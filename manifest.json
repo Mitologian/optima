@@ -1,7 +1,7 @@
 {
-  "name": "BNI Ventura",
-  "short_name": "Ventura",
-  "description": "BNI Ventura Chapter Gamification App",
+  "name": "BNI Optima",
+  "short_name": "Optima",
+  "description": "BNI Optima Chapter Gamification App",
   "start_url": ".",
   "display": "standalone",
   "orientation": "portrait",

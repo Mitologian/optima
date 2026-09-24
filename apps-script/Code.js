@@ -1,3 +1,6 @@
+// Penunjuk sheet data aplikasi. Ini sheet BNI Optima Road to Launch.
+const SHEET_ID = "1lr7wQp5a_LPxK2wpwYRzgTcrHiexO2jvr-c0UBeX-t4";
+
 /* =========================
    DO GET — Single Page App
 ========================= */
@@ -15,7 +18,7 @@ function doGet(e) {
    A=MemberName B=Team C=Leader D=Active E=IsLaunchTeam
 ========================= */
 function getMembers() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName('Members');
   const data  = sheet.getDataRange().getDisplayValues();
   data.shift();
@@ -60,7 +63,7 @@ function getDynamicTarget_(currentMembers) {
 const MAX_MEMBERS_PER_TEAM = 7;
 
 function getRegularMemberRows_() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName('Members');
   const data  = sheet.getDataRange().getDisplayValues();
   data.shift();
@@ -129,7 +132,7 @@ function resolveJoinTeam_(preferredTeam) {
    ENSURE MEMBER EXISTS
 ========================= */
 function ensureMemberExists_(memberName, teamName) {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName('Members');
   const data  = sheet.getDataRange().getDisplayValues();
   data.shift();
@@ -210,7 +213,7 @@ function addLockedClassification_(memberName, teamName, classification) {
    RULES MAP
 ========================= */
 function getRulesMap() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName('Rules');
   const data  = sheet.getDataRange().getValues();
   data.shift();
@@ -223,7 +226,7 @@ function getRulesMap() {
    SUBMIT INVITE
 ========================= */
 function submitActivity(formData) {
-  const ss              = SpreadsheetApp.getActiveSpreadsheet();
+  const ss              = SpreadsheetApp.openById(SHEET_ID);
   const activitiesSheet = ss.getSheetByName('Activities');
   const visitorsSheet   = ss.getSheetByName('Visitors');
   const membersSheet    = ss.getSheetByName('Members');
@@ -282,7 +285,7 @@ function submitActivity(formData) {
    GET OPEN VISITORS
 ========================= */
 function getVisitors() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName('Visitors');
   const data  = sheet.getDataRange().getDisplayValues();
   data.shift();
@@ -302,7 +305,7 @@ function getVisitors() {
    GET PROSPECTS
 ========================= */
 function getProspects() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName('Visitors');
   const data  = sheet.getDataRange().getDisplayValues();
   data.shift();
@@ -322,7 +325,7 @@ function getProspects() {
    UPDATE VISITOR STATUS
 ========================= */
 function updateVisitorStatus(data) {
-  const ss              = SpreadsheetApp.getActiveSpreadsheet();
+  const ss              = SpreadsheetApp.openById(SHEET_ID);
   const visitorsSheet   = ss.getSheetByName('Visitors');
   const activitiesSheet = ss.getSheetByName('Activities');
   const rules           = getRulesMap();
@@ -433,7 +436,7 @@ function updateVisitorStatus(data) {
    SUBMIT ATTENDANCE
 ========================= */
 function submitAttendance(attendanceData) {
-  const ss              = SpreadsheetApp.getActiveSpreadsheet();
+  const ss              = SpreadsheetApp.openById(SHEET_ID);
   const attendanceSheet = ss.getSheetByName('Attendance');
   const membersSheet    = ss.getSheetByName('Members');
   const activitiesSheet = ss.getSheetByName('Activities');
@@ -474,7 +477,7 @@ function submitAttendance(attendanceData) {
    ATTENDANCE HISTORY
 ========================= */
 function getAttendanceDates() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName('Attendance');
   const data = sheet.getDataRange().getDisplayValues();
   data.shift();
@@ -489,7 +492,7 @@ function getAttendanceDates() {
 }
 
 function getAttendanceByDate(date) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const tz = Session.getScriptTimeZone();
 
   const attSheet = ss.getSheetByName('Attendance');
@@ -567,7 +570,7 @@ function getAttendanceByDate(date) {
    GET DASHBOARD DATA
 ========================= */
 function getDashboardData() {
-  const ss      = SpreadsheetApp.getActiveSpreadsheet();
+  const ss      = SpreadsheetApp.openById(SHEET_ID);
   const actData = ss.getSheetByName('Activities').getDataRange().getDisplayValues();
   actData.shift();
   const memData = ss.getSheetByName('Members').getDataRange().getDisplayValues();
@@ -808,7 +811,7 @@ if (weeklyGrowth.length) {
 ========================= */
 
 function getClassificationsSheet_() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
   let sheet   = ss.getSheetByName('Classifications');
   if (!sheet) {
     sheet = ss.insertSheet('Classifications');
@@ -845,7 +848,7 @@ function postWantedClassification(data) {
   if (!data.memberName || !data.classification)
     return { success: false, message: 'Nama dan klasifikasi wajib diisi.' };
 
-  const ss          = SpreadsheetApp.getActiveSpreadsheet();
+  const ss          = SpreadsheetApp.openById(SHEET_ID);
   const membersSheet= ss.getSheetByName('Members');
   const memberRows  = membersSheet.getDataRange().getDisplayValues();
   memberRows.shift();
@@ -906,7 +909,7 @@ function syncLockedFromMembers(memberName, team, classification) {
    Return: array { memberName, team, sponsoredBy, sponsoredByTeam, joinDate }
 ========================= */
 function getMemberSponsors() {
-  const ss              = SpreadsheetApp.getActiveSpreadsheet();
+  const ss              = SpreadsheetApp.openById(SHEET_ID);
   const visitorsSheet   = ss.getSheetByName('Visitors');
   const membersSheet    = ss.getSheetByName('Members');
 
@@ -951,7 +954,7 @@ function verifyAdminPin(pin) {
    Shared idea pool + daily brainstorm reward
 ========================= */
 function getBrainTargetsSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   let sh = ss.getSheetByName('BrainTargets');
   if (!sh) {
     sh = ss.insertSheet('BrainTargets');
@@ -977,7 +980,7 @@ function getDateKey_() {
 
 function getTeamForMember_(memberName) {
   if (!memberName) return '';
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sh = ss.getSheetByName('Members');
   if (!sh) return '';
   const data = sh.getDataRange().getDisplayValues();
@@ -1126,7 +1129,7 @@ function requestBrainTarget(data) {
 }
 
 function logBrainActivity_(memberName, action, visitorName, business, points, notes) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sh = ss.getSheetByName('Activities');
   if (!sh) return;
 

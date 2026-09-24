@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#E31837">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BNI Ventura">
+  <meta name="description" content="BNI Ventura Chapter Gamification App">
+
+  <title>BNI Ventura</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Apple touch icons -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #E31837;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* Splash screen shown while iframe loads */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #E31837;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: opacity 0.4s ease;
+    }
+    #splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #splash-logo {
+      font-size: 32px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    #splash-tagline {
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 48px;
+    }
+    #splash-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* The iframe fills full screen */
+    #app-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Splash screen (shown during load) -->
+  <div id="splash">
+    <div id="splash-logo">BNI VENTURA</div>
+    <div id="splash-tagline">Bravely Venturing Together!</div>
+    <div id="splash-spinner"></div>
+  </div>
+
+  <!-- Apps Script embedded — banner is INSIDE this iframe, invisible to user -->
+  <iframe
+    id="app-frame"
+    src="https://script.google.com/macros/s/AKfycbzcEW7RCUNzxNb0WmQUYuNIFlgiTTpjoz2qGm1bQP5AZHKeolAv6RxEaLRFrnC8hSyByw/exec"
+    allow="fullscreen"
+    loading="eager"
+  ></iframe>
+
+  <script>
+    // Register service worker for PWA install capability
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js')
+          .then(function(reg) { console.log('SW registered'); })
+          .catch(function(err) { console.log('SW error:', err); });
+      });
+    }
+
+    // Hide splash when iframe loads
+    var frame = document.getElementById('app-frame');
+    var splash = document.getElementById('splash');
+
+    frame.addEventListener('load', function() {
+      setTimeout(function() {
+        splash.classList.add('hidden');
+      }, 800); // small delay so content is visible before splash fades
+    });
+
+    // Fallback: hide splash after 5s regardless
+    setTimeout(function() {
+      splash.classList.add('hidden');
+    }, 5000);
+  </script>
+
+</body>
+</html>

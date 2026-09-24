@@ -7,7 +7,7 @@ const SHEET_ID = "1lr7wQp5a_LPxK2wpwYRzgTcrHiexO2jvr-c0UBeX-t4";
 function doGet(e) {
   const template = HtmlService.createTemplateFromFile('Main');
   return template.evaluate()
-    .setTitle('BNI Ventura')
+    .setTitle('BNI Optima')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1');
 }
@@ -55,7 +55,7 @@ function getDynamicTarget_(currentMembers) {
    TEAM ASSIGNMENT CONFIG
    Rule:
    - Max 7 regular members per team
-   - New Joined_Ventura member goes to referred team if crossTeamRef exists
+   - New Joined_Optima member goes to referred team if crossTeamRef exists
    - Otherwise goes to inviter team
    - If requested team is full, assign to next new team number
    - Launch Team invite still uses manual selected team, but also respects max 7
@@ -184,7 +184,7 @@ function ensureMemberExists_(memberName, teamName) {
 /* =========================
    ADD LOCKED CLASSIFICATION (internal helper)
    Dipanggil saat:
-   1. Visitor Joined_Ventura (business field = classification)
+   1. Visitor Joined_Optima (business field = classification)
    2. Wanted request di-fulfill
    Cek duplikat sebelum menambah.
 ========================= */
@@ -289,7 +289,7 @@ function getVisitors() {
   const sheet = ss.getSheetByName('Visitors');
   const data  = sheet.getDataRange().getDisplayValues();
   data.shift();
-  const closed = ['Joined_Ventura','Joined_Other','Declined','Rejected'];
+  const closed = ['Joined_Optima','Joined_Other','Declined','Rejected'];
   return data
     .map(r => ({
       visitorName: r[0]||'', business: r[1]||'', phone: r[2]||'',
@@ -309,7 +309,7 @@ function getProspects() {
   const sheet = ss.getSheetByName('Visitors');
   const data  = sheet.getDataRange().getDisplayValues();
   data.shift();
-  const closed = ['Joined_Ventura','Joined_Other','Declined','Rejected'];
+  const closed = ['Joined_Optima','Joined_Other','Declined','Rejected'];
   return data
     .map(r => ({
       visitorName: r[0]||'', business: r[1]||'', phone: r[2]||'',
@@ -351,7 +351,7 @@ function updateVisitorStatus(data) {
   let requestedJoinTeam = '';
   let teamAssignment = null;
 
-  if (data.newStatus === 'Joined_Ventura') {
+  if (data.newStatus === 'Joined_Optima') {
     if (isLT) {
       requestedJoinTeam = data.joinTeam || '';
     } else if (crossTeamRef) {
@@ -376,7 +376,7 @@ function updateVisitorStatus(data) {
     (isLT ? 'LT-invite | ' : '') +
     'Status: ' + currentStatus + ' → ' + data.newStatus;
 
-  if (data.newStatus === 'Joined_Ventura' && teamAssignment) {
+  if (data.newStatus === 'Joined_Optima' && teamAssignment) {
     activityNote +=
       ' | RequestedTeam: ' + (teamAssignment.requestedTeam || '-') +
       ' | FinalTeam: ' + teamAssignment.finalTeam;
@@ -395,7 +395,7 @@ function updateVisitorStatus(data) {
   ]);
 
   let crossTeamBonusAwarded = false;
-  if (data.newStatus === 'Joined_Ventura' && !isLT && crossTeamRef && crossTeamRef === joinTeamValue) {
+  if (data.newStatus === 'Joined_Optima' && !isLT && crossTeamRef && crossTeamRef === joinTeamValue) {
     const bonus = rules['CrossTeamBonus'] || 0;
     if (bonus > 0) {
       activitiesSheet.appendRow([
@@ -410,7 +410,7 @@ function updateVisitorStatus(data) {
   let memberAdded = false;
   let memberAddResult = null;
 
-  if (data.newStatus === 'Joined_Ventura') {
+  if (data.newStatus === 'Joined_Optima') {
     memberAddResult = ensureMemberExists_(visitorName, joinTeamValue);
     memberAdded = memberAddResult.added;
 
@@ -584,7 +584,7 @@ function getDashboardData() {
   memberList.forEach(m => {
     statsMap[m.memberName] = {
       memberName: m.memberName, team: m.team,
-      joinedVentura: 0, joinedOther: 0, totalPoints: 0, goldCount: 0,
+      joinedOptima: 0, joinedOther: 0, totalPoints: 0, goldCount: 0,
       inviteCount: 0, attendanceCount: 0, coffeeCount: 0, appliedCount: 0,
       weeklyPoints: 0, weeklyInvites: 0, weeklyConversions: 0, weeklyCoffee: 0
     };
@@ -608,7 +608,7 @@ if (now < weekStart) {
   weekStart.setDate(weekStart.getDate() - 7);
 }
 
-  const feedActions = ['Invite','Invite_Coffee','Joined_Ventura','Joined_Other','Prior_Gold','Applied','Attended','Coffee_Session','Declined','Rejected','CrossTeamBonus','Brainstorm_3_Targets','Brain_Request'];
+  const feedActions = ['Invite','Invite_Coffee','Joined_Optima','Joined_Other','Prior_Gold','Applied','Attended','Coffee_Session','Declined','Rejected','CrossTeamBonus','Brainstorm_3_Targets','Brain_Request'];
   const recentFeed  = [];
 
   actData.forEach(row => {
@@ -629,7 +629,7 @@ if (now < weekStart) {
         // intentionally NOT adding to totalPoints
       } else {
         s.totalPoints += points;
-        if (action === 'Joined_Ventura') { s.joinedVentura++; if(isThisWeek) s.weeklyConversions++; }
+        if (action === 'Joined_Optima') { s.joinedOptima++; if(isThisWeek) s.weeklyConversions++; }
         if (action === 'Joined_Other')     s.joinedOther++;
         if (action === 'Invite' || action === 'Invite_Coffee') { s.inviteCount++; if(isThisWeek) s.weeklyInvites++; }
         if (action === 'Coffee_Session' || action === 'Invite_Coffee') { s.coffeeCount++; if(isThisWeek) s.weeklyCoffee++; }
@@ -646,19 +646,19 @@ if (now < weekStart) {
 
   Object.keys(statsMap).forEach(name => {
     const s = statsMap[name];
-    s.goldCount    = s.joinedVentura + s.joinedOther;
+    s.goldCount    = s.joinedOptima + s.joinedOther;
     s.goldProgress = s.goldCount + ' / 6';
-    s.convRate     = s.inviteCount > 0 ? ((s.joinedVentura/s.inviteCount)*100).toFixed(0)+'%' : '—';
+    s.convRate     = s.inviteCount > 0 ? ((s.joinedOptima/s.inviteCount)*100).toFixed(0)+'%' : '—';
   });
 
   const summaryRows = [
-    ['MemberName','Team','Joined_Ventura','Joined_Other','TotalPoints','GoldProgress','GoldCount',
+    ['MemberName','Team','Joined_Optima','Joined_Other','TotalPoints','GoldProgress','GoldCount',
      'InviteCount','AttendanceCount','WeeklyPoints','WeeklyInvites','CoffeeCount','AppliedCount',
      'ConvRate','WeeklyConversions','WeeklyCoffee']
   ];
   Object.values(statsMap).forEach(s => {
     summaryRows.push([
-      s.memberName, s.team, s.joinedVentura, s.joinedOther, s.totalPoints,
+      s.memberName, s.team, s.joinedOptima, s.joinedOther, s.totalPoints,
       s.goldProgress, s.goldCount, s.inviteCount, s.attendanceCount,
       s.weeklyPoints, s.weeklyInvites, s.coffeeCount, s.appliedCount,
       s.convRate, s.weeklyConversions, s.weeklyCoffee
@@ -670,16 +670,16 @@ if (now < weekStart) {
 // Dynamic baseline: semua member aktif non-Launch Team di Members sheet
 const foundingMemberCount = memberList.length;
 
-// Count member yang join dari aktivitas Joined_Ventura
-const newVentura = allStats.reduce((a,s)=>a+s.joinedVentura, 0);
+// Count member yang join dari aktivitas Joined_Optima
+const newOptima = allStats.reduce((a,s)=>a+s.joinedOptima, 0);
 
 const launchDate = new Date('2026-08-25');
 const daysToLaunch = Math.max(0, Math.ceil((launchDate-now)/(1000*60*60*24)));
 
   const overallTop3 = allStats.slice()
-    .sort((a,b)=>b.totalPoints-a.totalPoints||b.joinedVentura-a.joinedVentura)
+    .sort((a,b)=>b.totalPoints-a.totalPoints||b.joinedOptima-a.joinedOptima)
     .slice(0,3)
-    .map(s=>({ memberName:s.memberName, team:s.team, value:s.totalPoints, sub:s.joinedVentura+' JV · '+s.inviteCount+' inv' }));
+    .map(s=>({ memberName:s.memberName, team:s.team, value:s.totalPoints, sub:s.joinedOptima+' JV · '+s.inviteCount+' inv' }));
 
   const weeklyTop3 = allStats.filter(s=>s.weeklyPoints>0)
     .sort((a,b)=>b.weeklyPoints-a.weeklyPoints||b.weeklyInvites-a.weeklyInvites)
@@ -687,7 +687,7 @@ const daysToLaunch = Math.max(0, Math.ceil((launchDate-now)/(1000*60*60*24)));
     .map(s=>({ memberName:s.memberName, team:s.team, value:s.weeklyPoints, sub:s.weeklyInvites+' inv · '+s.weeklyConversions+' conv' }));
 
   /* ── Weekly growth data for chart ──
-     Hitung Joined_Ventura per minggu (Senin–Minggu), build cumulative dari baseline 16.
+     Hitung Joined_Optima per minggu (Senin–Minggu), build cumulative dari baseline 16.
      Gunakan tanggal Senin minggu itu sebagai key (YYYY-MM-DD) agar lebih reliable
      daripada ISO week number calculation yang bisa off-by-one.
   */
@@ -715,14 +715,14 @@ actData.forEach(row => {
   const name = (row[3] || '').toString().trim(); // visitorName / new member name
   const action = (row[5] || '').toString().trim();
 
-  if (action !== 'Joined_Ventura' || !ts || !name) return;
+  if (action !== 'Joined_Optima' || !ts || !name) return;
 
   const keyName = name.toLowerCase();
 
   // hanya hitung kalau benar-benar ada di Members sheet
   if (!currentMemberSet.has(keyName)) return;
 
-  // hindari duplicate Joined_Ventura untuk orang yang sama
+  // hindari duplicate Joined_Optima untuk orang yang sama
   if (countedJoinNames.has(keyName)) return;
   countedJoinNames.add(keyName);
 
@@ -735,7 +735,7 @@ actData.forEach(row => {
 
   // Sort weeks and build cumulative from dynamic founding member count
 const sortedWeeks = Object.keys(weeklyJoins).sort(); // ISO date string sorts correctly
-let cumulative = foundingMemberCount - newVentura;
+let cumulative = foundingMemberCount - newOptima;
 const weeklyGrowth = [];
 
   sortedWeeks.forEach((wk, idx) => {
@@ -782,8 +782,8 @@ if (weeklyGrowth.length) {
       totalMembers: currentTotal,
       targetMembers: targetMembers,
       nextTarget: nextTarget,
-      newVentura,
-      newVenturaWeek: allStats.reduce((a,s)=>a+s.weeklyConversions, 0),
+      newOptima,
+      newOptimaWeek: allStats.reduce((a,s)=>a+s.weeklyConversions, 0),
       weeklyInvitesTotal: allStats.reduce((a,s)=>a+s.weeklyInvites, 0),
       daysToLaunch
     },
@@ -875,7 +875,7 @@ function postWantedClassification(data) {
 /* Fulfill a Wanted classification request.
    SIMPLIFIED: hanya mencoret/mark Wanted entry sebagai done + catat kapan.
    TIDAK ada hubungan dengan Locked Classification atau roster member.
-   Locked Classification HANYA dari Launch Team via Update Status → Joined_Ventura.
+   Locked Classification HANYA dari Launch Team via Update Status → Joined_Optima.
 */
 function fulfillWanted(data) {
   const sheet = getClassificationsSheet_();
@@ -904,7 +904,7 @@ function syncLockedFromMembers(memberName, team, classification) {
 
 /* =========================
    GET MEMBER SPONSORS
-   Baca dari Visitors — siapa yang sponsor (invite) setiap member yang Joined_Ventura.
+   Baca dari Visitors — siapa yang sponsor (invite) setiap member yang Joined_Optima.
    Tidak ada perubahan data, murni read-only dari Visitors sheet.
    Return: array { memberName, team, sponsoredBy, sponsoredByTeam, joinDate }
 ========================= */
@@ -926,9 +926,9 @@ function getMemberSponsors() {
       .map(r => r[0].toString().trim())
   );
 
-  // Filter Visitors to those who Joined_Ventura — these are the sponsored members
+  // Filter Visitors to those who Joined_Optima — these are the sponsored members
   const sponsors = visitorData
-    .filter(r => r[0] && r[5] === 'Joined_Ventura')
+    .filter(r => r[0] && r[5] === 'Joined_Optima')
     .map(r => ({
       memberName:      r[0] || '',   // the visitor who became a member
       team:            r[6] || r[4] || '',  // joinTeam (col G) or invitedByTeam

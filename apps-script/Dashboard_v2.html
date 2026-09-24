@@ -256,8 +256,8 @@
 </head>
 <body>
   <div class="container">
-    <h1>Ventura Dashboard</h1>
-    <div class="subtitle">BNI Ventura Launch Mission & Gamification Board</div>
+    <h1>Optima Dashboard</h1>
+    <div class="subtitle">BNI Optima Launch Mission & Gamification Board</div>
 
     <div class="top-actions">
       <a class="action-link" href="https://script.google.com/macros/s/AKfycbwj6qTK1TDGMrFc388JHb2zWJWRp31VEBBA2u9x-ObfnvzO32Bewm0f_vhRT5hUl85ueg/exec?view=member" target="_top">Add Visitor</a>
@@ -276,7 +276,7 @@
 
     <div class="grid">
       <div class="card">
-        <h2>Ventura Launch Mission</h2>
+        <h2>Optima Launch Mission</h2>
         <div id="missionBox" class="loading">Loading mission data...</div>
       </div>
 
@@ -288,7 +288,7 @@
 
     <div class="grid">
       <div class="card">
-        <h2>Ventura Impact Board</h2>
+        <h2>Optima Impact Board</h2>
         <div id="memberTableWrap" class="loading">Loading member leaderboard...</div>
       </div>
 
@@ -344,8 +344,8 @@
       const rows = summaryRows.slice(1).filter(r => r[0]);
 
       const currentMembers = 16;
-      const newVentura = rows.reduce((sum, r) => sum + safeNum(r[2]), 0);
-      const totalMembers = currentMembers + newVentura;
+      const newOptima = rows.reduce((sum, r) => sum + safeNum(r[2]), 0);
+      const totalMembers = currentMembers + newOptima;
       const target = 51;
       const remaining = Math.max(target - totalMembers, 0);
       const progressPct = target > 0 ? (totalMembers / target) * 100 : 0;
@@ -371,7 +371,7 @@
 
         <div style="margin-top:14px">
           <div class="mission-row"><div>Current Members</div><div><strong>${currentMembers}</strong></div></div>
-          <div class="mission-row"><div>New Members Joined Ventura</div><div><strong>${newVentura}</strong></div></div>
+          <div class="mission-row"><div>New Members Joined Optima</div><div><strong>${newOptima}</strong></div></div>
           <div class="mission-row"><div>Remaining to 51</div><div><strong>${remaining}</strong></div></div>
           <div class="mission-row"><div>Progress</div><div><strong>${progressPct.toFixed(1)}%</strong></div></div>
         </div>
@@ -393,12 +393,12 @@
         return safeNum(b[2]) - safeNum(a[2]);
       });
 
-      const topVentura = sortedByJV[0];
+      const topOptima = sortedByJV[0];
       const topGold = sortedByGold[0];
 
       document.getElementById('highlightBox').innerHTML = `
-        <div class="mission-row"><div>Top Ventura Contributor</div><div><strong>${topVentura ? topVentura[0] : '-'}</strong></div></div>
-        <div class="mission-row"><div>Most Joined to Ventura</div><div><strong>${topVentura ? safeNum(topVentura[2]) : 0}</strong></div></div>
+        <div class="mission-row"><div>Top Optima Contributor</div><div><strong>${topOptima ? topOptima[0] : '-'}</strong></div></div>
+        <div class="mission-row"><div>Most Joined to Optima</div><div><strong>${topOptima ? safeNum(topOptima[2]) : 0}</strong></div></div>
         <div class="mission-row"><div>Gold Club Leader</div><div><strong>${topGold ? topGold[0] : '-'}</strong></div></div>
         <div class="mission-row"><div>Gold Progress</div><div><strong>${topGold ? topGold[5] : '0 / 6'}</strong></div></div>
       `;
@@ -418,7 +418,7 @@
             <th>Rank</th>
             <th>Member</th>
             <th>Team</th>
-            <th>Joined Ventura</th>
+            <th>Joined Optima</th>
             <th>Joined Other</th>
             <th>Total Points</th>
             <th>Gold</th>
@@ -454,26 +454,26 @@
 
       rows.forEach(r => {
         const team = r[1] || 'No Team';
-        const joinedVentura = safeNum(r[2]);
+        const joinedOptima = safeNum(r[2]);
         const joinedOther = safeNum(r[3]);
         const totalPoints = safeNum(r[4]);
 
         if (!teamMap[team]) {
           teamMap[team] = {
             team,
-            joinedVentura: 0,
+            joinedOptima: 0,
             joinedOther: 0,
             totalPoints: 0
           };
         }
 
-        teamMap[team].joinedVentura += joinedVentura;
+        teamMap[team].joinedOptima += joinedOptima;
         teamMap[team].joinedOther += joinedOther;
         teamMap[team].totalPoints += totalPoints;
       });
 
       const teams = Object.values(teamMap).sort((a, b) => {
-        if (b.joinedVentura !== a.joinedVentura) return b.joinedVentura - a.joinedVentura;
+        if (b.joinedOptima !== a.joinedOptima) return b.joinedOptima - a.joinedOptima;
         return b.totalPoints - a.totalPoints;
       });
 
@@ -482,7 +482,7 @@
           <tr>
             <th>Rank</th>
             <th>Team</th>
-            <th>Joined Ventura</th>
+            <th>Joined Optima</th>
             <th>Joined Other</th>
             <th>Total Points</th>
           </tr>
@@ -493,7 +493,7 @@
           <tr>
             <td><span class="rank-badge">${i + 1}</span></td>
             <td>${t.team}</td>
-            <td>${t.joinedVentura}</td>
+            <td>${t.joinedOptima}</td>
             <td>${t.joinedOther}</td>
             <td>${t.totalPoints}</td>
           </tr>

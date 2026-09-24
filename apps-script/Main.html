@@ -3,7 +3,7 @@
 <head>
 <base target="_top">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>BNI Ventura</title>
+<title>BNI Optima</title>
 <style>
 /* ─── RESET ─── */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -538,7 +538,7 @@ html,body{
 <div id="pg-dashboard" class="page active">
 
   <div class="topbar">
-    <div class="topbar-logo">BNI VENTURA</div>
+    <div class="topbar-logo">BNI OPTIMA</div>
     <div class="topbar-right">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     </div>
@@ -548,8 +548,8 @@ html,body{
     <div class="hero-row">
       <div>
         <div class="hero-greeting">Welcome Back Explorers! 👋</div>
-        <div class="hero-title">Ventura Dashboard</div>
-        <div class="hero-tagline">Bravely Venturing Together!</div>
+        <div class="hero-title">Optima Dashboard</div>
+        <div class="hero-tagline">Optimal Results, Together!</div>
       </div>
       <div class="hero-countdown">
         <div class="cd-num" id="db-days">—</div>
@@ -577,11 +577,11 @@ html,body{
     <div class="mission-card">
       <div class="mc-hdr">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        <span class="mc-hdr-text">Ventura Launch Mission</span>
+        <span class="mc-hdr-text">Optima Launch Mission</span>
       </div>
       <div class="mc-body">
         <div class="mc-left">
-          <div class="mc-lbl">Total Members Ventura</div>
+          <div class="mc-lbl">Total Members Optima</div>
           <div class="mc-big">
             <span class="mc-num" id="db-total">—</span>
             <span class="mc-den">/ 51</span>
@@ -651,7 +651,7 @@ html,body{
       <div class="ib-hdr">
         <div class="ib-hdr-left">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-          <span class="ib-title">Ventura Impact Board</span>
+          <span class="ib-title">Optima Impact Board</span>
         </div>
         <button class="view-all-btn" onclick="goPage('leaderboard')">View All ›</button>
       </div>
@@ -674,7 +674,7 @@ html,body{
           <span class="sh-title">Team Mission Board</span>
         </div>
       </div>
-      <div class="tc-sub">Member Join Ventura (JV)</div>
+      <div class="tc-sub">Member Join Optima (JV)</div>
       <div id="db-team-jv"><div class="ldg">Loading...</div></div>
       <div class="divider"></div>
       <div class="tc-sub">Total Poin Tim</div>
@@ -1030,7 +1030,7 @@ html,body{
       <label class="flbl">Status Baru</label>
       <select class="finput" id="a-st" onchange="chkStChange()">
         <optgroup label="Progress"><option value="Attended">Attended</option><option value="Coffee_Session">☕ Coffee Session / Interview</option><option value="Applied">Applied</option></optgroup>
-        <optgroup label="Join"><option value="Joined_Ventura">✨ Joined Ventura</option><option value="Joined_Other">Joined Other Chapter</option></optgroup>
+        <optgroup label="Join"><option value="Joined_Optima">✨ Joined Optima</option><option value="Joined_Other">Joined Other Chapter</option></optgroup>
         <optgroup label="Exit"><option value="Declined">Declined</option><option value="Rejected">Rejected</option></optgroup>
       </select>
       <div id="a-man-box" class="manual-box" style="display:none;">
@@ -1112,7 +1112,7 @@ html,body{
 
   <!-- TAB: SPONSOR MAP -->
   <div id="lbtab-sponsors" style="display:none;">
-    <div class="lb-hdr-strip">Siapa mengundang siapa — semua member yang sudah join Ventura</div>
+    <div class="lb-hdr-strip">Siapa mengundang siapa — semua member yang sudah join Optima</div>
     <!-- Summary: top sponsors -->
     <div style="padding:12px 18px 0;">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;">Top Sponsor (terbanyak berhasil masukkan member)</div>
@@ -1342,13 +1342,13 @@ function rankLine(i){
   return'<div class="rl rl-gray"></div>';
 }
 function statusChip(s){
-  var m={'Invited':'<span class="chip c-inv">Invited</span>','Coffee_Scheduled':'<span class="chip c-cof">☕ Sched</span>','Attended':'<span class="chip c-att">Attended</span>','Coffee_Session':'<span class="chip c-int">☕ Interview</span>','Applied':'<span class="chip c-app">Applied</span>','Joined_Ventura':'<span class="chip c-jv">✨ JV</span>','Joined_Other':'<span class="chip c-jo">Joined Other</span>','Declined':'<span class="chip c-dec">Declined</span>','Rejected':'<span class="chip c-rej">Rejected</span>'};
+  var m={'Invited':'<span class="chip c-inv">Invited</span>','Coffee_Scheduled':'<span class="chip c-cof">☕ Sched</span>','Attended':'<span class="chip c-att">Attended</span>','Coffee_Session':'<span class="chip c-int">☕ Interview</span>','Applied':'<span class="chip c-app">Applied</span>','Joined_Optima':'<span class="chip c-jv">✨ JV</span>','Joined_Other':'<span class="chip c-jo">Joined Other</span>','Declined':'<span class="chip c-dec">Declined</span>','Rejected':'<span class="chip c-rej">Rejected</span>'};
   return m[s]||'<span class="chip" style="background:var(--bg);color:var(--muted);">'+(s||'—')+'</span>';
 }
 function dayAgo(d){var s=d||'';if(!s)return'<span class="days-chip dc-cold">?</span>';var df=Math.floor((new Date()-new Date(s))/864e5);if(df>=7)return'<span class="days-chip dc-hot">'+df+'d lalu 🔥</span>';if(df>=3)return'<span class="days-chip dc-warm">'+df+'d lalu</span>';return'<span class="days-chip dc-cold">'+df+'d lalu</span>';}
-function feedEmoji(a){var m={'Invite':'👋','Invite_Coffee':'☕','Attended':'🙋','Coffee_Session':'🎙️','Applied':'📝','Joined_Ventura':'🎉','Joined_Other':'🤝','Prior_Gold':'⭐','Declined':'🚫','Rejected':'❌','CrossTeamBonus':'🔀','Morning_Attend':'🌅','Noon_Attend':'☀️','FullTeamBonus':'🏆','Brainstorm_3_Targets':'🧠','Brain_Request':'🔥'};return m[a]||'📌';}
-function feedBg(a){var m={'Invite':'#DBEAFE','Invite_Coffee':'#FED7AA','Attended':'#D1FAE5','Coffee_Session':'#EDE9FE','Applied':'#FEF3C7','Joined_Ventura':'#D1FAE5','Joined_Other':'#E0E7FF','Prior_Gold':'#FEF3C7','Declined':'#FEF0F2','Rejected':'#FEF0F2','CrossTeamBonus':'#DBEAFE','Morning_Attend':'#FEF3C7','Noon_Attend':'#FEF3C7','FullTeamBonus':'#FEF3C7','Brainstorm_3_Targets':'#FEF0F2','Brain_Request':'#FEF0F2'};return m[a]||'#F7F8FA';}
-function feedLabel(a,name,vis){var v=vis||'visitor',n=name||'—';var m={'Invite':n+' mengundang '+v,'Invite_Coffee':n+' coffee: '+v,'Attended':v+' hadir (by '+n+')','Coffee_Session':v+' selesai interview (by '+n+')','Applied':v+' mendaftar! (by '+n+')','Joined_Ventura':'🎉 '+v+' JOIN VENTURA! by '+n,'Joined_Other':v+' join chapter lain','Prior_Gold':'⭐ Prior Member','Declined':v+' declined','Rejected':v+' rejected','CrossTeamBonus':'🔀 Cross-team bonus! '+n,'Morning_Attend':n+' hadir Pagi','Noon_Attend':n+' hadir Siang','FullTeamBonus':'🏆 Full Team Bonus!','Brainstorm_3_Targets':n+' menyelesaikan Daily Brainstorm Challenge','Brain_Request':n+' request classification '+(vis||'')};return m[a]||a;}
+function feedEmoji(a){var m={'Invite':'👋','Invite_Coffee':'☕','Attended':'🙋','Coffee_Session':'🎙️','Applied':'📝','Joined_Optima':'🎉','Joined_Other':'🤝','Prior_Gold':'⭐','Declined':'🚫','Rejected':'❌','CrossTeamBonus':'🔀','Morning_Attend':'🌅','Noon_Attend':'☀️','FullTeamBonus':'🏆','Brainstorm_3_Targets':'🧠','Brain_Request':'🔥'};return m[a]||'📌';}
+function feedBg(a){var m={'Invite':'#DBEAFE','Invite_Coffee':'#FED7AA','Attended':'#D1FAE5','Coffee_Session':'#EDE9FE','Applied':'#FEF3C7','Joined_Optima':'#D1FAE5','Joined_Other':'#E0E7FF','Prior_Gold':'#FEF3C7','Declined':'#FEF0F2','Rejected':'#FEF0F2','CrossTeamBonus':'#DBEAFE','Morning_Attend':'#FEF3C7','Noon_Attend':'#FEF3C7','FullTeamBonus':'#FEF3C7','Brainstorm_3_Targets':'#FEF0F2','Brain_Request':'#FEF0F2'};return m[a]||'#F7F8FA';}
+function feedLabel(a,name,vis){var v=vis||'visitor',n=name||'—';var m={'Invite':n+' mengundang '+v,'Invite_Coffee':n+' coffee: '+v,'Attended':v+' hadir (by '+n+')','Coffee_Session':v+' selesai interview (by '+n+')','Applied':v+' mendaftar! (by '+n+')','Joined_Optima':'🎉 '+v+' JOIN VENTURA! by '+n,'Joined_Other':v+' join chapter lain','Prior_Gold':'⭐ Prior Member','Declined':v+' declined','Rejected':v+' rejected','CrossTeamBonus':'🔀 Cross-team bonus! '+n,'Morning_Attend':n+' hadir Pagi','Noon_Attend':n+' hadir Siang','FullTeamBonus':'🏆 Full Team Bonus!','Brainstorm_3_Targets':n+' menyelesaikan Daily Brainstorm Challenge','Brain_Request':n+' request classification '+(vis||'')};return m[a]||a;}
 
 /* ── HIGHLIGHTS BUILDER (3 tiles) ── */
 var ICONS={
@@ -1386,7 +1386,7 @@ function renderDash(data){
   document.getElementById('db-pct').textContent=pct+'%';
   document.getElementById('db-pct2').textContent=pct+'%';
   document.getElementById('db-vis-wk').textContent=cs.weeklyInvitesTotal||0;
-  document.getElementById('db-new-wk').textContent=cs.newVenturaWeek||0;
+  document.getElementById('db-new-wk').textContent=cs.newOptimaWeek||0;
   document.getElementById('db-rem').textContent=rem;
 
   /* Sorts */
@@ -1663,7 +1663,7 @@ function loadSponsors(){
   google.script.run
     .withSuccessHandler(function(sponsors){
       if(!sponsors||!sponsors.length){
-        document.getElementById('lb-sponsor-summary').innerHTML='<div class="ldg">Belum ada member yang join Ventura.</div>';
+        document.getElementById('lb-sponsor-summary').innerHTML='<div class="ldg">Belum ada member yang join Optima.</div>';
         document.getElementById('lb-sponsor-list').innerHTML='';
         return;
       }
@@ -2421,7 +2421,7 @@ function chkStChange(){
   var vn=document.getElementById('a-vis').value;
   var st=document.getElementById('a-st').value;
   var v=ALL_VIS.find(function(x){return x.visitorName===vn;});
-  document.getElementById('a-man-box').style.display=(v&&v.inviterType==='LaunchTeam'&&st==='Joined_Ventura')?'block':'none';
+  document.getElementById('a-man-box').style.display=(v&&v.inviterType==='LaunchTeam'&&st==='Joined_Optima')?'block':'none';
 }
 function doUpdateSt(){
   var vn=document.getElementById('a-vis').value;  /* hidden input, set by sdInit callback */
@@ -2430,7 +2430,7 @@ function doUpdateSt(){
   var res=document.getElementById('a-st-res');
   if(!vn){res.innerHTML='<div class="al al-err">Pilih visitor terlebih dahulu.</div>';return;}
   var v=ALL_VIS.find(function(x){return x.visitorName===vn;});
-  if(v&&v.inviterType==='LaunchTeam'&&st==='Joined_Ventura'&&!jt){res.innerHTML='<div class="al al-err">Pilih team untuk visitor ini.</div>';return;}
+  if(v&&v.inviterType==='LaunchTeam'&&st==='Joined_Optima'&&!jt){res.innerHTML='<div class="al al-err">Pilih team untuk visitor ini.</div>';return;}
   res.innerHTML='<div class="al al-info">Updating...</div>';
   google.script.run
     .withSuccessHandler(function(r){

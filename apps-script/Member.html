@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 30px auto;
+      background: #fafafa;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      margin: 8px 0 16px;
+      padding: 10px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    .nav-link, button {
+      display: inline-block;
+      background: black;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+
+    .success { color: green; }
+    .error { color: red; }
+
+    .top-actions {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-actions">
+    <a
+      class="nav-link"
+      target="_top"
+      href="https://script.google.com/macros/s/AKfycbwj6qTK1TDGMrFc388JHb2zWJWRp31VEBBA2u9x-ObfnvzO32Bewm0f_vhRT5hUl85ueg/exec"
+    >
+      ← Back to Dashboard
+    </a>
+  </div>
+
+  <div class="card">
+    <h1>Add Visitor</h1>
+    <p>Submit visitor invitation</p>
+
+    <label>Member</label>
+    <select id="memberName"></select>
+
+    <label>Visitor Name</label>
+    <input id="visitorName">
+
+    <label>Business</label>
+    <input id="business">
+
+    <label>Phone</label>
+    <input id="phone">
+
+    <label>Collaborator (optional)</label>
+    <input id="collaborator">
+
+    <label>Notes</label>
+    <textarea id="notes"></textarea>
+
+    <button onclick="submitInvite()">Submit Invite</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    function loadMembers() {
+      google.script.run.withSuccessHandler(function(members) {
+        const sel = document.getElementById('memberName');
+        sel.innerHTML = '<option value="">Select Member</option>';
+
+        members.forEach(function(m) {
+          sel.innerHTML +=
+            '<option value="' + m.memberName + '">' +
+            m.memberName + ' (' + m.team + ')' +
+            '</option>';
+        });
+      }).getMembers();
+    }
+
+    function submitInvite() {
+      const data = {
+        memberName: document.getElementById('memberName').value,
+        visitorName: document.getElementById('visitorName').value,
+        business: document.getElementById('business').value,
+        phone: document.getElementById('phone').value,
+        collaborator: document.getElementById('collaborator').value,
+        notes: document.getElementById('notes').value
+      };
+
+      const result = document.getElementById('result');
+
+      if (!data.memberName || !data.visitorName || !data.business || !data.phone) {
+        result.innerHTML = '<span class="error">Please complete all required fields.</span>';
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          result.innerHTML = '<span class="success">Success! +' + res.points + ' points</span>';
+          document.getElementById('visitorName').value = '';
+          document.getElementById('business').value = '';
+          document.getElementById('phone').value = '';
+          document.getElementById('collaborator').value = '';
+          document.getElementById('notes').value = '';
+        })
+        .withFailureHandler(function(err) {
+          result.innerHTML = '<span class="error">Failed: ' + JSON.stringify(err) + '</span>';
+        })
+        .submitActivity(data);
+    }
+
+    window.onload = loadMembers;
+  </script>
+</body>
+</html>

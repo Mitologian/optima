@@ -1,0 +1,585 @@
+<div style="background:yellow; padding:10px; font-weight:bold;">
+  DASHBOARD VERSION: FINAL NEW
+</div>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f8fb;
+      margin: 0;
+      padding: 24px;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 18px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .action-link, .action-btn {
+      display: inline-block;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .action-link {
+      background: #111827;
+    }
+
+    .action-btn {
+      background: #374151;
+    }
+
+    .admin-pin-box {
+      display: none;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 24px;
+      max-width: 420px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .admin-pin-box input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 12px;
+      box-sizing: border-box;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+    }
+
+    .admin-pin-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .admin-pin-actions button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      background: #111827;
+      font-weight: bold;
+    }
+
+    .admin-pin-actions .secondary {
+      background: #6b7280;
+    }
+
+    .pin-error {
+      color: #b00020;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+
+    .big-number {
+      font-size: 36px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .mission-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .mission-row:last-child {
+      border-bottom: none;
+    }
+
+    .progress-wrap {
+      margin-top: 14px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 14px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #111827, #374151);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f3f4f6;
+      text-align: left;
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .rank-badge {
+      display: inline-block;
+      min-width: 28px;
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #111827;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .gold-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f59e0b;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .almost-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #ef4444;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .neutral-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #9ca3af;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .loading {
+      color: #6b7280;
+    }
+
+    .error {
+      color: #b00020;
+      font-weight: bold;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      body {
+        padding: 14px;
+      }
+
+      .big-number {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Ventura Dashboard</h1>
+    <div class="subtitle">BNI Ventura Launch Mission & Gamification Board</div>
+
+    <div class="top-actions">
+      <a class="action-link" href="https://script.google.com/macros/s/AKfycbwj6qTK1TDGMrFc388JHb2zWJWRp31VEBBA2u9x-ObfnvzO32Bewm0f_vhRT5hUl85ueg/exec?view=member" target="_top">Add Visitor</a>
+      <button class="action-btn" onclick="showAdminPin()">Admin Access</button>
+    </div>
+
+    <div id="adminPinBox" class="admin-pin-box">
+      <div style="font-weight:bold; margin-bottom:6px;">Enter Admin PIN</div>
+      <input type="password" id="adminPinInput" placeholder="PIN">
+      <div class="admin-pin-actions">
+        <button onclick="goAdmin()">Open Admin</button>
+        <button class="secondary" onclick="hideAdminPin()">Cancel</button>
+      </div>
+      <div id="pinError" class="pin-error"></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Ventura Launch Mission</h2>
+        <div id="missionBox" class="loading">Loading mission data...</div>
+      </div>
+
+      <div class="card">
+        <h2>Highlights</h2>
+        <div id="highlightBox" class="loading">Loading highlights...</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Ventura Impact Board</h2>
+        <div id="memberTableWrap" class="loading">Loading member leaderboard...</div>
+      </div>
+
+      <div class="card">
+        <h2>Team Mission Board</h2>
+        <div id="teamTableWrap" class="loading">Loading team leaderboard...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Gold Club Race</h2>
+      <div id="goldTableWrap" class="loading">Loading gold race...</div>
+    </div>
+  </div>
+
+  <script>
+    const ADMIN_URL = "https://script.google.com/macros/s/AKfycbwj6qTK1TDGMrFc388JHb2zWJWRp31VEBBA2u9x-ObfnvzO32Bewm0f_vhRT5hUl85ueg/exec?view=admin";
+
+    function safeNum(val) {
+      const n = Number(val);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function getBadge(goldCount) {
+      if (goldCount >= 6) return '<span class="gold-badge">Gold Club</span>';
+      if (goldCount >= 4) return '<span class="almost-badge">Almost There</span>';
+      return '<span class="neutral-badge">In Progress</span>';
+    }
+
+    function showAdminPin() {
+      document.getElementById('adminPinBox').style.display = 'block';
+      document.getElementById('pinError').innerHTML = '';
+      document.getElementById('adminPinInput').value = '';
+      document.getElementById('adminPinInput').focus();
+    }
+
+    function hideAdminPin() {
+      document.getElementById('adminPinBox').style.display = 'none';
+      document.getElementById('pinError').innerHTML = '';
+      document.getElementById('adminPinInput').value = '';
+    }
+
+    function goAdmin() {
+      const pin = document.getElementById('adminPinInput').value;
+      if (pin === '1234') {
+        window.top.location.href = ADMIN_URL;
+      } else {
+        document.getElementById('pinError').innerHTML = 'Wrong PIN';
+      }
+    }
+
+    function renderMission(summaryRows) {
+      const rows = summaryRows.slice(1).filter(r => r[0]);
+
+      const currentMembers = 16;
+      const newVentura = rows.reduce((sum, r) => sum + safeNum(r[2]), 0);
+      const totalMembers = currentMembers + newVentura;
+      const target = 51;
+      const remaining = Math.max(target - totalMembers, 0);
+      const progressPct = target > 0 ? (totalMembers / target) * 100 : 0;
+
+      let message = '';
+      if (remaining <= 5) {
+        message = '🔥 Almost there. Push final members!';
+      } else if (remaining <= 15) {
+        message = '⚡ Momentum is building. Keep inviting!';
+      } else {
+        message = '🚀 Early stage. Every invite matters.';
+      }
+
+      document.getElementById('missionBox').innerHTML = `
+        <div class="big-number">${totalMembers} / ${target}</div>
+        <div class="muted">Total members currently on track toward chapter launch</div>
+
+        <div class="progress-wrap">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${progressPct.toFixed(1)}%"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div class="mission-row"><div>Current Members</div><div><strong>${currentMembers}</strong></div></div>
+          <div class="mission-row"><div>New Members Joined Ventura</div><div><strong>${newVentura}</strong></div></div>
+          <div class="mission-row"><div>Remaining to 51</div><div><strong>${remaining}</strong></div></div>
+          <div class="mission-row"><div>Progress</div><div><strong>${progressPct.toFixed(1)}%</strong></div></div>
+        </div>
+
+        <div style="margin-top:12px; font-weight:bold;">${message}</div>
+      `;
+    }
+
+    function renderHighlights(summaryRows) {
+      const rows = summaryRows.slice(1).filter(r => r[0]);
+
+      const sortedByJV = [...rows].sort((a, b) => {
+        if (safeNum(b[2]) !== safeNum(a[2])) return safeNum(b[2]) - safeNum(a[2]);
+        return safeNum(b[4]) - safeNum(a[4]);
+      });
+
+      const sortedByGold = [...rows].sort((a, b) => {
+        if (safeNum(b[6]) !== safeNum(a[6])) return safeNum(b[6]) - safeNum(a[6]);
+        return safeNum(b[2]) - safeNum(a[2]);
+      });
+
+      const topVentura = sortedByJV[0];
+      const topGold = sortedByGold[0];
+
+      document.getElementById('highlightBox').innerHTML = `
+        <div class="mission-row"><div>Top Ventura Contributor</div><div><strong>${topVentura ? topVentura[0] : '-'}</strong></div></div>
+        <div class="mission-row"><div>Most Joined to Ventura</div><div><strong>${topVentura ? safeNum(topVentura[2]) : 0}</strong></div></div>
+        <div class="mission-row"><div>Gold Club Leader</div><div><strong>${topGold ? topGold[0] : '-'}</strong></div></div>
+        <div class="mission-row"><div>Gold Progress</div><div><strong>${topGold ? topGold[5] : '0 / 6'}</strong></div></div>
+      `;
+    }
+
+    function renderMemberTable(summaryRows) {
+      const rows = summaryRows.slice(1).filter(r => r[0]);
+
+      const sorted = [...rows].sort((a, b) => {
+        if (safeNum(b[2]) !== safeNum(a[2])) return safeNum(b[2]) - safeNum(a[2]);
+        return safeNum(b[4]) - safeNum(a[4]);
+      });
+
+      let html = `
+        <table>
+          <tr>
+            <th>Rank</th>
+            <th>Member</th>
+            <th>Team</th>
+            <th>Joined Ventura</th>
+            <th>Joined Other</th>
+            <th>Total Points</th>
+            <th>Gold</th>
+          </tr>
+      `;
+
+      sorted.forEach((r, i) => {
+        let badge = `<span class="rank-badge">${i + 1}</span>`;
+        if (i === 0) badge = '🥇';
+        if (i === 1) badge = '🥈';
+        if (i === 2) badge = '🥉';
+
+        html += `
+          <tr>
+            <td>${badge}</td>
+            <td>${r[0]}</td>
+            <td>${r[1]}</td>
+            <td>${safeNum(r[2])}</td>
+            <td>${safeNum(r[3])}</td>
+            <td>${safeNum(r[4])}</td>
+            <td>${r[5]}</td>
+          </tr>
+        `;
+      });
+
+      html += '</table>';
+      document.getElementById('memberTableWrap').innerHTML = html;
+    }
+
+    function renderTeamTable(summaryRows) {
+      const rows = summaryRows.slice(1).filter(r => r[0]);
+      const teamMap = {};
+
+      rows.forEach(r => {
+        const team = r[1] || 'No Team';
+        const joinedVentura = safeNum(r[2]);
+        const joinedOther = safeNum(r[3]);
+        const totalPoints = safeNum(r[4]);
+
+        if (!teamMap[team]) {
+          teamMap[team] = {
+            team,
+            joinedVentura: 0,
+            joinedOther: 0,
+            totalPoints: 0
+          };
+        }
+
+        teamMap[team].joinedVentura += joinedVentura;
+        teamMap[team].joinedOther += joinedOther;
+        teamMap[team].totalPoints += totalPoints;
+      });
+
+      const teams = Object.values(teamMap).sort((a, b) => {
+        if (b.joinedVentura !== a.joinedVentura) return b.joinedVentura - a.joinedVentura;
+        return b.totalPoints - a.totalPoints;
+      });
+
+      let html = `
+        <table>
+          <tr>
+            <th>Rank</th>
+            <th>Team</th>
+            <th>Joined Ventura</th>
+            <th>Joined Other</th>
+            <th>Total Points</th>
+          </tr>
+      `;
+
+      teams.forEach((t, i) => {
+        html += `
+          <tr>
+            <td><span class="rank-badge">${i + 1}</span></td>
+            <td>${t.team}</td>
+            <td>${t.joinedVentura}</td>
+            <td>${t.joinedOther}</td>
+            <td>${t.totalPoints}</td>
+          </tr>
+        `;
+      });
+
+      html += '</table>';
+      document.getElementById('teamTableWrap').innerHTML = html;
+    }
+
+    function renderGoldTable(summaryRows) {
+      const rows = summaryRows.slice(1).filter(r => r[0]);
+
+      const sorted = [...rows].sort((a, b) => {
+        if (safeNum(b[6]) !== safeNum(a[6])) return safeNum(b[6]) - safeNum(a[6]);
+        return safeNum(b[2]) - safeNum(a[2]);
+      });
+
+      let html = `
+        <table>
+          <tr>
+            <th>Rank</th>
+            <th>Member</th>
+            <th>Team</th>
+            <th>Gold Count</th>
+            <th>Progress</th>
+            <th>Status</th>
+          </tr>
+      `;
+
+      sorted.forEach((r, i) => {
+        const goldCount = safeNum(r[6]);
+        html += `
+          <tr>
+            <td><span class="rank-badge">${i + 1}</span></td>
+            <td>${r[0]}</td>
+            <td>${r[1]}</td>
+            <td>${goldCount}</td>
+            <td>${r[5]}</td>
+            <td>${getBadge(goldCount)}</td>
+          </tr>
+        `;
+      });
+
+      html += '</table>';
+      document.getElementById('goldTableWrap').innerHTML = html;
+    }
+
+    function renderDashboard(data) {
+      const summaryRows = data.summary || [];
+
+      if (!summaryRows.length) {
+        const msg = '<span class="error">No Summary data found.</span>';
+        document.getElementById('missionBox').innerHTML = msg;
+        document.getElementById('highlightBox').innerHTML = msg;
+        document.getElementById('memberTableWrap').innerHTML = msg;
+        document.getElementById('teamTableWrap').innerHTML = msg;
+        document.getElementById('goldTableWrap').innerHTML = msg;
+        return;
+      }
+
+      renderMission(summaryRows);
+      renderHighlights(summaryRows);
+      renderMemberTable(summaryRows);
+      renderTeamTable(summaryRows);
+      renderGoldTable(summaryRows);
+    }
+
+    function loadDashboard() {
+      google.script.run
+        .withSuccessHandler(renderDashboard)
+        .withFailureHandler(function(err) {
+          const msg = `<span class="error">Failed to load dashboard: ${JSON.stringify(err)}</span>`;
+          document.getElementById('missionBox').innerHTML = msg;
+          document.getElementById('highlightBox').innerHTML = msg;
+          document.getElementById('memberTableWrap').innerHTML = msg;
+          document.getElementById('teamTableWrap').innerHTML = msg;
+          document.getElementById('goldTableWrap').innerHTML = msg;
+        })
+        .getDashboardData();
+    }
+
+    window.onload = function () {
+      loadDashboard();
+      setInterval(loadDashboard, 15000);
+    };
+  </script>
+</body>
+</html>

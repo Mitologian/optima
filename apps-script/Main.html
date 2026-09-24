@@ -1,0 +1,3107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>BNI Ventura</title>
+<style>
+/* ─── RESET ─── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --red:#E31837; --red2:#C41230; --red-bg:#FEF0F2; --red-light:#FDECEA; --red-mid:#F5C6CC;
+  --black:#1A1A1A; --dark:#333;
+  --mid:#6B7280; --muted:#9CA3AF; --subtle:#B0B8C1;
+  --bg:#F7F8FA; --border:#EAEDF2; --white:#FFFFFF;
+  --gold:#D4A017; --silver:#8A9BB0; --bronze:#A0674A;
+  --green:#10B981; --blue:#3B82F6;
+  --font:'Arial','Helvetica Neue',Helvetica,sans-serif;
+}
+html,body{
+  font-family:var(--font);background:var(--bg);color:var(--dark);
+  font-size:14px;line-height:1.5;max-width:480px;margin:0 auto;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ─── PAGES ─── */
+.page{display:none;min-height:100vh;padding-bottom:76px;}
+.page.active{display:block;}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  background:var(--white);padding:13px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1.5px solid var(--border);
+  position:sticky;top:0;z-index:50;
+}
+.topbar-logo{font-size:17px;font-weight:700;color:var(--red);letter-spacing:.5px;}
+.topbar-right{cursor:pointer;}
+.topbar-right svg{width:22px;height:22px;stroke:var(--muted);}
+.page-topbar{
+  background:var(--white);padding:13px 18px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1.5px solid var(--border);
+  position:sticky;top:0;z-index:50;
+}
+.back-btn{display:flex;align-items:center;gap:4px;color:var(--red);font-size:13px;font-weight:600;cursor:pointer;background:none;border:none;font-family:var(--font);}
+.back-btn svg{width:17px;height:17px;stroke:currentColor;}
+.page-title{font-size:16px;font-weight:600;color:var(--black);}
+
+/* ─── DASH HERO ─── */
+.dash-hero{background:var(--white);padding:16px 18px 14px;border-bottom:1px solid var(--border);}
+.hero-row{display:flex;justify-content:space-between;align-items:flex-start;}
+.hero-greeting{font-size:12px;color:var(--muted);margin-bottom:3px;}
+.hero-title{font-size:21px;font-weight:700;color:var(--black);line-height:1.15;}
+.hero-tagline{font-size:11px;color:var(--subtle);margin-top:3px;}
+.hero-countdown{text-align:right;}
+.cd-num{font-size:52px;font-weight:700;color:var(--red);line-height:1;}
+.cd-lbl{font-size:12px;font-weight:600;color:var(--red);}
+
+/* ─── ACTION BUTTONS ─── */
+.action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 18px;background:var(--white);border-bottom:1px solid var(--border);}
+.act-btn{
+  display:flex;align-items:center;gap:9px;padding:13px 14px;
+  border-radius:11px;cursor:pointer;font-family:var(--font);
+  font-size:13px;font-weight:600;border:none;transition:opacity .15s;
+}
+.act-btn:active{opacity:.82;}
+.act-primary{background:var(--red);color:white;}
+.act-outline{background:white;color:var(--red);border:1.5px solid var(--red);}
+.act-btn svg{width:20px;height:20px;flex-shrink:0;}
+.act-arrow{font-size:16px;margin-left:auto;opacity:.7;}
+
+/* ─── SECTION ─── */
+.s{padding:14px 18px;}
+.s+.s{padding-top:6px;}
+.s-gap{margin-bottom:16px;}
+
+/* ─── SECTION HEADER ─── */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sh-left{display:flex;align-items:center;gap:7px;}
+.sh-icon{width:17px;height:17px;stroke:var(--red);flex-shrink:0;}
+.sh-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--red);}
+.view-all-btn{font-size:11px;font-weight:600;color:var(--red);background:none;border:none;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:2px;}
+
+/* ─── CARD ─── */
+.card{background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.04);}
+.card-p{padding:15px;}
+
+/* ─── MISSION CARD ─── */
+.mission-card{background:var(--white);border-radius:14px;border:1px solid var(--border);margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.04);overflow:hidden;}
+.mc-hdr{display:flex;align-items:center;gap:7px;padding:13px 15px 10px;}
+.mc-hdr svg{width:16px;height:16px;stroke:var(--red);}
+.mc-hdr-text{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--red);}
+.mc-body{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border);}
+.mc-left{padding:13px 15px;border-right:1px solid var(--border);}
+.mc-lbl{font-size:10px;color:var(--muted);margin-bottom:5px;}
+.mc-big{display:flex;align-items:baseline;gap:5px;margin-bottom:10px;}
+.mc-num{font-size:42px;font-weight:700;color:var(--red);line-height:1;}
+.mc-den{font-size:17px;font-weight:400;color:var(--muted);}
+.prog-bar{height:7px;background:var(--red-bg);border-radius:999px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--red);border-radius:999px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+.prog-pct{display:inline-block;background:var(--red);color:white;font-size:10px;font-weight:600;padding:2px 9px;border-radius:999px;margin-top:7px;}
+.mc-right{display:grid;grid-template-columns:1fr 1fr;}
+.mc-tile{padding:10px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
+.mc-tile:nth-child(2n){border-right:none;}
+.mc-tile:nth-child(3),.mc-tile:nth-child(4){border-bottom:none;}
+.mc-tile svg{width:20px;height:20px;stroke:var(--red);margin-bottom:4px;}
+.mc-tile-lbl{font-size:9px;color:var(--muted);line-height:1.35;}
+.mc-tile-val{font-size:18px;font-weight:700;color:var(--black);margin-top:2px;}
+
+/* ─── HIGHLIGHTS GRID (3 cols) ─── */
+.hl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.hl-tile{background:var(--white);border:1px solid var(--border);border-radius:11px;padding:12px 8px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.03);}
+.hl-icon{width:28px;height:28px;stroke:var(--red);margin:0 auto 6px;}
+.hl-lbl{font-size:9px;color:var(--muted);line-height:1.3;text-transform:uppercase;letter-spacing:.03em;}
+.hl-name{font-size:11px;font-weight:600;color:var(--black);margin-top:3px;line-height:1.2;}
+.hl-val{font-size:10px;font-weight:600;color:var(--red);margin-top:2px;}
+
+/* ─── GROWTH CHART ─── */
+.growth-card{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:15px;margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.04);}
+.gc-hdr{display:flex;align-items:center;gap:7px;margin-bottom:3px;}
+.gc-hdr svg{width:16px;height:16px;stroke:var(--red);}
+.gc-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--red);}
+.gc-sub{font-size:10px;color:var(--muted);margin-bottom:12px;}
+.chart-wrap{width:100%;overflow:hidden;}
+
+/* ─── RANK COLOR LINES ─── */
+.rl{width:3px;height:30px;border-radius:999px;flex-shrink:0;}
+.rl-1{background:var(--gold);}
+.rl-2{background:var(--silver);}
+.rl-3{background:var(--bronze);}
+.rl-red{background:var(--red);}
+.rl-gray{background:#D1D5DB;}
+
+/* ─── IMPACT BOARD ─── */
+.impact-card{background:var(--white);border-radius:14px;border:1px solid var(--border);margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.04);overflow:hidden;}
+.ib-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid var(--border);}
+.ib-hdr-left{display:flex;align-items:center;gap:7px;}
+.ib-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--red);}
+.ib-cols{display:grid;grid-template-columns:28px 1fr 36px 36px 52px 48px;padding:6px 15px;background:var(--bg);border-bottom:1px solid var(--border);}
+.ib-col-lbl{font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;text-align:center;}
+.ib-col-lbl:nth-child(2){text-align:left;}
+.ib-scroll{max-height:380px;overflow-y:auto;}
+.ib-row{display:grid;grid-template-columns:28px 1fr 36px 36px 52px 48px;align-items:center;padding:10px 15px;border-bottom:1px solid var(--border);transition:background .1s;}
+.ib-row:last-child{border-bottom:none;}
+.ib-row:hover{background:var(--bg);}
+.ib-rank{display:flex;align-items:center;gap:5px;}
+.ib-name{font-size:12px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ib-team{font-size:10px;color:var(--muted);}
+.ib-cell{font-size:12px;font-weight:600;text-align:center;color:var(--black);}
+.ib-cell.red{color:var(--red);}
+.gold-chip{background:var(--red-bg);color:var(--red);font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;white-space:nowrap;display:inline-block;}
+.ib-scroll::-webkit-scrollbar{width:3px;}
+.ib-scroll::-webkit-scrollbar-thumb{background:var(--red-mid);border-radius:999px;}
+
+/* ─── TEAM CHART ─── */
+.team-card{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:15px;margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.04);}
+.tc-sub{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px;}
+.tbar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.tbar-label{width:58px;font-size:11px;font-weight:500;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+.tbar-track{flex:1;height:9px;background:var(--red-bg);border-radius:999px;overflow:hidden;}
+.tbar-fill{height:100%;border-radius:999px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+.tbar-val{width:28px;font-size:11px;font-weight:600;text-align:right;flex-shrink:0;}
+
+/* ─── GOLD CLUB ─── */
+.gold-card{background:var(--white);border-radius:14px;border:1px solid var(--border);margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.04);overflow:hidden;}
+.gold-scroll{max-height:340px;overflow-y:auto;}
+.gold-scroll::-webkit-scrollbar{width:3px;}
+.gold-scroll::-webkit-scrollbar-thumb{background:var(--red-mid);border-radius:999px;}
+.gold-row{display:flex;align-items:center;gap:11px;padding:10px 15px;border-bottom:1px solid var(--border);transition:background .1s;}
+.gold-row:last-child{border-bottom:none;}
+.gold-row:hover{background:var(--bg);}
+.gold-rank{width:18px;font-size:11px;font-weight:500;color:var(--muted);text-align:center;flex-shrink:0;}
+.gold-info{flex:1;min-width:0;}
+.gold-name{font-size:12px;font-weight:600;color:var(--black);}
+.gold-team-name{font-size:10px;color:var(--muted);}
+.gold-bar-track{height:5px;background:var(--red-bg);border-radius:999px;overflow:hidden;margin-top:5px;}
+.gold-bar-fill{height:100%;background:var(--red);border-radius:999px;}
+.gold-right{text-align:right;flex-shrink:0;}
+.gold-count{font-size:13px;font-weight:700;color:var(--red);}
+.gold-denom{font-size:9px;color:var(--muted);}
+
+/* ─── ACTIVITY FEED ─── */
+.feed-card{background:var(--white);border-radius:14px;border:1px solid var(--border);margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.04);overflow:hidden;}
+.feed-item{display:flex;align-items:flex-start;gap:11px;padding:10px 15px;border-bottom:1px solid var(--border);}
+.feed-item:last-child{border-bottom:none;}
+.feed-dot{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.feed-body{flex:1;}
+.feed-main{font-size:12px;font-weight:600;color:var(--black);line-height:1.35;}
+.feed-sub{font-size:10px;color:var(--muted);margin-top:1px;}
+.feed-pts{font-size:11px;font-weight:700;color:var(--green);flex-shrink:0;}
+
+/* ─── BOTTOM NAV (5) ─── */
+.bottom-nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  background:white;border-top:1.5px solid var(--border);
+  display:flex;z-index:100;padding:7px 0 14px;
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;background:none;border:none;font-family:var(--font);padding:3px 2px;
+}
+.nav-btn svg{width:21px;height:21px;stroke:var(--muted);transition:stroke .15s;}
+.nav-lbl{font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;}
+.nav-btn.on svg{stroke:var(--red);}
+.nav-btn.on .nav-lbl{color:var(--red);}
+
+/* ─── FORMS ─── */
+.fw{padding:14px 18px;}
+.fcard{background:white;border-radius:14px;border:1px solid var(--border);padding:15px;margin-bottom:14px;}
+.fcard-title{font-size:14px;font-weight:600;color:var(--black);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.fcard-title svg{width:17px;height:17px;stroke:var(--red);}
+.flbl{font-size:11px;font-weight:600;color:var(--dark);margin-bottom:5px;display:block;}
+.finput{
+  width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:13px;font-family:var(--font);color:var(--black);background:white;
+  margin-bottom:12px;transition:border-color .15s;
+}
+.finput:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(227,24,55,.08);}
+.fhint{font-size:10px;color:var(--muted);margin-top:-8px;margin-bottom:12px;}
+
+/* ─── INVITE TYPE PILLS ─── */
+.type-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px;}
+.type-pill{
+  border:1.5px solid var(--border);border-radius:11px;padding:12px;
+  cursor:pointer;text-align:center;transition:all .15s;background:white;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.type-pill.on{border-color:var(--red);background:var(--red);}
+.type-pill svg{width:22px;height:22px;stroke:var(--red);transition:stroke .15s;}
+.type-pill.on svg{stroke:white;}
+.type-pill-lbl{font-size:12px;font-weight:600;color:var(--red);transition:color .15s;}
+.type-pill.on .type-pill-lbl{color:white;}
+.type-pill-sub{font-size:10px;color:var(--muted);transition:color .15s;}
+.type-pill.on .type-pill-sub{color:rgba(255,255,255,.8);}
+
+/* ─── SESSION PILLS ─── */
+.sess-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.sess-pill{
+  border:1.5px solid var(--border);border-radius:10px;padding:10px;
+  text-align:center;cursor:pointer;transition:all .15s;background:white;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:12px;font-weight:600;color:var(--red);
+}
+.sess-pill svg{width:18px;height:18px;stroke:var(--red);transition:stroke .15s;}
+.sess-pill.on{background:var(--red);border-color:var(--red);color:white;}
+.sess-pill.on svg{stroke:white;}
+
+/* ─── VISIT EXTRA BOX ─── */
+.vex{background:var(--bg);border-radius:11px;padding:12px;margin-bottom:12px;border:1px solid var(--border);}
+.vex-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:10px;}
+
+/* ─── TUESDAY DATE PICKER ─── */
+.tue-picker-wrap{position:relative;margin-bottom:12px;}
+.tue-input{cursor:pointer;background:white;}
+.tue-panel{
+  display:none;
+  background:white;
+  border:1.5px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 12px 32px rgba(0,0,0,.14);
+  padding:12px;
+  margin-top:6px;
+  position:relative;
+  z-index:300;
+}
+.tue-panel.open{display:block;}
+.tue-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+.tue-month{
+  font-size:13px;
+  font-weight:700;
+  color:var(--black);
+}
+.tue-nav{
+  border:1px solid var(--border);
+  background:white;
+  color:var(--red);
+  border-radius:8px;
+  width:30px;
+  height:30px;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+}
+.tue-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:4px;
+}
+.tue-dow{
+  font-size:9px;
+  font-weight:700;
+  color:var(--muted);
+  text-align:center;
+  padding:4px 0;
+}
+.tue-day{
+  height:34px;
+  border-radius:9px;
+  border:1px solid transparent;
+  background:var(--bg);
+  color:var(--muted);
+  font-size:12px;
+  font-weight:600;
+  cursor:not-allowed;
+}
+.tue-day.ok{
+  background:var(--red-light);
+  border-color:var(--red-mid);
+  color:var(--red);
+  cursor:pointer;
+}
+.tue-day.ok:hover{
+  background:var(--red);
+  color:white;
+}
+.tue-day.selected{
+  background:var(--red);
+  color:white;
+  border-color:var(--red);
+}
+.tue-day.blank{
+  background:transparent;
+  border:none;
+  cursor:default;
+}
+.tue-hint{
+  margin-top:8px;
+  font-size:10px;
+  color:var(--muted);
+}
+
+/* ─── CROSS TEAM PANEL ─── */
+.ct-panel{background:#FFF0F3;border:1.5px solid var(--red-mid);border-radius:11px;padding:12px;margin-bottom:12px;}
+.ct-title{font-size:12px;font-weight:600;color:var(--red);margin-bottom:3px;}
+.ct-desc{font-size:10px;color:var(--red2);margin-bottom:8px;line-height:1.5;opacity:.85;}
+
+/* ─── ALERTS ─── */
+.al{border-radius:10px;padding:10px 13px;font-size:12px;margin-top:10px;font-weight:500;line-height:1.5;}
+.al-ok{background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7;}
+.al-err{background:var(--red-light);color:var(--red2);border:1px solid var(--red-mid);}
+.al-info{background:#DBEAFE;color:#1E40AF;border:1px solid #93C5FD;}
+
+/* ─── PIN ─── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.overlay.on{display:flex;}
+.pin-box{background:white;border-radius:20px;padding:26px 22px;width:295px;box-shadow:0 20px 55px rgba(0,0,0,.2);}
+.pin-ico{width:48px;height:48px;background:var(--red);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 13px;}
+.pin-ico svg{width:24px;height:24px;stroke:white;}
+.pin-title{font-size:17px;font-weight:700;text-align:center;margin-bottom:4px;color:var(--black);}
+.pin-sub{font-size:11px;color:var(--muted);text-align:center;margin-bottom:14px;}
+.pin-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:10px 16px;border:none;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;font-family:var(--font);transition:opacity .15s;}
+.btn:active{opacity:.8;}
+.btn-red{background:var(--red);color:white;}
+.btn-out{background:white;color:var(--mid);border:1.5px solid var(--border);}
+.btn-blk{width:100%;}
+.btn-sm{padding:8px 12px;font-size:11px;border-radius:8px;}
+
+/* ─── ADMIN TABS ─── */
+.tab-bar{display:flex;background:white;border-bottom:1.5px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:55px;z-index:40;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-item{
+  padding:11px 14px;font-size:11px;font-weight:600;color:var(--muted);
+  border-bottom:2px solid transparent;white-space:nowrap;cursor:pointer;
+  background:none;border-top:none;border-left:none;border-right:none;
+  font-family:var(--font);margin-bottom:-1px;
+  display:flex;align-items:center;gap:5px;
+}
+.tab-item svg{width:14px;height:14px;stroke:var(--muted);transition:stroke .15s;}
+.tab-item.on{color:var(--red);border-bottom-color:var(--red);}
+.tab-item.on svg{stroke:var(--red);}
+
+/* ─── PROSPECTS ─── */
+.prospect-list{display:flex;flex-direction:column;gap:0;}
+.prospect-item{
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:11px 15px 11px 14px;
+  transition:background .12s;
+  border-left:3px solid transparent;
+}
+.prospect-item:hover{background:var(--red-bg);}
+.prospect-item.urgency-hot{border-left-color:var(--red);background:#fff8f8;}
+.prospect-item.urgency-warm{border-left-color:var(--gold);background:#fffdf5;}
+.prospect-item.urgency-cold{border-left-color:#93C5FD;background:var(--white);}
+.pt-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;}
+.pt-name{font-size:13px;font-weight:600;color:var(--black);}
+.pt-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:7px;}
+.pt-chip{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:3px;}
+.pt-chip svg{width:11px;height:11px;stroke:var(--muted);}
+.pt-footer{display:flex;justify-content:space-between;align-items:center;}
+.days-chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;}
+.dc-hot{background:var(--red-light);color:var(--red);}
+.dc-warm{background:#FEF3C7;color:#92400E;}
+.dc-cold{background:var(--red-bg);color:var(--red);}
+.wa-link{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:white;background:var(--green);padding:4px 10px;border-radius:7px;text-decoration:none;transition:opacity .15s;}
+.wa-link:active{opacity:.8;}
+
+/* ─── ATTENDANCE ─── */
+.att-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0 13px;}
+.att-item{border:1.5px solid var(--border);border-radius:9px;padding:9px 11px;background:var(--bg);cursor:pointer;}
+.att-item.chk{border-color:var(--red);background:var(--red-light);}
+.att-item label{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:11px;font-weight:600;}
+.att-item input[type=checkbox]{width:14px;height:14px;accent-color:var(--red);cursor:pointer;flex-shrink:0;}
+.att-team-div{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:5px 0 2px;border-bottom:1px solid var(--border);grid-column:1/-1;}
+.att-toolbar{display:flex;gap:7px;margin-bottom:8px;}
+
+/* ─── STATUS CHIPS ─── */
+.chip{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:600;}
+.c-inv{background:#DBEAFE;color:#1E40AF;}
+.c-cof{background:#FED7AA;color:#9A3412;}
+.c-att{background:#D1FAE5;color:#065F46;}
+.c-int{background:#EDE9FE;color:#5B21B6;}
+.c-app{background:#FEF3C7;color:#92400E;}
+.c-jv{background:#D1FAE5;color:#065F46;}
+.c-jo{background:#E0E7FF;color:#3730A3;}
+.c-dec{background:var(--red-light);color:var(--red);}
+.c-rej{background:var(--red-light);color:var(--red);}
+
+/* ─── LEADERBOARD PAGE ─── */
+.lb-hdr-strip{background:var(--bg);padding:9px 18px;border-bottom:1px solid var(--border);font-size:10px;color:var(--muted);font-weight:600;}
+.lb-col-bar{display:grid;grid-template-columns:28px 8px 1fr 36px 36px 48px 44px;padding:7px 18px;background:white;border-bottom:1px solid var(--border);}
+.lb-col-txt{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;}
+.lb-col-txt:nth-child(3){text-align:left;}
+.lb-list{overflow-y:auto;max-height:calc(100vh - 200px);}
+.lb-row{display:grid;grid-template-columns:28px 8px 1fr 36px 36px 48px 44px;align-items:center;padding:9px 18px;border-bottom:1px solid var(--border);background:white;transition:background .1s;}
+.lb-row:hover{background:var(--bg);}
+.lb-num{font-size:11px;font-weight:600;color:var(--muted);text-align:center;}
+.lb-info{padding:0 6px 0 4px;}
+.lb-name{font-size:12px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lb-tm{font-size:9px;color:var(--muted);}
+.lb-val{font-size:12px;font-weight:600;text-align:center;color:var(--black);}
+.lb-val.r{color:var(--red);}
+
+/* ─── CLASSIFICATION PAGE ─── */
+.cl-tab-content{display:none;} .cl-tab-content.on{display:block;}
+
+/* Locked list */
+.cl-list{display:flex;flex-direction:column;gap:1px;background:var(--border);}
+.cl-item{background:white;display:grid;grid-template-columns:1fr 1fr 1fr;padding:10px 15px;font-size:12px;gap:6px;}
+.cl-item-hdr{background:var(--bg);display:grid;grid-template-columns:1fr 1fr 1fr;padding:7px 15px;}
+.cl-item-hdr span{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);}
+.cl-item .cl-main{font-weight:600;color:var(--black);}
+.cl-item .cl-name{color:var(--mid);}
+.cl-item .cl-team{color:var(--muted);font-size:10px;}
+
+/* Wanted list */
+.wanted-item{background:white;border-bottom:1px solid var(--border);padding:11px 15px;display:flex;align-items:flex-start;gap:10px;}
+.wanted-item:last-child{border-bottom:none;}
+.wanted-check-wrap{padding-top:2px;}
+.wanted-check{width:16px;height:16px;accent-color:var(--red);cursor:pointer;flex-shrink:0;}
+.wanted-info{flex:1;}
+.wanted-class{font-size:13px;font-weight:600;color:var(--black);}
+.wanted-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.wanted-done{opacity:.45;text-decoration:line-through;}
+.fulfill-btn{font-size:10px;font-weight:600;color:white;background:var(--green);border:none;border-radius:7px;padding:4px 9px;cursor:pointer;font-family:var(--font);}
+
+/* ─── SEARCHABLE DROPDOWN ─── */
+.sd-wrap{position:relative;margin-bottom:12px;}
+.sd-input{width:100%;padding:10px 34px 10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:var(--font);color:var(--black);background:white;cursor:pointer;transition:border-color .15s;}
+.sd-input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(227,24,55,.08);}
+.sd-arrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;}
+.sd-arrow svg{width:15px;height:15px;stroke:var(--muted);}
+.sd-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1.5px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;max-height:240px;overflow:hidden;flex-direction:column;}
+.sd-dropdown.open{display:flex;}
+.sd-search{display:none;}
+.sd-search input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:var(--font);color:var(--black);}
+.sd-search input:focus{outline:none;border-color:var(--red);}
+.sd-options{overflow-y:auto;flex:1;}
+.sd-group-label{padding:6px 12px 3px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--bg);}
+.sd-option{padding:9px 12px;font-size:13px;cursor:pointer;color:var(--black);transition:background .1s;}
+.sd-option:hover,.sd-option.focused{background:var(--red-bg);color:var(--red);}
+.sd-option.no-result{color:var(--muted);cursor:default;font-size:12px;}
+.flow-box{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:9px 12px;margin-bottom:12px;font-size:10px;color:var(--muted);line-height:1.9;}
+.flow-box strong{color:var(--black);}
+.manual-box{background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:11px;padding:12px;margin-top:8px;}
+.manual-title{font-size:11px;font-weight:700;color:#92400E;margin-bottom:7px;}
+
+
+/* ─── WHO TO INVITE / BRAIN JOLTER ─── */
+.inv-tabs{display:flex;background:white;border-bottom:1.5px solid var(--border);position:sticky;top:51px;z-index:45;}
+.inv-tab{flex:1;padding:12px 10px;background:white;border:none;font-family:var(--font);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;}
+.inv-tab.on{color:var(--red);border-bottom-color:var(--red);background:var(--red-bg);}
+.brain-wrap{padding:14px 18px;}
+.brain-hero{background:linear-gradient(135deg,#fff,#fff1f3);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:14px;box-shadow:0 1px 5px rgba(0,0,0,.04);}
+.brain-hero-top{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.brain-title{font-size:13px;font-weight:700;color:var(--red);margin-bottom:4px;}
+.brain-desc{font-size:11px;color:var(--black);line-height:1.45;}
+.brain-pts{background:white;border-radius:13px;padding:10px 13px;text-align:center;color:var(--red);font-weight:800;min-width:82px;border:1px solid var(--red-mid);}
+.brain-pts .big{font-size:20px;line-height:1;}
+.brain-progress{margin-top:13px;}
+.brain-progress-row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--black);margin-bottom:8px;}
+.brain-dots{display:flex;align-items:center;gap:8px;}
+.brain-dot{flex:1;height:7px;border-radius:999px;background:var(--border);}
+.brain-dot.on{background:var(--red);}
+.brain-form{background:white;border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:14px;box-shadow:0 1px 5px rgba(0,0,0,.04);}
+.brain-form-title{font-size:12px;font-weight:600;color:var(--black);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.brain-cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.brain-cat{border:1.5px solid var(--border);border-radius:10px;background:white;padding:10px 6px;font-size:11px;font-weight:700;color:var(--black);text-align:center;cursor:pointer;font-family:var(--font);}
+.brain-cat.on{background:var(--red);color:white;border-color:var(--red);}
+.brain-section-title{font-size:12px;font-weight:700;color:var(--red);margin:10px 0 8px;}
+.jolt-box{background:white;border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:14px;box-shadow:0 1px 5px rgba(0,0,0,.04);}
+.jolt-head{font-size:12px;font-weight:700;color:var(--red);margin-bottom:4px;}
+.jolt-sub{font-size:11px;color:var(--muted);margin-bottom:10px;}
+.jolt-list{display:flex;flex-direction:column;gap:7px;}
+.jolt-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 10px;font-size:11px;color:var(--black);line-height:1.35;}
+.pool-card{background:white;border:1px solid var(--border);border-radius:14px;margin-bottom:14px;box-shadow:0 1px 5px rgba(0,0,0,.04);overflow:hidden;}
+.pool-head{padding:13px 15px;border-bottom:1px solid var(--border);}
+.pool-title{font-size:12px;font-weight:700;color:var(--red);}
+.pool-sub{font-size:11px;color:var(--muted);line-height:1.4;}
+.pool-list{max-height:420px;overflow-y:auto;}
+.pool-item{display:flex;align-items:center;gap:10px;padding:11px 15px;border-bottom:1px solid var(--border);}
+.pool-item:last-child{border-bottom:none;}
+.pool-avatar{width:38px;height:38px;border-radius:50%;background:var(--red-bg);color:var(--red);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;}
+.pool-main{flex:1;min-width:0;}
+.pool-name{font-size:11px;font-weight:500;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pool-cl{font-size:11px;color:var(--mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pool-by{font-size:10px;color:var(--muted);margin-top:2px;}
+.pool-btn{border:1.5px solid var(--red);background:white;color:var(--red);border-radius:9px;padding:7px 10px;font-size:10px;font-weight:600;font-family:var(--font);cursor:pointer;}
+.pool-btn.done{border-color:var(--border);color:var(--muted);background:var(--bg);cursor:default;}
+
+/* ─── MISC ─── */
+.ldg{color:var(--muted);font-size:12px;padding:18px 0;text-align:center;}
+.divider{height:1px;background:var(--border);margin:12px 0;}
+</style>
+</head>
+<body>
+
+<!-- ══════════ PAGE: DASHBOARD ══════════ -->
+<div id="pg-dashboard" class="page active">
+
+  <div class="topbar">
+    <div class="topbar-logo">BNI VENTURA</div>
+    <div class="topbar-right">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+  </div>
+
+  <div class="dash-hero">
+    <div class="hero-row">
+      <div>
+        <div class="hero-greeting">Welcome Back Explorers! 👋</div>
+        <div class="hero-title">Ventura Dashboard</div>
+        <div class="hero-tagline">Bravely Venturing Together!</div>
+      </div>
+      <div class="hero-countdown">
+        <div class="cd-num" id="db-days">—</div>
+        <div class="cd-lbl">Days Left</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="act-btn act-primary" onclick="goPage('visitor')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      Add Visitor
+      <span class="act-arrow">›</span>
+    </button>
+    <button class="act-btn act-outline" onclick="showPin()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Launch Team
+      <span class="act-arrow">›</span>
+    </button>
+  </div>
+
+  <div class="s">
+
+    <!-- MISSION CARD -->
+    <div class="mission-card">
+      <div class="mc-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span class="mc-hdr-text">Ventura Launch Mission</span>
+      </div>
+      <div class="mc-body">
+        <div class="mc-left">
+          <div class="mc-lbl">Total Members Ventura</div>
+          <div class="mc-big">
+            <span class="mc-num" id="db-total">—</span>
+            <span class="mc-den">/ 51</span>
+          </div>
+          <div class="prog-bar"><div class="prog-fill" id="db-prog" style="width:0%"></div></div>
+          <span class="prog-pct" id="db-pct">0%</span>
+        </div>
+        <div class="mc-right">
+          <div class="mc-tile">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <div class="mc-tile-lbl">Visitor<br>This Week</div>
+            <div class="mc-tile-val" id="db-vis-wk">—</div>
+          </div>
+          <div class="mc-tile">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            <div class="mc-tile-lbl">New Members<br>This Week</div>
+            <div class="mc-tile-val" id="db-new-wk">—</div>
+          </div>
+          <div class="mc-tile">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+            <div class="mc-tile-lbl">Remaining<br>to 51</div>
+            <div class="mc-tile-val" id="db-rem">—</div>
+          </div>
+          <div class="mc-tile">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <div class="mc-tile-lbl">Progress</div>
+            <div class="mc-tile-val" id="db-pct2">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HIGHLIGHTS OVERALL (3 cols) -->
+    <div class="s-gap">
+      <div class="sh">
+        <div class="sh-left">
+          <svg class="sh-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span class="sh-title">Highlights Overall</span>
+        </div>
+      </div>
+      <div class="hl-grid" id="db-hl-all"><div class="ldg" style="grid-column:1/-1">Loading...</div></div>
+    </div>
+
+    <!-- HIGHLIGHTS WEEKLY (3 cols) -->
+    <div class="s-gap" style="margin-top:16px;">
+      <div class="sh">
+        <div class="sh-left">
+          <svg class="sh-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span class="sh-title">Highlights Weekly</span>
+        </div>
+      </div>
+      <div class="hl-grid" id="db-hl-wk"><div class="ldg" style="grid-column:1/-1">Loading...</div></div>
+    </div>
+
+    <!-- CHAPTER GROWTH -->
+    <div class="growth-card" style="margin-top:16px;">
+      <div class="gc-hdr">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span class="gc-title">Chapter Growth</span>
+      </div>
+      <div class="gc-sub">Progress kumulatif menuju 51 member</div>
+      <div class="chart-wrap" id="db-chart"><div class="ldg">Loading chart...</div></div>
+    </div>
+
+    <!-- IMPACT BOARD -->
+    <div class="impact-card">
+      <div class="ib-hdr">
+        <div class="ib-hdr-left">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          <span class="ib-title">Ventura Impact Board</span>
+        </div>
+        <button class="view-all-btn" onclick="goPage('leaderboard')">View All ›</button>
+      </div>
+      <div class="ib-cols">
+        <span class="ib-col-lbl"></span>
+        <span class="ib-col-lbl" style="text-align:left;">Member</span>
+        <span class="ib-col-lbl">JV</span>
+        <span class="ib-col-lbl">JO</span>
+        <span class="ib-col-lbl">Points</span>
+        <span class="ib-col-lbl">Gold</span>
+      </div>
+      <div class="ib-scroll" id="db-impact"><div class="ldg">Loading...</div></div>
+    </div>
+
+    <!-- TEAM MISSION BOARD -->
+    <div class="team-card">
+      <div class="sh" style="margin-bottom:13px;">
+        <div class="sh-left">
+          <svg class="sh-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="sh-title">Team Mission Board</span>
+        </div>
+      </div>
+      <div class="tc-sub">Member Join Ventura (JV)</div>
+      <div id="db-team-jv"><div class="ldg">Loading...</div></div>
+      <div class="divider"></div>
+      <div class="tc-sub">Total Poin Tim</div>
+      <div id="db-team-pts"><div class="ldg">Loading...</div></div>
+    </div>
+
+    <!-- GOLD CLUB RACE -->
+    <div class="gold-card">
+      <div class="ib-hdr">
+        <div class="ib-hdr-left">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span class="ib-title">Gold Club Race</span>
+        </div>
+      </div>
+      <div class="gold-scroll" id="db-gold"><div class="ldg">Loading...</div></div>
+    </div>
+
+    <!-- LIVE ACTIVITY FEED -->
+    <div class="s-gap" style="margin-top:0;">
+      <div class="sh">
+        <div class="sh-left">
+          <svg class="sh-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.17 12 19.79 19.79 0 0 1 1.11 3.38 2 2 0 0 1 3.09 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16z"/></svg>
+          <span class="sh-title">Live Activity</span>
+        </div>
+      </div>
+      <div class="feed-card">
+        <div id="db-feed"><div class="ldg">Loading...</div></div>
+      </div>
+    </div>
+
+  </div><!-- /s -->
+</div><!-- /dashboard -->
+
+<!-- ══════════ PAGE: ADD VISITOR ══════════ -->
+<div id="pg-visitor" class="page">
+  <div class="page-topbar">
+    <button class="back-btn" onclick="goPage('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+    <span class="page-title">Add Visitor</span>
+  </div>
+  <div class="inv-tabs">
+    <button class="inv-tab on" id="invtab-form" onclick="invTab('form')">Invite Visitor</button>
+    <button class="inv-tab" id="invtab-brain" onclick="invTab('brain')">Who to Invite?</button>
+  </div>
+
+  <div id="inv-form">
+  <div class="fw">
+    <div class="fcard">
+      <div class="fcard-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Invite Visitor Baru
+      </div>
+
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;">Entry Point</div>
+      <div class="type-row">
+        <div class="type-pill on" id="tp-visit" onclick="selType('visit')">
+          <!-- Calendar icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="type-pill-lbl">Visit Meeting</span>
+          <span class="type-pill-sub">Selasa Pagi / Siang</span>
+        </div>
+        <div class="type-pill" id="tp-coffee" onclick="selType('coffee')">
+          <!-- Coffee cup icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          <span class="type-pill-lbl">Coffee Session</span>
+          <span class="type-pill-sub">Interview, hari bebas</span>
+        </div>
+      </div>
+
+      <!-- Visit extra -->
+      <div id="visit-extra" class="vex">
+        <div class="vex-title">📅 Detail Kunjungan</div>
+
+<label class="flbl">Tanggal Visit</label>
+
+<div class="tue-picker-wrap">
+  <input 
+    type="text" 
+    class="finput tue-input" 
+    id="v-vdate-display" 
+    placeholder="Pilih hari Selasa..." 
+    readonly
+    onclick="toggleTuePicker()">
+
+  <input type="hidden" id="v-vdate">
+
+  <div class="tue-panel" id="tue-panel">
+    <div class="tue-head">
+      <button type="button" class="tue-nav" onclick="changeTueMonth(-1)">‹</button>
+      <div class="tue-month" id="tue-month-label">Month</div>
+      <button type="button" class="tue-nav" onclick="changeTueMonth(1)">›</button>
+    </div>
+
+    <div class="tue-grid" id="tue-grid"></div>
+
+    <div class="tue-hint">
+      Hari Selasa ditandai merah dan dapat dipilih. Tanggal lain tidak aktif.
+    </div>
+  </div>
+</div>
+        <div style="font-size:11px;font-weight:600;color:var(--black);margin-bottom:7px;">Sesi</div>
+        <div class="sess-row">
+          <div class="sess-pill on" id="sp-pagi" onclick="selSess('Pagi')">
+            <!-- Sunrise / half sun -->
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3v1M5.22 5.22l.7.7M3 12h1M20 12h1M17.78 5.92l.7-.7"/><path d="M5 17H3M19 17h2"/><path d="M12 7a5 5 0 0 1 5 5H7a5 5 0 0 1 5-5z"/><line x1="12" y1="22" x2="12" y2="17"/></svg>
+            Pagi (BOD)
+          </div>
+          <div class="sess-pill" id="sp-siang" onclick="selSess('Siang')">
+            <!-- Full sun -->
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            Siang (Casual)
+          </div>
+        </div>
+      </div>
+      <!-- Coffee extra -->
+      <div id="coffee-extra" class="vex" style="display:none;">
+        <div class="vex-title">☕ Detail Coffee Session</div>
+        <label class="flbl">Tanggal</label>
+        <input type="date" class="finput" id="v-cdate" style="margin-bottom:0;">
+        <div class="fhint" style="margin-top:6px;">Bisa hari apa saja.</div>
+      </div>
+
+      <label class="flbl">Pengundang *</label>
+      <div class="sd-wrap" id="sd-inviter-wrap">
+        <input 
+  class="sd-input" 
+  id="sd-inviter-display" 
+  placeholder="Ketik / pilih pengundang..." 
+  autocomplete="off"
+  onclick="sdOpen('inviter')" 
+  onfocus="sdOpen('inviter')" 
+  oninput="sdFilter('inviter')" 
+  onkeydown="sdKey(event,'inviter')" 
+  value="">
+        <input type="hidden" id="v-inviter">
+        <div class="sd-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sd-dropdown" id="sd-inviter-dd">
+          <div class="sd-search"><input type="text" placeholder="Cari nama..." id="sd-inviter-q" oninput="sdFilter('inviter')" onkeydown="sdKey(event,'inviter')"></div>
+          <div class="sd-options" id="sd-inviter-opts"></div>
+        </div>
+      </div>
+      <div id="v-lt-note" class="fhint" style="display:none;color:var(--red);font-weight:600;">⚠️ Launch Team invite — tidak ada poin, team TBD.</div>
+
+      <label class="flbl">Nama Visitor *</label>
+      <input type="text" class="finput" id="v-name" placeholder="Nama lengkap">
+      <label class="flbl">Bidang / Bisnis *</label>
+      <input type="text" class="finput" id="v-biz" placeholder="e.g. Property, Kuliner, IT">
+      <label class="flbl">No. Telepon *</label>
+      <input type="tel" class="finput" id="v-phone" placeholder="081xxxxxxxx atau 811xxxxxxxx">
+      <div class="fhint">Format bebas — 081xxx atau 811xxx, link WA otomatis dibuat.</div>
+
+      <div class="ct-panel">
+        <div class="ct-title">🔀 Cross-Team Referral</div>
+        <div class="ct-desc">Visitor lebih cocok untuk team lain? Referral ke sana dan dapat bonus poin kalau dia join!</div>
+        <label class="flbl">Referral ke Team</label>
+        <select class="finput" id="v-cross" style="margin-bottom:0;"><option value="">Tidak (team saya sendiri)</option></select>
+      </div>
+
+      <label class="flbl" style="margin-top:12px;">Notes (opsional)</label>
+      <textarea class="finput" id="v-notes" rows="3" placeholder="Info tambahan..."></textarea>
+
+      <button class="btn btn-red btn-blk" onclick="doInvite()">Submit Undangan</button>
+      <div id="v-result"></div>
+    </div>
+  </div>
+  </div><!-- /inv-form -->
+
+  <div id="inv-brain" style="display:none;">
+    <div class="brain-wrap">
+
+      <div class="brain-hero">
+        <div class="brain-hero-top">
+          <div>
+            <div class="brain-title">Daily Brainstorm Challenge</div>
+            <div class="brain-desc">Isi 3 nama pebisnis hari ini untuk membuka reward harian.</div>
+          </div>
+          <div class="brain-pts">
+            <div class="big">+30</div>
+            <div style="font-size:10px;">pts/hari</div>
+          </div>
+        </div>
+        <div class="brain-progress">
+          <div class="brain-progress-row">
+            <span>Progress hari ini</span>
+            <span id="brain-progress-text">0 / 3 nama</span>
+          </div>
+          <div class="brain-dots">
+            <div class="brain-dot" id="brain-dot-1"></div>
+            <div class="brain-dot" id="brain-dot-2"></div>
+            <div class="brain-dot" id="brain-dot-3"></div>
+          </div>
+        </div>
+        <div id="brain-reward-note" class="fhint" style="margin-top:10px;margin-bottom:0;">Reward diberikan setelah 3 nama valid masuk hari ini.</div>
+      </div>
+
+      <div class="jolt-box">
+        <div class="jolt-head">Bingung Mau Undang Siapa?</div>
+        <div class="jolt-sub">Klik salah satu kategori di bawah, lalu gunakan checklist sebagai pemicu ide sebelum menambahkan nama pebisnis.</div>
+
+        <label class="flbl">Pilih Kategori</label>
+        <input type="hidden" id="brain-category" value="Client">
+
+        <div class="brain-cat-grid">
+          <button type="button" class="brain-cat on" onclick="brainCat('Client',this)">Client</button>
+          <button type="button" class="brain-cat" onclick="brainCat('Vendor',this)">Vendor</button>
+          <button type="button" class="brain-cat" onclick="brainCat('Partner',this)">Partner</button>
+          <button type="button" class="brain-cat" onclick="brainCat('Friends',this)">Friends</button>
+          <button type="button" class="brain-cat" onclick="brainCat('Relatives',this)">Relatives</button>
+          <button type="button" class="brain-cat" onclick="brainCat('Organisations',this)">Organisations</button>
+          <button type="button" class="brain-cat" onclick="brainCat('Geographical',this)">Geographical</button>
+          <button type="button" class="brain-cat" onclick="brainCat('Social Sphere / Social Media',this)">Social</button>
+          <button type="button" class="brain-cat" onclick="brainCat('Other',this)">Other</button>
+        </div>
+
+        <div id="jolt-category-title" class="brain-section-title">Client</div>
+        <div class="jolt-list" id="jolt-list"></div>
+        <div class="fhint" style="margin-top:10px;margin-bottom:0;">Sudah kepikiran 1 nama? Tambahkan di bawah supaya tidak lupa.</div>
+      </div>
+
+      <div class="brain-form">
+        <div class="brain-form-title">➕ Tambah Nama Pebisnis</div>
+
+        <label class="flbl">Nama Kamu *</label>
+<div class="sd-wrap" id="sd-brainby-wrap">
+  <input 
+    class="sd-input" 
+    id="sd-brainby-display"
+    placeholder="Ketik / pilih nama kamu..."
+    autocomplete="off"
+    onclick="sdOpen('brainby')" 
+    onfocus="sdOpen('brainby')" 
+    oninput="sdFilter('brainby')" 
+    onkeydown="sdKey(event,'brainby')"
+  >
+  <input type="hidden" id="brain-by">
+
+  <div class="sd-arrow"></div>
+
+  <div class="sd-dropdown" id="sd-brainby-dd">
+    <div class="sd-search">
+      <input type="text" placeholder="Cari nama..." id="sd-brainby-q">
+    </div>
+    <div class="sd-options" id="sd-brainby-opts"></div>
+  </div>
+</div>
+
+        <label class="flbl">Nama Pebisnis *</label>
+        <input type="text" class="finput" id="brain-name" placeholder="Contoh: Budi Santoso">
+
+        <label class="flbl">Classification / Bisnis *</label>
+        <input type="text" class="finput" id="brain-classification" placeholder="Contoh: Notaris, Digital Agency">
+
+        <button class="btn btn-red btn-blk" onclick="addBrainTarget()">+ Tambah Nama Pebisnis</button>
+        <div id="brain-result"></div>
+      </div>
+
+      <div class="pool-card">
+        <div class="pool-head">
+          <div class="pool-title">Nama Yang Bisa Diundang</div>
+          <div class="pool-sub">Daftar nama dari seluruh member. Klik Request kalau kamu butuh classification itu masuk Most Wanted.</div>
+        </div>
+        <div class="pool-list" id="brain-pool-list">
+          <div class="ldg">Loading...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ PAGE: LAUNCH TEAM ══════════ -->
+<div id="pg-admin" class="page">
+  <div class="page-topbar">
+    <button class="back-btn" onclick="goPage('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+    <span class="page-title">Launch Team</span>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-item on" onclick="aTab('fu')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Follow-Up
+    </button>
+    <button class="tab-item" onclick="aTab('status')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5"/></svg>
+      Update Status
+    </button>
+    <button class="tab-item" onclick="aTab('att')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+      Attendance
+    </button>
+    <button class="tab-item" onclick="aTab('wanted')">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
+    <circle cx="11" cy="11" r="8"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+  Wanted
+</button>
+  </div>
+
+<div id="atab-wanted" class="fw" style="display:none;">
+  <div class="fcard" style="padding:0;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 15px 10px;border-bottom:1px solid var(--border);">
+      <div class="fcard-title" style="margin-bottom:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Wanted Check
+      </div>
+    </div>
+
+    <div style="padding:9px 15px 6px;font-size:10px;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--border);">
+      Centang request yang sudah berhasil dipenuhi. Setelah dicentang, request akan hilang dari Most Wanted dan list ini.
+    </div>
+
+    <div id="lt-wanted-list">
+      <div class="ldg">Loading...</div>
+    </div>
+
+    <div id="lt-wanted-result" style="padding:0 15px 12px;"></div>
+  </div>
+</div>
+
+  <div id="atab-fu" class="fw">
+    <div class="fcard" style="padding:0;overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 15px 10px;border-bottom:1px solid var(--border);">
+        <div class="fcard-title" style="margin-bottom:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Prospect Follow-Up
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--red);"></div>
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);"></div>
+          <div style="width:8px;height:8px;border-radius:50%;background:#93C5FD;"></div>
+        </div>
+      </div>
+      <div class="prospect-list" id="a-pros"><div class="ldg">Loading...</div></div>
+    </div>
+  </div>
+  <div id="atab-status" class="fw" style="display:none;">
+    <div class="fcard">
+      <div class="fcard-title"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5"/></svg>Update Status Visitor</div>
+      <div class="flow-box"><strong>Flow:</strong> Invited/☕Scheduled→Attended→☕Interview→Applied→✨Joined VN/Other<br><span style="color:var(--red);">Exit: Declined·Rejected</span></div>
+      <label class="flbl">Visitor</label>
+      <div class="sd-wrap" id="sd-visitor-wrap">
+        <input class="sd-input" id="sd-visitor-display" placeholder="Pilih visitor..." readonly onclick="sdOpen('visitor')" value="">
+        <input type="hidden" id="a-vis">
+        <div class="sd-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="sd-dropdown" id="sd-visitor-dd">
+          <div class="sd-search"><input type="text" placeholder="Cari nama visitor..." id="sd-visitor-q" oninput="sdFilter('visitor')" onkeydown="sdKey(event,'visitor')"></div>
+          <div class="sd-options" id="sd-visitor-opts"></div>
+        </div>
+      </div>
+      <label class="flbl">Status Baru</label>
+      <select class="finput" id="a-st" onchange="chkStChange()">
+        <optgroup label="Progress"><option value="Attended">Attended</option><option value="Coffee_Session">☕ Coffee Session / Interview</option><option value="Applied">Applied</option></optgroup>
+        <optgroup label="Join"><option value="Joined_Ventura">✨ Joined Ventura</option><option value="Joined_Other">Joined Other Chapter</option></optgroup>
+        <optgroup label="Exit"><option value="Declined">Declined</option><option value="Rejected">Rejected</option></optgroup>
+      </select>
+      <div id="a-man-box" class="manual-box" style="display:none;">
+        <div class="manual-title">⚠️ Assign Team Manual (Launch Team invite)</div>
+        <label class="flbl">Assign ke Team</label>
+        <select class="finput" id="a-mteam" style="margin-bottom:0;"><option value="">Loading...</option></select>
+      </div>
+      <div style="margin-top:12px;"><button class="btn btn-red" onclick="doUpdateSt()">Update Status</button></div>
+      <div id="a-st-res"></div>
+    </div>
+  </div>
+  <div id="atab-att" class="fw" style="display:none;">
+    <div class="fcard">
+      <div class="fcard-title"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Submit Attendance</div>
+      <div class="al al-info" style="margin-bottom:12px;">Hanya hari <strong>Selasa</strong> yang diproses.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label class="flbl">Tanggal</label><input type="date" class="finput" id="a-att-d" style="margin-bottom:0;"></div>
+        <div><label class="flbl">Sesi</label><select class="finput" id="a-att-s" style="margin-bottom:0;"><option value="Pagi">Pagi (BOD)</option><option value="Siang">Siang (Casual)</option></select></div>
+      </div>
+      <div class="att-toolbar" style="margin-top:12px;">
+        <button class="btn btn-sm" style="background:var(--bg);color:var(--mid);border:1.5px solid var(--border);" onclick="selAllAtt()">✓ All</button>
+        <button class="btn btn-sm btn-out" onclick="clrAtt()">✕ Clear</button>
+      </div>
+      <label class="flbl">Members Present</label>
+      <div class="att-grid" id="a-att-m"><div class="ldg" style="grid-column:1/-1">Loading...</div></div>
+      <button class="btn btn-red btn-blk" onclick="doAtt()">Submit Attendance</button>
+      <div id="a-att-res"></div>
+
+      <div class="divider"></div>
+
+      <div class="fcard" style="margin-top:14px;">
+        <div class="fcard-title">Attendance History</div>
+
+        <label class="flbl">Pilih Tanggal Absensi</label>
+        <select class="finput" id="att-hist-date" onchange="loadAttendanceHistoryDetail()">
+          <option value="">Loading dates...</option>
+        </select>
+
+        <div id="att-hist-result">
+          <div class="ldg">Pilih tanggal untuk melihat daftar hadir.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PAGE: LEADERBOARD ══════════ -->
+<div id="pg-leaderboard" class="page">
+  <div class="page-topbar">
+    <button class="back-btn" onclick="goPage('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+    <span class="page-title">Leaderboard</span>
+  </div>
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-item on" onclick="lbTab('score')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+      Score
+    </button>
+    <button class="tab-item" onclick="lbTab('sponsors')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      Sponsor Map
+    </button>
+  </div>
+
+  <!-- TAB: SCORE -->
+  <div id="lbtab-score">
+    <div class="lb-hdr-strip">Semua member · All-Time · Sorted by Total Points</div>
+    <div class="lb-col-bar">
+      <span class="lb-col-txt">#</span><span></span>
+      <span class="lb-col-txt" style="text-align:left;">Member</span>
+      <span class="lb-col-txt">Inv</span>
+      <span class="lb-col-txt">JV</span>
+      <span class="lb-col-txt">Pts</span>
+      <span class="lb-col-txt">Gold</span>
+    </div>
+    <div class="lb-list" id="lb-rows"><div class="ldg">Loading...</div></div>
+  </div>
+
+  <!-- TAB: SPONSOR MAP -->
+  <div id="lbtab-sponsors" style="display:none;">
+    <div class="lb-hdr-strip">Siapa mengundang siapa — semua member yang sudah join Ventura</div>
+    <!-- Summary: top sponsors -->
+    <div style="padding:12px 18px 0;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;">Top Sponsor (terbanyak berhasil masukkan member)</div>
+      <div id="lb-sponsor-summary" class="ldg">Loading...</div>
+    </div>
+    <div style="height:1px;background:var(--border);margin:12px 0;"></div>
+    <!-- Full sponsor list -->
+    <div style="padding:0 18px 6px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;">Detail — Member Baru & Sponsornya</div>
+    </div>
+    <div id="lb-sponsor-list"><div class="ldg">Loading...</div></div>
+  </div>
+</div>
+
+<!-- ══════════ PAGE: CLASSIFICATION ══════════ -->
+<div id="pg-classification" class="page">
+  <div class="page-topbar">
+    <button class="back-btn" onclick="goPage('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+    <span class="page-title">Classification</span>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-item on" onclick="clTab('locked')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Locked
+    </button>
+    <button class="tab-item" onclick="clTab('wanted')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Most Wanted
+    </button>
+    <button class="tab-item" onclick="clTab('post')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Post Request
+    </button>
+  </div>
+
+  <!-- TAB: LOCKED CLASSIFICATIONS -->
+  <div id="cl-locked" class="cl-tab-content on">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px 8px;">
+      <div style="font-size:10px;color:var(--muted);">Klasifikasi bisnis member chapter — urutan join</div>
+      <div id="cl-locked-count" style="font-size:10px;font-weight:700;color:var(--red);"></div>
+    </div>
+    <div style="background:white;">
+      <div id="cl-locked-list"><div class="ldg">Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- TAB: MOST WANTED -->
+  <div id="cl-wanted" class="cl-tab-content" style="display:none;">
+    <div style="padding:12px 18px 6px;font-size:10px;color:var(--muted);">Business classification yang dicari oleh member. ✓ jika sudah berhasil diisi.</div>
+    <div class="card" style="margin:12px 18px 0;border-radius:11px;overflow:hidden;">
+      <div id="cl-wanted-list"><div class="ldg">Loading...</div></div>
+    </div>
+    <!-- Fulfill modal (inline) -->
+    <div id="fulfill-box" class="fcard" style="margin:12px 18px 0;display:none;background:var(--red-bg);border-color:var(--red-mid);">
+      <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px;">✅ Mark as Fulfilled</div>
+      <div id="fulfill-cl-lbl" style="font-size:12px;color:var(--black);font-weight:600;margin-bottom:10px;"></div>
+      <label class="flbl">Fulfilled oleh</label>
+      <div class="sd-wrap" id="sd-fulfill-wrap">
+  <input 
+    class="sd-input" 
+    id="sd-fulfill-display" 
+    placeholder="Ketik / pilih nama yang fulfill..." 
+    autocomplete="off"
+    onclick="sdOpen('fulfill')" 
+    onfocus="sdOpen('fulfill')" 
+    oninput="sdFilter('fulfill')" 
+    onkeydown="sdKey(event,'fulfill')" 
+    value="">
+  <input type="hidden" id="ff-checkedby">
+  <div class="sd-arrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </div>
+  <div class="sd-dropdown" id="sd-fulfill-dd">
+    <div class="sd-search">
+      <input type="text" placeholder="Cari nama..." id="sd-fulfill-q">
+    </div>
+    <div class="sd-options" id="sd-fulfill-opts"></div>
+  </div>
+</div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn btn-red" onclick="doFulfill()">Konfirmasi</button>
+        <button class="btn btn-out" onclick="hideFulfill()">Batal</button>
+      </div>
+      <div id="ff-result"></div>
+    </div>
+  </div>
+
+  <!-- TAB: POST REQUEST -->
+  <div id="cl-post" class="cl-tab-content" style="display:none;">
+    <div class="fw" style="padding-top:12px;">
+      <div class="fcard">
+        <div class="fcard-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Post Classification Request
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Post klasifikasi bisnis yang kamu cari. Member lain bisa bantu invite orang tersebut!</div>
+        <label class="flbl">Nama Kamu *</label>
+        <div class="sd-wrap" id="sd-postmember-wrap">
+  <input 
+    class="sd-input" 
+    id="sd-postmember-display" 
+    placeholder="Ketik / pilih nama kamu..." 
+    autocomplete="off"
+    onclick="sdOpen('postmember')" 
+    onfocus="sdOpen('postmember')" 
+    oninput="sdFilter('postmember')" 
+    onkeydown="sdKey(event,'postmember')" 
+    value="">
+  <input type="hidden" id="post-member">
+  <div class="sd-arrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </div>
+  <div class="sd-dropdown" id="sd-postmember-dd">
+    <div class="sd-search">
+      <input type="text" placeholder="Cari nama..." id="sd-postmember-q">
+    </div>
+    <div class="sd-options" id="sd-postmember-opts"></div>
+  </div>
+</div>
+        <div id="post-lt-note" style="display:none;font-size:10px;color:var(--red);font-weight:600;margin-top:-8px;margin-bottom:10px;">⚠️ Post sebagai Launch Team — tidak ada poin gamifikasi, classification tetap tampil dan bisa dipenuhi member.</div>
+        <label class="flbl">Classification yang dicari *</label>
+        <input type="text" class="finput" id="post-cl" placeholder="e.g. Dokter Gigi, Notaris, Pengacara">
+        <div class="fhint">Tulis profesi atau jenis bisnis yang kamu butuhkan untuk chapter.</div>
+        <button class="btn btn-red btn-blk" onclick="doPost()">Post Request</button>
+        <div id="post-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PIN OVERLAY ══════════ -->
+<div class="overlay" id="pin-overlay">
+  <div class="pin-box">
+    <div class="pin-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+    <div class="pin-title">Launch Team</div>
+    <div class="pin-sub">Masukkan PIN untuk membuka panel.</div>
+    <label class="flbl">PIN</label>
+    <input type="password" class="finput" id="pin-in" placeholder="••••" onkeydown="if(event.key==='Enter')doPin()">
+    <div id="pin-err" class="al al-err" style="display:none;"></div>
+    <div class="pin-btns">
+      <button class="btn btn-red" onclick="doPin()">Buka</button>
+      <button class="btn btn-out" onclick="hidePin()">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ BOTTOM NAV ══════════ -->
+<div class="bottom-nav">
+  <button class="nav-btn on" id="nav-dashboard" onclick="goPage('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span class="nav-lbl">Dashboard</span>
+  </button>
+  <button class="nav-btn" id="nav-visitor" onclick="goPage('visitor')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+    <span class="nav-lbl">Add Visitor</span>
+  </button>
+  <button class="nav-btn" id="nav-admin" onclick="showPin()">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    <span class="nav-lbl">Launch Team</span>
+  </button>
+  <button class="nav-btn" id="nav-leaderboard" onclick="goPage('leaderboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+    <span class="nav-lbl">Leaderboard</span>
+  </button>
+  <button class="nav-btn" id="nav-classification" onclick="goPage('classification')">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    <span class="nav-lbl">Classification</span>
+  </button>
+</div>
+
+<script>
+'use strict';
+/* ── STATE ── */
+var CUR='dashboard', INV='visit', SESS='Pagi';
+var ALL_INV=[], ALL_VIS=[], ALL_TEAMS=[], CL_DATA=null, FULFILL_ID=null;
+var TC=['#E31837','#3B82F6','#10B981','#F59E0B','#8B5CF6','#F97316'];
+/* Real weekly member data - grows with actual data */
+var WEEKLY_REAL=[];
+
+/* ── PAGE ROUTING ── */
+function goPage(p){
+  document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active');});
+  var t=document.getElementById('pg-'+p);
+  if(t){t.classList.add('active');CUR=p;window.scrollTo(0,0);}
+  document.querySelectorAll('.nav-btn').forEach(function(n){n.classList.remove('on');});
+  var nb=document.getElementById('nav-'+p);
+  if(nb) nb.classList.add('on');
+  if(p==='dashboard')      loadDash();
+  if(p==='visitor')        {loadInviters();renderBrainJolter('Client');loadBrainMemberList();loadBrainTargets();}
+  if(p==='admin')          {loadProspects();loadVisitors4Admin();loadMem4Att();loadTeams4Admin();}
+  if(p==='leaderboard')    loadLB();
+  if(p==='classification') loadClassification();
+}
+
+/* ── PIN ── */
+function showPin(){
+  document.getElementById('pin-in').value='';
+  document.getElementById('pin-err').style.display='none';
+  document.getElementById('pin-overlay').classList.add('on');
+  setTimeout(function(){document.getElementById('pin-in').focus();},120);
+}
+function hidePin(){document.getElementById('pin-overlay').classList.remove('on');}
+function doPin(){
+  var pin=document.getElementById('pin-in').value;
+  var err=document.getElementById('pin-err');
+  if(!pin){err.textContent='PIN tidak boleh kosong.';err.style.display='block';return;}
+  google.script.run
+    .withSuccessHandler(function(ok){
+      if(ok){hidePin();goPage('admin');}
+      else{err.textContent='PIN salah.';err.style.display='block';document.getElementById('pin-in').value='';document.getElementById('pin-in').focus();}
+    })
+    .withFailureHandler(function(e){err.textContent='Error: '+e;err.style.display='block';})
+    .verifyAdminPin(pin);
+}
+
+/* ── HELPERS ── */
+function N(v){var n=Number(v);return isNaN(n)?0:n;}
+function rankLine(i){
+  if(i===0) return'<div class="rl rl-1"></div>';
+  if(i===1) return'<div class="rl rl-2"></div>';
+  if(i===2) return'<div class="rl rl-3"></div>';
+  if(i<10)  return'<div class="rl rl-red"></div>';
+  return'<div class="rl rl-gray"></div>';
+}
+function statusChip(s){
+  var m={'Invited':'<span class="chip c-inv">Invited</span>','Coffee_Scheduled':'<span class="chip c-cof">☕ Sched</span>','Attended':'<span class="chip c-att">Attended</span>','Coffee_Session':'<span class="chip c-int">☕ Interview</span>','Applied':'<span class="chip c-app">Applied</span>','Joined_Ventura':'<span class="chip c-jv">✨ JV</span>','Joined_Other':'<span class="chip c-jo">Joined Other</span>','Declined':'<span class="chip c-dec">Declined</span>','Rejected':'<span class="chip c-rej">Rejected</span>'};
+  return m[s]||'<span class="chip" style="background:var(--bg);color:var(--muted);">'+(s||'—')+'</span>';
+}
+function dayAgo(d){var s=d||'';if(!s)return'<span class="days-chip dc-cold">?</span>';var df=Math.floor((new Date()-new Date(s))/864e5);if(df>=7)return'<span class="days-chip dc-hot">'+df+'d lalu 🔥</span>';if(df>=3)return'<span class="days-chip dc-warm">'+df+'d lalu</span>';return'<span class="days-chip dc-cold">'+df+'d lalu</span>';}
+function feedEmoji(a){var m={'Invite':'👋','Invite_Coffee':'☕','Attended':'🙋','Coffee_Session':'🎙️','Applied':'📝','Joined_Ventura':'🎉','Joined_Other':'🤝','Prior_Gold':'⭐','Declined':'🚫','Rejected':'❌','CrossTeamBonus':'🔀','Morning_Attend':'🌅','Noon_Attend':'☀️','FullTeamBonus':'🏆','Brainstorm_3_Targets':'🧠','Brain_Request':'🔥'};return m[a]||'📌';}
+function feedBg(a){var m={'Invite':'#DBEAFE','Invite_Coffee':'#FED7AA','Attended':'#D1FAE5','Coffee_Session':'#EDE9FE','Applied':'#FEF3C7','Joined_Ventura':'#D1FAE5','Joined_Other':'#E0E7FF','Prior_Gold':'#FEF3C7','Declined':'#FEF0F2','Rejected':'#FEF0F2','CrossTeamBonus':'#DBEAFE','Morning_Attend':'#FEF3C7','Noon_Attend':'#FEF3C7','FullTeamBonus':'#FEF3C7','Brainstorm_3_Targets':'#FEF0F2','Brain_Request':'#FEF0F2'};return m[a]||'#F7F8FA';}
+function feedLabel(a,name,vis){var v=vis||'visitor',n=name||'—';var m={'Invite':n+' mengundang '+v,'Invite_Coffee':n+' coffee: '+v,'Attended':v+' hadir (by '+n+')','Coffee_Session':v+' selesai interview (by '+n+')','Applied':v+' mendaftar! (by '+n+')','Joined_Ventura':'🎉 '+v+' JOIN VENTURA! by '+n,'Joined_Other':v+' join chapter lain','Prior_Gold':'⭐ Prior Member','Declined':v+' declined','Rejected':v+' rejected','CrossTeamBonus':'🔀 Cross-team bonus! '+n,'Morning_Attend':n+' hadir Pagi','Noon_Attend':n+' hadir Siang','FullTeamBonus':'🏆 Full Team Bonus!','Brainstorm_3_Targets':n+' menyelesaikan Daily Brainstorm Challenge','Brain_Request':n+' request classification '+(vis||'')};return m[a]||a;}
+
+/* ── HIGHLIGHTS BUILDER (3 tiles) ── */
+var ICONS={
+  trophy:'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  sponsor:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>',
+  invite:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  coffee:'<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>'
+};
+function mkHl(items){
+  return items.map(function(it){
+    return'<div class="hl-tile"><svg class="hl-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8">'+ICONS[it.icon]+'</svg><div class="hl-lbl">'+it.lbl+'</div><div class="hl-name">'+it.name+'</div><div class="hl-val">'+it.val+'</div></div>';
+  }).join('');
+}
+
+/* ── DASHBOARD ── */
+function loadDash(){
+  google.script.run
+    .withSuccessHandler(renderDash)
+    .withFailureHandler(function(e){document.getElementById('db-chart').innerHTML='<div class="ldg" style="color:var(--red);">Error: '+e+'</div>';})
+    .getDashboardData();
+}
+
+function renderDash(data){
+  var rows=(data.summary||[]).slice(1).filter(function(r){return r[0];});
+  var cs=data.chapterStats||{};
+  var feed=data.recentFeed||[];
+
+  /* Mission */
+  var total=cs.totalMembers||0,target=51;
+  var pct=Math.min(100,(total/target)*100).toFixed(0);
+  var rem=Math.max(0,target-total);
+  document.getElementById('db-days').textContent=cs.daysToLaunch||0;
+  document.getElementById('db-total').textContent=total;
+  document.getElementById('db-prog').style.width=pct+'%';
+  document.getElementById('db-pct').textContent=pct+'%';
+  document.getElementById('db-pct2').textContent=pct+'%';
+  document.getElementById('db-vis-wk').textContent=cs.weeklyInvitesTotal||0;
+  document.getElementById('db-new-wk').textContent=cs.newVenturaWeek||0;
+  document.getElementById('db-rem').textContent=rem;
+
+  /* Sorts */
+  var byPts =rows.slice().sort(function(a,b){return N(b[4])-N(a[4]);});
+  var byJV  =rows.slice().sort(function(a,b){return N(b[2])-N(a[2])||N(b[4])-N(a[4]);});
+  var byInv =rows.slice().sort(function(a,b){return N(b[7])-N(a[7])||N(b[4])-N(a[4]);});
+  var byWPts=rows.slice().sort(function(a,b){return N(b[9])-N(a[9])||N(b[4])-N(a[4]);});
+  var byWJV =rows.slice().sort(function(a,b){return N(b[14])-N(a[14])||N(b[2])-N(a[2]);});
+  var byWInv=rows.slice().sort(function(a,b){return N(b[10])-N(a[10])||N(b[4])-N(a[4]);});
+  var byWCS =rows.slice().sort(function(a,b){return N(b[15])-N(a[15])||N(b[4])-N(a[4]);});
+
+  /* Highlights Overall — 3 tiles */
+  document.getElementById('db-hl-all').innerHTML=mkHl([
+    {icon:'trophy',lbl:'Top Contributor',name:byPts[0]?byPts[0][0]:'—',val:byPts[0]?N(byPts[0][4])+' pts':'—'},
+    {icon:'sponsor',lbl:'Top Sponsor',name:byJV[0]?byJV[0][0]:'—',val:byJV[0]?N(byJV[0][2])+' Members':'—'},
+    {icon:'invite',lbl:'Top Inviter',name:byInv[0]?byInv[0][0]:'—',val:byInv[0]?N(byInv[0][7])+' Visitors':'—'}
+  ]);
+
+  /* Highlights Weekly — 3 tiles */
+  document.getElementById('db-hl-wk').innerHTML=mkHl([
+    {icon:'trophy',lbl:'Top Contributor',name:byWPts[0]&&N(byWPts[0][9])>0?byWPts[0][0]:'—',val:byWPts[0]&&N(byWPts[0][9])>0?N(byWPts[0][9])+' pts':'—'},
+    {icon:'sponsor',lbl:'Top Sponsor',name:byWJV[0]&&N(byWJV[0][14])>0?byWJV[0][0]:'—',val:byWJV[0]&&N(byWJV[0][14])>0?N(byWJV[0][14])+' Members':'—'},
+    {icon:'coffee',lbl:'Top CS',name:byWCS[0]&&N(byWCS[0][15])>0?byWCS[0][0]:'—',val:byWCS[0]&&N(byWCS[0][15])>0?N(byWCS[0][15])+' Sesi':'—'}
+  ]);
+
+  /* Growth chart — real data, target dinamis dari backend */
+  renderGrowthChart(data.weeklyGrowth||[], cs.daysToLaunch||0, total, cs.targetMembers||51);
+
+  /* Impact Board top 10 */
+  var top10=byPts.slice(0,10);
+  var ih='';
+  top10.forEach(function(r,i){
+    ih+='<div class="ib-row">'+
+      '<div class="ib-rank">'+rankLine(i)+'</div>'+
+      '<div><div class="ib-name">'+r[0]+'</div><div class="ib-team">'+r[1]+'</div></div>'+
+      '<div class="ib-cell">'+N(r[2])+'</div>'+
+      '<div class="ib-cell">'+N(r[3])+'</div>'+
+      '<div class="ib-cell red">'+N(r[4])+'</div>'+
+      '<div class="ib-cell"><span class="gold-chip">'+r[5]+'</span></div>'+
+    '</div>';
+  });
+  document.getElementById('db-impact').innerHTML=ih||'<div class="ldg">Belum ada data.</div>';
+
+  /* Team charts */
+  var tm={};
+  rows.forEach(function(r){var t=r[1]||'No Team';if(!tm[t])tm[t]={t:t,jv:0,pts:0};tm[t].jv+=N(r[2]);tm[t].pts+=N(r[4]);});
+  var tArr=Object.values(tm).sort(function(a,b){return b.jv-a.jv;}).slice(0,6);
+  var mxJV=Math.max.apply(null,tArr.map(function(x){return x.jv;})||[1]);
+  var mxPts=Math.max.apply(null,tArr.map(function(x){return x.pts;})||[1]);
+  if(!mxJV)mxJV=1;if(!mxPts)mxPts=1;
+  var jvH='',ptsH='';
+  tArr.forEach(function(t,i){
+    var col=TC[i%TC.length];
+    var jW=Math.round((t.jv/mxJV)*100);
+    var pW=Math.round((t.pts/mxPts)*100);
+    jvH+='<div class="tbar-row"><div class="tbar-label">'+t.t.replace('Team ','T.')+'</div><div class="tbar-track"><div class="tbar-fill" style="width:'+jW+'%;background:'+col+';"></div></div><div class="tbar-val" style="color:'+col+';">'+t.jv+'</div></div>';
+    ptsH+='<div class="tbar-row"><div class="tbar-label">'+t.t.replace('Team ','T.')+'</div><div class="tbar-track"><div class="tbar-fill" style="width:'+pW+'%;background:'+col+';"></div></div><div class="tbar-val" style="color:'+col+';">'+t.pts+'</div></div>';
+  });
+  document.getElementById('db-team-jv').innerHTML=jvH||'<div class="ldg">Belum ada data.</div>';
+  document.getElementById('db-team-pts').innerHTML=ptsH||'<div class="ldg">Belum ada data.</div>';
+
+  /* Gold Club */
+  var gRows=byPts.slice().sort(function(a,b){return N(b[6])-N(a[6])||N(b[2])-N(a[2]);});
+  var gH='';
+  gRows.forEach(function(r,i){
+    var gc=N(r[6]),pct2=Math.min(100,(gc/6)*100).toFixed(0);
+    gH+='<div class="gold-row"><div class="gold-rank">'+(i+1)+'</div><div class="gold-info"><div class="gold-name">'+r[0]+'</div><div class="gold-team-name">'+r[1]+'</div><div class="gold-bar-track"><div class="gold-bar-fill" style="width:'+pct2+'%;"></div></div></div><div class="gold-right"><div class="gold-count">'+gc+'<span class="gold-denom">/6</span></div></div></div>';
+  });
+  document.getElementById('db-gold').innerHTML=gH||'<div class="ldg">Belum ada data.</div>';
+
+  /* Live Activity Feed — newest first */
+  if(!feed.length){
+    document.getElementById('db-feed').innerHTML='<div class="ldg">Belum ada aktivitas.</div>';
+  } else {
+    var fh='';
+    feed.forEach(function(item){
+      var em=feedEmoji(item.action);
+      var bg=feedBg(item.action);
+      var lb=feedLabel(item.action,item.name,item.visitorName);
+      var pt=item.points>0?'+'+item.points+' pts':'';
+      var tm2=item.ts?new Date(item.ts).toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+      fh+='<div class="feed-item"><div class="feed-dot" style="background:'+bg+';">'+em+'</div><div class="feed-body"><div class="feed-main">'+lb+'</div><div class="feed-sub">'+(item.team?item.team+' · ':'')+tm2+'</div></div>'+(pt?'<div class="feed-pts">'+pt+'</div>':'')+'</div>';
+    });
+    document.getElementById('db-feed').innerHTML=fh;
+  }
+}
+
+/* ── GROWTH CHART ──
+   weeklyGrowth: array { key, value, label } dari backend
+   - Setiap entry = 1 minggu ada join baru, value = cumulative member
+   - Sudah termasuk titik "Now" sebagai entry terakhir
+   - label: 'W1','W2',...,'Now'
+   Chart menampilkan:
+   - Titik kiri = Start (16), titik kanan terakhir = Now (current total)
+   - 10 kolom projection ke depan menuju target 51
+   - Dot aktif di tiap minggu ada join baru
+   - Dashed line projection dari Now menuju 51
+*/
+function renderGrowthChart(weeklyGrowth, daysToLaunch, curTotal, targetMembers){
+  var target   = targetMembers || 51;  // dinamis dari backend
+  var numFuture= 10;
+
+  /* Launch date label — hitung dari daysToLaunch */
+  var launchLabel = 'Aug 25';
+  if(daysToLaunch > 0){
+    var ld = new Date();
+    ld.setDate(ld.getDate() + daysToLaunch);
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    launchLabel = months[ld.getMonth()] + ' ' + ld.getDate();
+  }
+
+  /* Build plot points: always start with first real value */
+  var plotPts = [];
+  if(weeklyGrowth && weeklyGrowth.length){
+    // First point = week before any joins (baseline)
+    plotPts.push({ label:'Start', val: weeklyGrowth[0].value - (weeklyGrowth[0].joinCount||0) });
+  }
+  (weeklyGrowth||[]).forEach(function(w){
+    plotPts.push({ label: w.label || 'W?', val: w.value });
+  });
+
+  /* If no data at all — just show curTotal */
+  if(plotPts.length === 0){
+    plotPts.push({ label:'Start', val: curTotal });
+    plotPts.push({ label:'Now', val: curTotal });
+  } else if(plotPts.length === 1){
+    plotPts.push({ label:'Now', val: curTotal });
+  }
+
+  var nowIdx    = plotPts.length - 1;
+  var totalCols = nowIdx + 1 + numFuture;
+
+  var W=430, H=185, pl=34, pr=14, pt2=16, pb=30;
+  var cW=W-pl-pr, cH=H-pt2-pb;
+  var maxV = Math.max(target+4, curTotal+4);
+  var minV = 12;
+
+  function xp(i){ return pl + (i / (totalCols-1)) * cW; }
+  function yp(v){ return pt2 + cH - ((v-minV)/(maxV-minV)) * cH; }
+
+  /* Solid line: Start → Now */
+  var path = 'M'+xp(0).toFixed(1)+','+yp(plotPts[0].val).toFixed(1);
+  for(var j=1; j<=nowIdx; j++){
+    path += ' L'+xp(j).toFixed(1)+','+yp(plotPts[j].val).toFixed(1);
+  }
+  /* Area fill under solid line */
+  var area = path +
+    ' L'+xp(nowIdx).toFixed(1)+','+(pt2+cH)+
+    ' L'+xp(0).toFixed(1)+','+(pt2+cH)+' Z';
+
+  /* Dashed projection: Now → target (at end of future space) */
+  var futurePath = '';
+  if(curTotal < target){
+    futurePath =
+      '<line x1="'+xp(nowIdx).toFixed(1)+'" y1="'+yp(curTotal).toFixed(1)+
+      '" x2="'+xp(totalCols-1).toFixed(1)+'" y2="'+yp(target).toFixed(1)+
+      '" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="5,3" opacity=".35"/>';
+  }
+
+  /* Target dashed horizontal line */
+  var tgtY = yp(target);
+
+  /* Y grid lines + labels */
+  var yLabels = '';
+  [minV, 20, 30, 40, target].forEach(function(v){
+    var gy = yp(v);
+    yLabels += '<line x1="'+pl+'" y1="'+gy.toFixed(1)+'" x2="'+(pl+cW)+'" y2="'+gy.toFixed(1)+
+      '" stroke="#F0F0F5" stroke-width="0.8"/>';
+    yLabels += '<text x="'+(pl-4)+'" y="'+(gy+4)+
+      '" font-size="8" fill="#9CA3AF" text-anchor="end">'+v+'</text>';
+  });
+
+  /* X labels: real week labels + future marks */
+  var xLabels = '';
+  plotPts.forEach(function(pt, i){
+    xLabels += '<text x="'+xp(i).toFixed(1)+'" y="'+(H-6)+
+      '" font-size="8" fill="'+(i===nowIdx?'var(--red)':'#9CA3AF')+
+      '" text-anchor="middle" '+(i===nowIdx?'font-weight="700"':'')+'>'+pt.label+'</text>';
+  });
+  /* Future: +W2, +W4, +W6, +W8, +W10 */
+  for(var f=2; f<=numFuture; f+=2){
+    var fx = xp(nowIdx+f);
+    xLabels += '<text x="'+fx.toFixed(1)+'" y="'+(H-6)+
+      '" font-size="7" fill="#C4C9D4" text-anchor="middle">+W'+f+'</text>';
+  }
+  /* Launch date label at the very end — dinamis */
+  xLabels += '<text x="'+xp(totalCols-1).toFixed(1)+'" y="'+(H-6)+
+    '" font-size="7" fill="var(--red)" text-anchor="end" opacity=".6">'+launchLabel+'</text>';
+
+  /* Dots on each plot point */
+  var dotsH = '';
+  plotPts.forEach(function(pt, i){
+    var dx = xp(i).toFixed(1), dy = yp(pt.val).toFixed(1);
+    if(i === nowIdx){
+      /* Now: large filled red, value above */
+      dotsH += '<circle cx="'+dx+'" cy="'+dy+'" r="5.5" fill="var(--red)" stroke="white" stroke-width="2.5"/>';
+      dotsH += '<text x="'+dx+'" y="'+(parseFloat(dy)-11)+
+        '" font-size="11" font-weight="700" fill="var(--red)" text-anchor="middle">'+pt.val+'</text>';
+    } else if(i === 0){
+      /* Start: small gray dot, value to the right */
+      dotsH += '<circle cx="'+dx+'" cy="'+dy+'" r="3" fill="white" stroke="#9CA3AF" stroke-width="1.5"/>';
+      dotsH += '<text x="'+(parseFloat(dx)+7)+'" y="'+(parseFloat(dy)+4)+
+        '" font-size="8" fill="#9CA3AF">'+pt.val+'</text>';
+    } else {
+      /* Intermediate: small red-bordered dot, show value if different from prev */
+      var prevVal = plotPts[i-1].val;
+      var diff    = pt.val - prevVal;
+      dotsH += '<circle cx="'+dx+'" cy="'+dy+'" r="3.5" fill="white" stroke="var(--red)" stroke-width="2"/>';
+      if(diff > 0){
+        dotsH += '<text x="'+dx+'" y="'+(parseFloat(dy)-8)+
+          '" font-size="8" font-weight="600" fill="var(--red)" text-anchor="middle">+'+diff+'</text>';
+      }
+    }
+  });
+
+  /* Target label */
+  var targetLabel = '<text x="'+(pl+cW-2)+'" y="'+(tgtY-5)+
+    '" font-size="8" fill="var(--red)" text-anchor="end" opacity=".6">target 51</text>';
+
+  /* Jun 30 vertical guide line (at totalCols-1) */
+  var jun30Line = '<line x1="'+xp(totalCols-1).toFixed(1)+'" y1="'+pt2+
+    '" x2="'+xp(totalCols-1).toFixed(1)+'" y2="'+(pt2+cH)+
+    '" stroke="#E31837" stroke-width="0.8" stroke-dasharray="3,3" opacity=".25"/>';
+
+  var svg =
+    '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">'+
+    '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0%" stop-color="#E31837" stop-opacity=".12"/>'+
+      '<stop offset="100%" stop-color="#E31837" stop-opacity=".01"/>'+
+    '</linearGradient></defs>'+
+    yLabels+
+    jun30Line+
+    '<line x1="'+pl+'" y1="'+tgtY.toFixed(1)+'" x2="'+(pl+cW)+'" y2="'+tgtY.toFixed(1)+
+      '" stroke="#E31837" stroke-width="1" stroke-dasharray="5,3" opacity=".4"/>'+
+    targetLabel+
+    '<path d="'+area+'" fill="url(#ag)"/>'+
+    '<path d="'+path+'" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+
+    futurePath+dotsH+xLabels+
+    '</svg>';
+
+  document.getElementById('db-chart').innerHTML = svg;
+}
+
+/* ── LEADERBOARD ── */
+function lbTab(t){
+  ['score','sponsors'].forEach(function(x){
+    document.getElementById('lbtab-'+x).style.display=(x===t)?'block':'none';
+  });
+  document.querySelectorAll('#pg-leaderboard .tab-item').forEach(function(b,i){
+    b.classList.toggle('on',['score','sponsors'][i]===t);
+  });
+  if(t==='sponsors') loadSponsors();
+}
+
+function loadLB(){
+  google.script.run
+    .withSuccessHandler(function(data){
+      var rows=(data.summary||[]).slice(1).filter(function(r){return r[0];});
+      var sorted=rows.slice().sort(function(a,b){return N(b[4])-N(a[4]);});
+      var h='';
+      sorted.forEach(function(r,i){
+        h+='<div class="lb-row"><div class="lb-num">'+(i+1)+'</div>'+rankLine(i)+'<div class="lb-info"><div class="lb-name">'+r[0]+'</div><div class="lb-tm">'+r[1]+'</div></div><div class="lb-val">'+N(r[7])+'</div><div class="lb-val r">'+N(r[2])+'</div><div class="lb-val dark">'+N(r[4])+'</div><div class="lb-val" style="font-size:10px;">'+r[5]+'</div></div>';
+      });
+      document.getElementById('lb-rows').innerHTML=h||'<div class="ldg">Belum ada data.</div>';
+    })
+    .withFailureHandler(function(e){document.getElementById('lb-rows').innerHTML='<div class="ldg" style="color:var(--red);">Error: '+e+'</div>';})
+    .getDashboardData();
+}
+
+function loadSponsors(){
+  document.getElementById('lb-sponsor-summary').innerHTML='<div class="ldg">Loading...</div>';
+  document.getElementById('lb-sponsor-list').innerHTML='<div class="ldg">Loading...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(sponsors){
+      if(!sponsors||!sponsors.length){
+        document.getElementById('lb-sponsor-summary').innerHTML='<div class="ldg">Belum ada member yang join Ventura.</div>';
+        document.getElementById('lb-sponsor-list').innerHTML='';
+        return;
+      }
+
+      /* ── Summary: hitung berapa member per sponsor ── */
+      var countMap={};
+      sponsors.forEach(function(s){
+        var key=s.sponsoredBy||'Launch Team';
+        var team=s.sponsoredByTeam||'—';
+        if(!countMap[key]) countMap[key]={name:key,team:team,count:0};
+        countMap[key].count++;
+      });
+      var topSponsors=Object.values(countMap).sort(function(a,b){return b.count-a.count;});
+      var maxCount=topSponsors[0]?topSponsors[0].count:1;
+
+      var sumH='';
+      topSponsors.forEach(function(sp,i){
+        var barW=Math.round((sp.count/maxCount)*100);
+        var col=['var(--gold)','var(--silver)','var(--bronze)'][i]||'var(--red)';
+        sumH+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'+
+          '<div style="width:110px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+sp.name+'</div>'+
+          '<div style="flex:1;height:9px;background:var(--red-bg);border-radius:999px;overflow:hidden;">'+
+            '<div style="height:100%;width:'+barW+'%;background:'+col+';border-radius:999px;transition:width .7s;"></div>'+
+          '</div>'+
+          '<div style="width:20px;font-size:11px;font-weight:700;color:var(--red);text-align:right;">'+sp.count+'</div>'+
+        '</div>';
+      });
+      document.getElementById('lb-sponsor-summary').innerHTML=sumH;
+
+      /* ── Detail list: tiap member baru + sponsornya ── */
+      var listH='';
+      sponsors.forEach(function(s){
+        var ltBadge=s.inviterType==='LaunchTeam'?
+          '<span style="font-size:9px;background:#DBEAFE;color:#1E40AF;padding:1px 6px;border-radius:999px;font-weight:700;margin-left:4px;">LT</span>':'';
+        var dateStr=s.joinDate?new Date(s.joinDate).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):'';
+        listH+='<div style="display:flex;align-items:center;padding:10px 18px;border-bottom:1px solid var(--border);gap:12px;background:white;">'+
+          /* New member */
+          '<div style="flex:1;min-width:0;">'+
+            '<div style="font-size:13px;font-weight:600;color:var(--black);">'+s.memberName+'</div>'+
+            '<div style="font-size:10px;color:var(--muted);">'+s.team+(dateStr?' · '+dateStr:'')+'</div>'+
+          '</div>'+
+          /* Arrow */
+          '<div style="color:var(--muted);font-size:14px;">←</div>'+
+          /* Sponsor */
+          '<div style="text-align:right;flex-shrink:0;">'+
+            '<div style="font-size:12px;font-weight:600;color:var(--red);">'+s.sponsoredBy+ltBadge+'</div>'+
+            '<div style="font-size:10px;color:var(--muted);">'+s.sponsoredByTeam+'</div>'+
+          '</div>'+
+        '</div>';
+      });
+      document.getElementById('lb-sponsor-list').innerHTML=listH||'<div class="ldg">Belum ada data.</div>';
+    })
+    .withFailureHandler(function(e){
+      document.getElementById('lb-sponsor-summary').innerHTML='<div class="ldg" style="color:var(--red);">Error: '+e+'</div>';
+    })
+    .getMemberSponsors();
+}
+
+/* ── SEARCHABLE AUTOCOMPLETE DROPDOWN ── */
+var SD_STATE = {};
+
+function sdInit(name, opts, onSelect){
+  SD_STATE[name] = {
+    opts: opts || [],
+    onSelect: onSelect || function(){},
+    focusIndex: -1
+  };
+  sdRender(name);
+}
+
+function sdOpen(name){
+  var dd = document.getElementById('sd-' + name + '-dd');
+  if(!dd) return;
+
+  dd.classList.add('open');
+  sdRender(name);
+
+  var display = document.getElementById('sd-' + name + '-display');
+  if(display) display.focus();
+}
+
+function sdClose(name){
+  var dd = document.getElementById('sd-' + name + '-dd');
+  if(dd) dd.classList.remove('open');
+  if(SD_STATE[name]) SD_STATE[name].focusIndex = -1;
+}
+
+function sdFilter(name){
+  var hiddenMap = {
+  inviter: 'v-inviter',
+  visitor: 'a-vis',
+  postmember: 'post-member',
+  fulfill: 'ff-checkedby'
+};
+
+var hiddenId = hiddenMap[name];
+  var hidden = document.getElementById(hiddenId);
+
+  if(hidden) hidden.value = '';
+
+  if(name === 'inviter'){
+    var note = document.getElementById('v-lt-note');
+    if(note) note.style.display = 'none';
+  }
+
+  sdOpen(name);
+  sdRender(name);
+}
+
+function sdRender(name){
+  var state = SD_STATE[name];
+  if(!state) return;
+
+  var display = document.getElementById('sd-' + name + '-display');
+  var box = document.getElementById('sd-' + name + '-opts');
+  if(!display || !box) return;
+
+  var q = (display.value || '').toLowerCase().trim();
+  var h = '';
+  var shown = 0;
+  var activeGroup = '';
+
+  state.visible = [];
+
+  state.opts.forEach(function(o){
+    if(o.type === 'group'){
+      activeGroup = o.label || '';
+      return;
+    }
+
+    var label = o.label || o.value || '';
+    var searchable = label.toLowerCase();
+
+    if(q && searchable.indexOf(q) === -1) return;
+
+    if(activeGroup){
+      h += '<div class="sd-group-label">' + activeGroup + '</div>';
+      activeGroup = '';
+    }
+
+    var idx = state.visible.length;
+    state.visible.push(o);
+
+    h += '<div class="sd-option" data-idx="' + idx + '" onclick="sdChoose(\'' + name + '\',' + idx + ')">' +
+      label +
+    '</div>';
+
+    shown++;
+  });
+
+  if(!shown){
+    h = '<div class="sd-option no-result">Tidak ada hasil. Coba ketik nama lain.</div>';
+  }
+
+  box.innerHTML = h;
+}
+
+function sdChoose(name, idx){
+  var state = SD_STATE[name];
+  if(!state || !state.visible || !state.visible[idx]) return;
+
+  var o = state.visible[idx];
+  var display = document.getElementById('sd-' + name + '-display');
+
+  if(display) display.value = o.label || o.value || '';
+
+  state.onSelect(o.value, o.label, !!o.isLT);
+  sdClose(name);
+}
+
+function sdReset(name){
+  var display = document.getElementById('sd-' + name + '-display');
+  var q = document.getElementById('sd-' + name + '-q');
+
+  if(display) display.value = '';
+  if(q) q.value = '';
+
+  if(SD_STATE[name]){
+    SD_STATE[name].focusIndex = -1;
+  }
+
+  sdRender(name);
+  sdClose(name);
+}
+
+function sdKey(e, name){
+  var state = SD_STATE[name];
+  if(!state) return;
+
+  var dd = document.getElementById('sd-' + name + '-dd');
+  if(!dd || !dd.classList.contains('open')){
+    if(e.key === 'ArrowDown' || e.key === 'Enter'){
+      sdOpen(name);
+      e.preventDefault();
+    }
+    return;
+  }
+
+  var items = dd.querySelectorAll('.sd-option:not(.no-result)');
+  if(!items.length) return;
+
+  if(e.key === 'ArrowDown'){
+    state.focusIndex = Math.min(state.focusIndex + 1, items.length - 1);
+    e.preventDefault();
+  } else if(e.key === 'ArrowUp'){
+    state.focusIndex = Math.max(state.focusIndex - 1, 0);
+    e.preventDefault();
+  } else if(e.key === 'Enter'){
+    if(state.focusIndex >= 0){
+      sdChoose(name, Number(items[state.focusIndex].getAttribute('data-idx')));
+    }
+    e.preventDefault();
+  } else if(e.key === 'Escape'){
+    sdClose(name);
+    e.preventDefault();
+  }
+
+  items.forEach(function(it, i){
+    it.classList.toggle('focused', i === state.focusIndex);
+  });
+}
+
+document.addEventListener('click', function(e){
+  ['inviter','visitor','postmember','fulfill'].forEach(function(name){
+    var wrap = document.getElementById('sd-' + name + '-wrap');
+    if(wrap && !wrap.contains(e.target)){
+      sdClose(name);
+    }
+  });
+});
+
+/* ── ADD VISITOR ── */
+function selType(t){
+  INV=t;
+  document.getElementById('tp-visit').classList.toggle('on',t==='visit');
+  document.getElementById('tp-coffee').classList.toggle('on',t==='coffee');
+  document.getElementById('visit-extra').style.display=t==='visit'?'block':'none';
+  document.getElementById('coffee-extra').style.display=t==='coffee'?'block':'none';
+}
+function selSess(s){
+  SESS=s;
+  document.getElementById('sp-pagi').classList.toggle('on',s==='Pagi');
+  document.getElementById('sp-siang').classList.toggle('on',s==='Siang');
+}
+function loadInviters(){
+  google.script.run
+    .withSuccessHandler(function(inv){
+      ALL_INV=inv;
+
+      /* Build options for searchable dropdown */
+      var opts=[];
+      var mem=inv.filter(function(m){return !m.isLaunchTeam;});
+      var lt=inv.filter(function(m){return m.isLaunchTeam;});
+
+      if(mem.length){
+        opts.push({type:'group',label:'Members'});
+        mem.forEach(function(m){
+          opts.push({
+            value:m.memberName,
+            label:m.memberName+' ('+m.team+')',
+            isLT:false
+          });
+        });
+      }
+
+      if(lt.length){
+        opts.push({type:'group',label:'Launch Team'});
+        lt.forEach(function(m){
+          opts.push({
+            value:m.memberName,
+            label:m.memberName+' [Launch Team]',
+            isLT:true
+          });
+        });
+      }
+
+      // ✅ EXISTING (JANGAN DIUBAH)
+      sdInit('inviter', opts, function(val,label,isLT){
+        document.getElementById('v-inviter').value=val;
+        document.getElementById('v-lt-note').style.display=(isLT)?'block':'none';
+      });
+
+      // ✅ TAMBAHKAN INI (Brain Jolter)
+      sdInit('brainby', opts, function(val,label,isLT){
+        document.getElementById('brain-by').value=val;
+        loadBrainTargets();
+      });
+
+    })
+    .withFailureHandler(function(){})
+    .getAllInviters();
+
+  google.script.run
+    .withSuccessHandler(function(teams){
+      ALL_TEAMS=teams;
+      var c=document.getElementById('v-cross');
+      c.innerHTML='<option value="">Tidak (team saya sendiri)</option>';
+      teams.forEach(function(t){
+        c.innerHTML+='<option value="'+t+'">'+t+'</option>';
+      });
+    })
+    .getTeams();
+}
+function chkInviter(){/* handled by sdInit callback */}
+/* ── TUESDAY ONLY DATE PICKER ── */
+var TUE_VIEW = new Date();
+var TUE_SELECTED = '';
+
+function pad2(n){
+  return String(n).padStart(2, '0');
+}
+
+function toISODateLocal(d){
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+}
+
+function formatDateID(iso){
+  if(!iso) return '';
+  var p = iso.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function toggleTuePicker(){
+  var panel = document.getElementById('tue-panel');
+  if(!panel) return;
+  panel.classList.toggle('open');
+  renderTuePicker();
+}
+
+function openTuePicker(){
+  var panel = document.getElementById('tue-panel');
+  if(!panel) return;
+  panel.classList.add('open');
+  renderTuePicker();
+}
+
+function closeTuePicker(){
+  var panel = document.getElementById('tue-panel');
+  if(panel) panel.classList.remove('open');
+}
+
+function changeTueMonth(delta){
+  TUE_VIEW.setMonth(TUE_VIEW.getMonth() + delta);
+  renderTuePicker();
+}
+
+function renderTuePicker(){
+  var label = document.getElementById('tue-month-label');
+  var grid = document.getElementById('tue-grid');
+  if(!label || !grid) return;
+
+  var monthNames = [
+    'Januari','Februari','Maret','April','Mei','Juni',
+    'Juli','Agustus','September','Oktober','November','Desember'
+  ];
+  var dayNames = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+  var y = TUE_VIEW.getFullYear();
+  var m = TUE_VIEW.getMonth();
+
+  label.textContent = monthNames[m] + ' ' + y;
+
+  var first = new Date(y, m, 1);
+  var last = new Date(y, m + 1, 0);
+  var html = '';
+
+  dayNames.forEach(function(d){
+    html += '<div class="tue-dow">' + d + '</div>';
+  });
+
+  for(var b = 0; b < first.getDay(); b++){
+    html += '<button type="button" class="tue-day blank" disabled></button>';
+  }
+
+  for(var day = 1; day <= last.getDate(); day++){
+    var d = new Date(y, m, day);
+    var iso = toISODateLocal(d);
+    var isTuesday = d.getDay() === 2;
+    var isSelected = iso === TUE_SELECTED;
+
+    var cls = 'tue-day';
+    if(isTuesday) cls += ' ok';
+    if(isSelected) cls += ' selected';
+
+    if(isTuesday){
+      html += '<button type="button" class="' + cls + '" onclick="selectTuesdayDate(\'' + iso + '\')">' + day + '</button>';
+    } else {
+      html += '<button type="button" class="' + cls + '" disabled>' + day + '</button>';
+    }
+  }
+
+  grid.innerHTML = html;
+}
+
+function selectTuesdayDate(iso){
+  TUE_SELECTED = iso;
+
+  document.getElementById('v-vdate').value = iso;
+  document.getElementById('v-vdate-display').value = formatDateID(iso);
+
+  renderTuePicker();
+  closeTuePicker();
+}
+
+document.addEventListener('click', function(e){
+  var wrap = document.querySelector('.tue-picker-wrap');
+  if(wrap && !wrap.contains(e.target)){
+    closeTuePicker();
+  }
+});
+function toggleAttTuePicker(){
+  var panel = document.getElementById('att-tue-panel');
+  if(!panel) return;
+  panel.classList.toggle('open');
+  renderAttTuePicker();
+}
+
+function closeAttTuePicker(){
+  var panel = document.getElementById('att-tue-panel');
+  if(panel) panel.classList.remove('open');
+}
+
+function changeAttTueMonth(delta){
+  ATT_TUE_VIEW.setMonth(ATT_TUE_VIEW.getMonth() + delta);
+  renderAttTuePicker();
+}
+
+function renderAttTuePicker(){
+  var label = document.getElementById('att-tue-month-label');
+  var grid = document.getElementById('att-tue-grid');
+  if(!label || !grid) return;
+
+  var monthNames = [
+    'Januari','Februari','Maret','April','Mei','Juni',
+    'Juli','Agustus','September','Oktober','November','Desember'
+  ];
+  var dayNames = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+  var y = ATT_TUE_VIEW.getFullYear();
+  var m = ATT_TUE_VIEW.getMonth();
+
+  label.textContent = monthNames[m] + ' ' + y;
+
+  var first = new Date(y, m, 1);
+  var last = new Date(y, m + 1, 0);
+  var html = '';
+
+  dayNames.forEach(function(d){
+    html += '<div class="tue-dow">' + d + '</div>';
+  });
+
+  for(var b = 0; b < first.getDay(); b++){
+    html += '<button type="button" class="tue-day blank" disabled></button>';
+  }
+
+  for(var day = 1; day <= last.getDate(); day++){
+    var d = new Date(y, m, day);
+    var iso = toISODateLocal(d);
+    var isTuesday = d.getDay() === 2;
+    var isSelected = iso === ATT_TUE_SELECTED;
+
+    var cls = 'tue-day';
+    if(isTuesday) cls += ' ok';
+    if(isSelected) cls += ' selected';
+
+    if(isTuesday){
+      html += '<button type="button" class="' + cls + '" onclick="selectAttTuesdayDate(\'' + iso + '\')">' + day + '</button>';
+    } else {
+      html += '<button type="button" class="' + cls + '" disabled>' + day + '</button>';
+    }
+  }
+
+  grid.innerHTML = html;
+}
+
+function selectAttTuesdayDate(iso){
+  ATT_TUE_SELECTED = iso;
+
+  document.getElementById('a-att-d').value = iso;
+  document.getElementById('a-att-d-display').value = formatDateID(iso);
+
+  renderAttTuePicker();
+  closeAttTuePicker();
+}
+
+document.addEventListener('click', function(e){
+  var visitorWrap = document.getElementById('v-vdate-display')?.closest('.tue-picker-wrap');
+  var attWrap = document.getElementById('a-att-d-display')?.closest('.tue-picker-wrap');
+
+  if(visitorWrap && !visitorWrap.contains(e.target)){
+    closeTuePicker();
+  }
+
+  if(attWrap && !attWrap.contains(e.target)){
+    closeAttTuePicker();
+  }
+});
+
+function doInvite(){
+  var vd=INV==='visit'?document.getElementById('v-vdate').value:document.getElementById('v-cdate').value;
+  if(INV === 'visit'){
+  if(!vd){
+    document.getElementById('v-result').innerHTML =
+      '<div class="al al-err">Tanggal visit wajib dipilih. Visit Meeting hanya tersedia di hari Selasa.</div>';
+    return;
+  }
+
+  var picked = new Date(vd + 'T00:00:00');
+  if(picked.getDay() !== 2){
+    document.getElementById('v-result').innerHTML =
+      '<div class="al al-err">Visit Meeting hanya bisa dijadwalkan di hari Selasa.</div>';
+    return;
+  }
+}
+  var fd={
+    memberName:document.getElementById('v-inviter').value,   /* hidden input set by sdInit */
+    visitorName:document.getElementById('v-name').value.trim(),
+    business:document.getElementById('v-biz').value.trim(),
+    phone:document.getElementById('v-phone').value.trim(),
+    notes:document.getElementById('v-notes').value.trim(),
+    inviteType:INV==='coffee'?'CoffeeSession':'Visit',
+    visitDate:vd, visitSession:INV==='visit'?SESS:'',
+    crossTeamRef:document.getElementById('v-cross').value
+  };
+  var res=document.getElementById('v-result');
+  if(!fd.memberName){res.innerHTML='<div class="al al-err">Pilih pengundang.</div>';return;}
+  if(!fd.visitorName){res.innerHTML='<div class="al al-err">Nama visitor wajib.</div>';return;}
+  if(!fd.business){res.innerHTML='<div class="al al-err">Bisnis/bidang wajib.</div>';return;}
+  if(!fd.phone){res.innerHTML='<div class="al al-err">No. telepon wajib.</div>';return;}
+  if(!fd.visitDate){res.innerHTML='<div class="al al-err">Pilih tanggal.</div>';return;}
+  res.innerHTML='<div class="al al-info">Menyimpan...</div>';
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r.success){res.innerHTML='<div class="al al-err">Gagal: '+(r.message||'?')+'</div>';return;}
+      var tl=r.inviteType==='CoffeeSession'?'☕ Coffee Session':'📅 Visit ('+SESS+')';
+      res.innerHTML='<div class="al al-ok">✓ Berhasil! +'+r.points+' poin — '+tl+(r.isLaunchTeam?' (LT)':'')+'</div>';
+      ['v-name','v-biz','v-phone','v-notes','v-vdate','v-cdate'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+      var vvd = document.getElementById('v-vdate-display');
+if(vvd) vvd.value = '';
+TUE_SELECTED = '';
+renderTuePicker();
+      document.getElementById('v-cross').value='';
+      /* Reset inviter searchable dropdown */
+      sdReset('inviter');
+      document.getElementById('v-inviter').value='';
+      document.getElementById('v-lt-note').style.display='none';
+    })
+    .withFailureHandler(function(e){res.innerHTML='<div class="al al-err">Error: '+JSON.stringify(e)+'</div>';})
+    .submitActivity(fd);
+}
+
+/* ── ADMIN ── */
+function aTab(t){
+  ['fu','status','att','wanted'].forEach(function(x){
+    var el=document.getElementById('atab-'+x);
+    if(el) el.style.display=(x===t)?'block':'none';
+  });
+
+  document.querySelectorAll('#pg-admin .tab-item').forEach(function(b,i){
+    b.classList.toggle('on',['fu','status','att','wanted'][i]===t);
+  });
+
+  if(t==='status') loadVisitors4Admin();
+  if(t==='att') { loadMem4Att(); loadAttendanceHistoryDates(); }
+  if(t==='fu') loadProspects();
+  if(t==='wanted') loadLTWanted();
+}
+
+function loadTeams4Admin(){
+  google.script.run.withSuccessHandler(function(teams){
+    ALL_TEAMS=teams;
+    var sel=document.getElementById('a-mteam');
+    sel.innerHTML='<option value="">-- Pilih Team --</option>';
+    teams.forEach(function(t){sel.innerHTML+='<option value="'+t+'">'+t+'</option>';});
+  }).getTeams();
+}
+function loadProspects(){
+  document.getElementById('a-pros').innerHTML='<div class="ldg">Loading...</div>';
+  google.script.run
+    .withSuccessHandler(function(pros){
+      if(!pros||!pros.length){
+        document.getElementById('a-pros').innerHTML=
+          '<div style="text-align:center;padding:24px 20px;color:var(--muted);font-size:12px;">'+
+          '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--red-mid)" stroke-width="1.5" style="display:block;margin:0 auto 8px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'+
+          'Tidak ada prospect aktif saat ini.</div>';
+        return;
+      }
+
+      /* Count for header */
+      var total=pros.length;
+      var hotCount=0;
+
+      var h='<div style="padding:9px 15px 6px;font-size:10px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-bottom:1px solid var(--border);">'+
+        '<span>'+total+' prospect aktif</span>'+
+        '<span style="color:var(--red);" id="pros-hot-count"></span>'+
+      '</div>';
+
+      pros.forEach(function(p){
+        /* Urgency: days since last update */
+        var s=p.lastUpdate||p.createdDate||'';
+        var df=s?Math.floor((new Date()-new Date(s))/864e5):0;
+        var urgClass=df>=7?'urgency-hot':df>=3?'urgency-warm':'urgency-cold';
+        if(df>=7) hotCount++;
+
+        var lt=p.inviterType==='LaunchTeam'?
+          '<span style="font-size:8px;background:#DBEAFE;color:#1E40AF;padding:1px 5px;border-radius:999px;font-weight:700;margin-left:3px;">LT</span>':'';
+
+        var sch=p.visitDate?(p.visitDate+(p.visitSession?' · '+p.visitSession:'')):'';
+
+        /* SVG icons for meta chips */
+        var icoUser='<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        var icoBiz ='<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>';
+        var icoCal ='<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+
+        h+='<div class="prospect-item '+urgClass+'">'+
+          /* Top row: name + status chip */
+          '<div class="pt-top">'+
+            '<div class="pt-name">'+p.visitorName+'</div>'+
+            statusChip(p.currentStatus)+
+          '</div>'+
+          /* Meta row: inviter, business, schedule */
+          '<div class="pt-meta">'+
+            '<span class="pt-chip">'+icoUser+' '+p.invitedBy+lt+'</span>'+
+            (p.business?'<span class="pt-chip">'+icoBiz+' '+p.business+'</span>':'')+
+            (sch?'<span class="pt-chip">'+icoCal+' '+sch+'</span>':'')+
+          '</div>'+
+          /* Footer: days ago + WA button */
+          '<div class="pt-footer">'+
+            dayAgo(p.lastUpdate||p.createdDate)+
+            (p.phone?
+              '<a class="wa-link" href="https://wa.me/62'+p.phone.replace(/^0/,'').replace(/\D/g,'')+'" target="_blank">'+
+                '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.17 12 19.79 19.79 0 0 1 1.11 3.38 2 2 0 0 1 3.09 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21 16z"/></svg>'+
+                ' WA'+
+              '</a>'
+            :'')+
+          '</div>'+
+        '</div>';
+      });
+
+      document.getElementById('a-pros').innerHTML=h;
+
+      /* Update hot count label */
+      if(hotCount>0){
+        var hc=document.getElementById('pros-hot-count');
+        if(hc) hc.textContent='🔥 '+hotCount+' perlu follow-up segera';
+      }
+    })
+    .withFailureHandler(function(e){document.getElementById('a-pros').innerHTML='<div class="ldg" style="color:var(--red);">Error: '+e+'</div>';})
+    .getProspects();
+}
+
+function loadLTWanted(){
+  var el=document.getElementById('lt-wanted-list');
+  var res=document.getElementById('lt-wanted-result');
+
+  if(el) el.innerHTML='<div class="ldg">Loading...</div>';
+  if(res) res.innerHTML='';
+
+  google.script.run
+    .withSuccessHandler(function(data){
+      renderLTWanted((data && data.wanted) || []);
+    })
+    .withFailureHandler(function(e){
+      if(el) el.innerHTML='<div class="ldg" style="color:var(--red);">Error: '+e+'</div>';
+    })
+    .getClassifications();
+}
+
+function renderLTWanted(wanted){
+  var el=document.getElementById('lt-wanted-list');
+  if(!el) return;
+
+  var openItems=(wanted || []).filter(function(r){
+    return !r.isChecked;
+  });
+
+  if(!openItems.length){
+    el.innerHTML='<div class="ldg">Tidak ada request aktif.</div>';
+    return;
+  }
+
+  var h='<div style="padding:8px 15px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--red);background:var(--red-bg);border-bottom:1px solid var(--red-mid);">'+
+    openItems.length+' Active Request</div>';
+
+  openItems.forEach(function(r){
+    var meta = (r.source === 'brain')
+      ? 'Leads name: <strong>'+r.memberName+'</strong>'
+      : 'Dicari oleh: <strong>'+r.memberName+'</strong>' + (r.team ? ' · '+r.team : '');
+
+    h+='<div class="wanted-item">'+
+      '<div class="wanted-info">'+
+        '<div class="wanted-class">'+r.classification+'</div>'+
+        '<div class="wanted-meta">'+meta+'</div>'+
+      '</div>'+
+      '<button class="btn btn-red btn-sm" onclick="markWantedDone(\''+r.id+'\')">✓ Done</button>'+
+    '</div>';
+  });
+
+  el.innerHTML=h;
+}
+
+function markWantedDone(id){
+  var res=document.getElementById('lt-wanted-result');
+  if(res) res.innerHTML='<div class="al al-info">Memproses...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r || !r.success){
+        if(res) res.innerHTML='<div class="al al-err">'+((r && r.message) || 'Gagal mark done')+'</div>';
+        return;
+      }
+
+      if(res) res.innerHTML='<div class="al al-ok">✓ Request ditandai selesai.</div>';
+
+      loadLTWanted();
+
+      if(typeof loadClassification === 'function'){
+        loadClassification();
+      }
+    })
+    .withFailureHandler(function(e){
+      if(res) res.innerHTML='<div class="al al-err">Error: '+e+'</div>';
+    })
+    .fulfillWanted({
+      id:id,
+      checkedBy:'Launch Team'
+    });
+}
+
+function loadVisitors4Admin(){
+  google.script.run
+    .withSuccessHandler(function(vs){
+      ALL_VIS=vs;
+      if(!vs||!vs.length){
+        document.getElementById('sd-visitor-display').placeholder='Tidak ada visitor aktif';
+        return;
+      }
+      var opts=vs.map(function(v){
+        return {
+          value:v.visitorName,
+          label:v.visitorName+' ['+v.currentStatus+'] — by '+v.invitedBy+(v.inviterType==='LaunchTeam'?' [LT]':''),
+          isLT:v.inviterType==='LaunchTeam'
+        };
+      });
+      sdInit('visitor', opts, function(val){
+        document.getElementById('a-vis').value=val;
+        chkStChange();
+      });
+    })
+    .withFailureHandler(function(){document.getElementById('sd-visitor-display').placeholder='Error loading';})
+    .getVisitors();
+}
+function chkVisSt(){chkStChange();}
+function chkStChange(){
+  var vn=document.getElementById('a-vis').value;
+  var st=document.getElementById('a-st').value;
+  var v=ALL_VIS.find(function(x){return x.visitorName===vn;});
+  document.getElementById('a-man-box').style.display=(v&&v.inviterType==='LaunchTeam'&&st==='Joined_Ventura')?'block':'none';
+}
+function doUpdateSt(){
+  var vn=document.getElementById('a-vis').value;  /* hidden input, set by sdInit callback */
+  var st=document.getElementById('a-st').value;
+  var jt=document.getElementById('a-mteam').value;
+  var res=document.getElementById('a-st-res');
+  if(!vn){res.innerHTML='<div class="al al-err">Pilih visitor terlebih dahulu.</div>';return;}
+  var v=ALL_VIS.find(function(x){return x.visitorName===vn;});
+  if(v&&v.inviterType==='LaunchTeam'&&st==='Joined_Ventura'&&!jt){res.innerHTML='<div class="al al-err">Pilih team untuk visitor ini.</div>';return;}
+  res.innerHTML='<div class="al al-info">Updating...</div>';
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r.success){res.innerHTML='<div class="al al-err">'+(r.message||'Gagal')+'</div>';return;}
+      var msg='✓ Status diupdate!';
+      if(r.points>0) msg+=' +'+r.points+' poin';
+      if(r.memberAdded) msg+=' — '+vn+' added (Team: '+r.joinTeam+')';
+      if(r.crossTeamBonusAwarded) msg+=' 🔀 Cross-team bonus!';
+      res.innerHTML='<div class="al al-ok">'+msg+'</div>';
+      /* Reset visitor dropdown */
+      sdReset('visitor');
+      document.getElementById('a-vis').value='';
+      loadVisitors4Admin();loadMem4Att();loadProspects();
+    })
+    .withFailureHandler(function(e){res.innerHTML='<div class="al al-err">Error: '+JSON.stringify(e)+'</div>';})
+    .updateVisitorStatus({visitorName:vn,newStatus:st,joinTeam:jt});
+}
+function loadMem4Att(){
+  var box=document.getElementById('a-att-m');
+  box.innerHTML='<div class="ldg" style="grid-column:1/-1">Loading...</div>';
+  google.script.run
+    .withSuccessHandler(function(members){
+      if(!members||!members.length){box.innerHTML='<div class="ldg" style="grid-column:1/-1">Tidak ada member.</div>';return;}
+      box.innerHTML='';
+      var tm={};
+      members.forEach(function(m){var t=m.team||'No Team';if(!tm[t])tm[t]=[];tm[t].push(m);});
+      Object.keys(tm).sort().forEach(function(tn){
+        var d=document.createElement('div');d.className='att-team-div';d.textContent=tn;box.appendChild(d);
+        tm[tn].forEach(function(m){
+          var item=document.createElement('div');item.className='att-item';
+          item.innerHTML='<label><input type="checkbox" class="att-chk" value="'+m.memberName+'" onchange="this.closest(\'.att-item\').classList.toggle(\'chk\',this.checked)"> '+m.memberName+(m.isLaunchTeam?' <span style="font-size:9px;color:var(--muted);">[LT]</span>':'')+'</label>';
+          box.appendChild(item);
+        });
+      });
+    })
+    .withFailureHandler(function(){box.innerHTML='<div class="ldg" style="grid-column:1/-1;color:var(--red);">Error.</div>';})
+    .getMembers();
+}
+function selAllAtt(){document.querySelectorAll('.att-chk').forEach(function(c){c.checked=true;c.closest('.att-item').classList.add('chk');});}
+function clrAtt(){document.querySelectorAll('.att-chk').forEach(function(c){c.checked=false;c.closest('.att-item').classList.remove('chk');});}
+function doAtt(){
+  var date=document.getElementById('a-att-d').value;
+  var sess=document.getElementById('a-att-s').value;
+  var chk=Array.from(document.querySelectorAll('.att-chk:checked')).map(function(c){return c.value;});
+  var res=document.getElementById('a-att-res');
+  if(!date){res.innerHTML='<div class="al al-err">Pilih tanggal.</div>';return;}
+  if(!chk.length){res.innerHTML='<div class="al al-err">Pilih minimal satu member.</div>';return;}
+  res.innerHTML='<div class="al al-info">Menyimpan...</div>';
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r.success){res.innerHTML='<div class="al al-err">'+r.message+'</div>';return;}
+      res.innerHTML='<div class="al al-ok">✓ Attendance disimpan untuk '+chk.length+' member.</div>';
+      clrAtt();
+    })
+    .withFailureHandler(function(e){res.innerHTML='<div class="al al-err">Error: '+JSON.stringify(e)+'</div>';})
+    .submitAttendance({date:date,session:sess,members:chk});
+}
+
+function loadAttendanceHistoryDates() {
+  var sel = document.getElementById('att-hist-date');
+  if (!sel) return;
+
+  sel.innerHTML = '<option value="">Loading dates...</option>';
+
+  google.script.run
+    .withSuccessHandler(function(dates) {
+      if (!dates || !dates.length) {
+        sel.innerHTML = '<option value="">Belum ada absensi</option>';
+        return;
+      }
+
+      sel.innerHTML = '<option value="">Pilih tanggal...</option>';
+
+      dates.forEach(function(d) {
+        sel.innerHTML += '<option value="' + d + '">' + d + '</option>';
+      });
+    })
+    .withFailureHandler(function(e) {
+      sel.innerHTML = '<option value="">Error loading dates</option>';
+    })
+    .getAttendanceDates();
+}
+
+function loadAttendanceHistoryDetail() {
+  var date = document.getElementById('att-hist-date').value;
+  var box = document.getElementById('att-hist-result');
+
+  if (!date) {
+    box.innerHTML = '<div class="ldg">Pilih tanggal untuk melihat daftar hadir.</div>';
+    return;
+  }
+
+  box.innerHTML = '<div class="ldg">Loading attendance...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(data) {
+      if (!data || !data.summary) {
+        box.innerHTML = '<div class="ldg">Tidak ada data untuk tanggal ini.</div>';
+        return;
+      }
+
+      window.ATT_HISTORY_DATA = data;
+
+      var h = '';
+
+      h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">';
+
+      h += '<button class="btn btn-sm" style="background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7;display:block;width:100%;padding:10px 6px;" onclick="toggleAttList(\'present\')">';
+      h += '<div style="font-size:10px;">Hadir</div>';
+      h += '<div style="font-size:18px;font-weight:800;">' + data.summary.present + '</div>';
+      h += '</button>';
+
+      h += '<button class="btn btn-sm" style="background:#FDECEA;color:#C41230;border:1px solid #F5C6CC;display:block;width:100%;padding:10px 6px;" onclick="toggleAttList(\'absent\')">';
+      h += '<div style="font-size:10px;">Tidak Hadir</div>';
+      h += '<div style="font-size:18px;font-weight:800;">' + data.summary.absent + '</div>';
+      h += '</button>';
+
+      h += '<button class="btn btn-sm" style="background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;display:block;width:100%;padding:10px 6px;" onclick="toggleAttList(\'noInvite\')">';
+      h += '<div style="font-size:10px;">Tidak Invite</div>';
+      h += '<div style="font-size:18px;font-weight:800;">' + data.summary.noInvite + '</div>';
+      h += '</button>';
+
+      h += '</div>';
+
+      h += '<div id="att-list-box"><div class="ldg">Klik salah satu kategori untuk melihat nama.</div></div>';
+
+      box.innerHTML = h;
+    })
+    .withFailureHandler(function(e) {
+      box.innerHTML = '<div class="al al-err">Error loading attendance.</div>';
+    })
+    .getAttendanceByDate(date);
+}
+
+function toggleAttList(type) {
+  var data = window.ATT_HISTORY_DATA;
+  var box = document.getElementById('att-list-box');
+
+  if (!data || !data.lists || !box) return;
+
+  if (window.ATT_OPEN_LIST === type) {
+    window.ATT_OPEN_LIST = '';
+    box.innerHTML = '<div class="ldg">Klik salah satu kategori untuk melihat nama.</div>';
+    return;
+  }
+
+  window.ATT_OPEN_LIST = type;
+
+  var titleMap = {
+    present: 'Hadir',
+    absent: 'Tidak Hadir',
+    noInvite: 'Tidak Mengundang'
+  };
+
+  var list = data.lists[type] || [];
+
+  if (!list.length) {
+    box.innerHTML = '<div class="ldg">Tidak ada nama di kategori ini.</div>';
+    return;
+  }
+
+  var h = '';
+  h += '<div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 8px;">' + titleMap[type] + '</div>';
+
+  list.forEach(function(m) {
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;background:white;border:1px solid var(--border);border-radius:9px;padding:8px 10px;margin-bottom:6px;">';
+    h += '<div style="font-size:12px;font-weight:600;color:var(--black);">' + m.memberName + '</div>';
+    h += '<div style="font-size:10px;color:var(--muted);">' + (m.team || '-') + '</div>';
+    h += '</div>';
+  });
+
+  box.innerHTML = h;
+}
+
+/* ── CLASSIFICATION ── */
+function clTab(t){
+  ['locked','wanted','post'].forEach(function(x){
+    var el = document.getElementById('cl-' + x);
+    if(el) {
+      el.style.display = (x === t) ? 'block' : 'none';
+      el.classList.toggle('on', x === t);
+    }
+  });
+
+  document.querySelectorAll('#pg-classification .tab-item').forEach(function(b, i){
+    b.classList.toggle('on', ['locked','wanted','post'][i] === t);
+  });
+
+  if(t === 'locked' || t === 'wanted') {
+    loadClassification();
+  }
+
+  if(t === 'wanted' || t === 'post') {
+    loadPostDropdowns();
+  }
+}
+
+function loadClassification(){
+  document.getElementById('cl-locked-list').innerHTML='<div class="ldg">Loading...</div>';
+  document.getElementById('cl-wanted-list').innerHTML='<div class="ldg">Loading...</div>';
+  google.script.run
+    .withSuccessHandler(function(data){
+      CL_DATA=data;
+      renderLocked(data.locked||[]);
+      renderWanted(data.wanted||[]);
+    })
+    .withFailureHandler(function(e){
+      document.getElementById('cl-locked-list').innerHTML='<div class="ldg" style="color:var(--red);">Error: '+e+'</div>';
+    })
+    .getClassifications();
+}
+
+function renderLocked(locked){
+  var el=document.getElementById('cl-locked-list');
+  var countEl=document.getElementById('cl-locked-count');
+  if(!locked.length){
+    el.innerHTML='<div class="ldg">Belum ada data.</div>';
+    if(countEl) countEl.textContent='';
+    return;
+  }
+
+  /* Sort by ID — L-INIT-01..17 first (original members in join order),
+     then new members by timestamp in ID (L-1234567890) */
+  var sorted=locked.slice().sort(function(a,b){
+    /* INIT entries go first, sorted numerically */
+    var aIsInit=a.id.indexOf('L-INIT-')===0;
+    var bIsInit=b.id.indexOf('L-INIT-')===0;
+    if(aIsInit&&bIsInit){
+      var aNum=parseInt(a.id.replace('L-INIT-',''))||0;
+      var bNum=parseInt(b.id.replace('L-INIT-',''))||0;
+      return aNum-bNum;
+    }
+    if(aIsInit) return -1;
+    if(bIsInit) return 1;
+    /* Both timestamp-based — sort by timestamp ascending (earlier join = lower number) */
+    var aTs=parseInt(a.id.replace('L-',''))||0;
+    var bTs=parseInt(b.id.replace('L-',''))||0;
+    return aTs-bTs;
+  });
+
+  if(countEl) countEl.textContent=sorted.length+' member';
+
+  /* Lock icon SVG — small, inline */
+  var lockIcon='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.2" style="flex-shrink:0;margin-top:1px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+  var h='';
+  sorted.forEach(function(r,i){
+    h+=
+      '<div style="display:flex;align-items:flex-start;padding:11px 18px;border-bottom:1px solid var(--border);gap:12px;">'+
+        /* Number */
+        '<div style="width:22px;flex-shrink:0;font-size:11px;font-weight:600;color:var(--muted);padding-top:1px;text-align:right;">'+(i+1)+'.</div>'+
+        /* Lock icon */
+        '<div style="padding-top:2px;">'+lockIcon+'</div>'+
+        /* Content */
+        '<div style="flex:1;min-width:0;">'+
+          '<div style="font-size:13px;font-weight:600;color:var(--black);line-height:1.3;">'+r.classification+'</div>'+
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+r.memberName+'</div>'+
+        '</div>'+
+      '</div>';
+  });
+  el.innerHTML=h;
+}
+
+function renderWanted(wanted){
+  if(!wanted || !wanted.length){
+    document.getElementById('cl-wanted-list').innerHTML='<div class="ldg" style="padding:14px;">Belum ada request. Post yang pertama!</div>';
+    return;
+  }
+
+  var openItems = wanted.filter(function(r){ return !r.isChecked; });
+  var doneItems = wanted.filter(function(r){ return  r.isChecked; });
+
+  var h='';
+
+  if(openItems.length){
+    h+='<div style="padding:8px 15px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--red);background:var(--red-bg);border-bottom:1px solid var(--red-mid);">'+openItems.length+' Dicari</div>';
+    openItems.forEach(function(r){
+      var meta = (r.source === 'brain')
+        ? 'Leads name: <strong>'+r.memberName+'</strong>'
+        : 'Dicari oleh: <strong>'+r.memberName+'</strong>' + (r.team ? ' · '+r.team : '');
+      h+='<div class="wanted-item">'+
+        '<div class="wanted-info">'+
+          '<div class="wanted-class">'+r.classification+'</div>'+
+          '<div class="wanted-meta">'+meta+'</div>'+
+        '</div>'+
+      '</div>';
+    });
+  }
+
+  if(!openItems.length && !doneItems.length){
+    h='<div class="ldg" style="padding:14px;">Belum ada request aktif.</div>';
+  }
+
+  if(doneItems.length){
+    h+='<div style="padding:8px 15px 4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--bg);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">'+doneItems.length+' Fulfilled</div>';
+    doneItems.forEach(function(r){
+      var doneDate=r.checkedDate?new Date(r.checkedDate).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):'';
+      var meta = (r.source === 'brain')
+        ? 'Leads name: '+r.memberName
+        : 'Dicari oleh: '+r.memberName + (r.team ? ' · '+r.team : '');
+      h+='<div class="wanted-item" style="opacity:.55;">'+
+        '<div class="wanted-info wanted-done">'+
+          '<div class="wanted-class">'+r.classification+'</div>'+
+          '<div class="wanted-meta">'+meta+' &nbsp;·&nbsp; ✅ Fulfilled'+(r.checkedBy?' oleh '+r.checkedBy:'')+(doneDate?' · '+doneDate:'')+'</div>'+
+        '</div>'+
+      '</div>';
+    });
+  }
+
+  document.getElementById('cl-wanted-list').innerHTML = h;
+}
+
+function openFulfill(id, cl){
+  FULFILL_ID = id;
+  document.getElementById('fulfill-cl-lbl').textContent = '"' + cl + '"';
+  document.getElementById('ff-result').innerHTML = '';
+
+  document.getElementById('ff-checkedby').value = '';
+  var display = document.getElementById('sd-fulfill-display');
+  if(display) display.value = '';
+
+  loadPostDropdowns();
+
+  document.getElementById('fulfill-box').style.display = 'block';
+  document.getElementById('fulfill-box').scrollIntoView({behavior:'smooth'});
+}
+
+function hideFulfill(){
+  document.getElementById('fulfill-box').style.display='none';
+  FULFILL_ID=null;
+}
+
+function doFulfill(){
+  if(!FULFILL_ID) return;
+  var cb=document.getElementById('ff-checkedby').value;
+  var res=document.getElementById('ff-result');
+  if(!cb){res.innerHTML='<div class="al al-err">Pilih siapa yang memfulfill request ini.</div>';return;}
+  res.innerHTML='<div class="al al-info">Memproses...</div>';
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r.success){res.innerHTML='<div class="al al-err">'+(r.message||'Gagal')+'</div>';return;}
+      res.innerHTML='<div class="al al-ok">✓ Marked as fulfilled!</div>';
+      setTimeout(function(){hideFulfill();loadClassification();},900);
+    })
+    .withFailureHandler(function(e){res.innerHTML='<div class="al al-err">Error: '+e+'</div>';})
+    .fulfillWanted({id:FULFILL_ID, checkedBy:cb});
+}
+
+function loadPostDropdowns(){
+  google.script.run
+    .withSuccessHandler(function(members){
+      var opts = [];
+      var reg = members.filter(function(m){ return !m.isLaunchTeam; });
+      var lt  = members.filter(function(m){ return m.isLaunchTeam; });
+
+      if(reg.length){
+        opts.push({type:'group', label:'Members'});
+        reg.forEach(function(m){
+          opts.push({
+            value: m.memberName,
+            label: m.memberName + ' (' + (m.team || '-') + ')',
+            isLT: false
+          });
+        });
+      }
+
+      if(lt.length){
+        opts.push({type:'group', label:'Launch Team'});
+        lt.forEach(function(m){
+          opts.push({
+            value: m.memberName,
+            label: m.memberName + ' [Launch Team]',
+            isLT: true
+          });
+        });
+      }
+
+      sdInit('postmember', opts, function(value, label, isLT){
+        document.getElementById('post-member').value = value || '';
+        document.getElementById('post-lt-note').style.display = isLT ? 'block' : 'none';
+      });
+
+      sdInit('fulfill', opts, function(value){
+        document.getElementById('ff-checkedby').value = value || '';
+      });
+    })
+    .getMembers();
+}
+
+function chkPostMember(){
+  var name = document.getElementById('post-member').value;
+  var display = document.getElementById('sd-postmember-display');
+
+  if(!name && display){
+    display.value = '';
+  }
+}
+
+function doPost(){
+  var mn=document.getElementById('post-member').value;
+  var cl=document.getElementById('post-cl').value.trim();
+  var res=document.getElementById('post-result');
+  if(!mn){res.innerHTML='<div class="al al-err">Pilih nama kamu.</div>';return;}
+  if(!cl){res.innerHTML='<div class="al al-err">Masukkan classification yang dicari.</div>';return;}
+  res.innerHTML='<div class="al al-info">Memposting...</div>';
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r.success){res.innerHTML='<div class="al al-err">'+(r.message||'Gagal')+'</div>';return;}
+      res.innerHTML='<div class="al al-ok">✓ Request berhasil dipost!</div>';
+      document.getElementById('post-cl').value='';
+    })
+    .withFailureHandler(function(e){res.innerHTML='<div class="al al-err">Error: '+e+'</div>';})
+    .postWantedClassification({memberName:mn, classification:cl});
+}
+
+
+/* ── WHO TO INVITE / BRAIN JOLTER ── */
+var BRAIN_JOLTS = {
+  'Client': [
+    '☐ 1 klien terbaik yang paling percaya sama kamu',
+    '☐ 1 klien yang sering repeat order atau transaksi',
+    '☐ 1 klien yang punya banyak relasi bisnis',
+    '☐ 1 klien yang pernah sangat puas dengan layanan kamu',
+    '☐ 1 klien yang pernah memberi referral, walau kecil'
+  ],
+  'Vendor': [
+    '☐ 1 supplier yang sering kamu bayar',
+    '☐ 1 vendor yang sudah paham kualitas bisnismu',
+    '☐ 1 vendor yang juga melayani banyak business owner',
+    '☐ 1 vendor yang ingin memperluas pasar',
+    '☐ 1 vendor yang punya hubungan baik dengan kamu'
+  ],
+  'Partner': [
+    '☐ 1 partner project beda profesi',
+    '☐ 1 orang yang sering kerja bareng kamu',
+    '☐ 1 partner yang target market-nya mirip',
+    '☐ 1 partner yang bisa memberi referral silang',
+    '☐ 1 partner yang sering bertemu calon klienmu'
+  ],
+  'Friends': [
+    '☐ 1 teman lama yang sekarang punya bisnis',
+    '☐ 1 teman komunitas yang aktif networking',
+    '☐ 1 teman yang sering promosi usaha',
+    '☐ 1 teman yang sedang mencari peluang bisnis',
+    '☐ 1 teman yang punya circle entrepreneur'
+  ],
+  'Relatives': [
+    '☐ 1 saudara yang punya usaha',
+    '☐ 1 keluarga besar yang sering bertemu pebisnis',
+    '☐ 1 kerabat yang punya profesi spesifik',
+    '☐ 1 kerabat yang sedang membangun bisnis',
+    '☐ 1 saudara yang butuh jaringan referral'
+  ],
+  'Organisations': [
+    '☐ 1 orang dari asosiasi bisnis',
+    '☐ 1 orang dari komunitas profesi',
+    '☐ 1 orang dari alumni sekolah/kampus',
+    '☐ 1 orang dari komunitas hobi yang punya bisnis',
+    '☐ 1 orang dari organisasi yang sering berkegiatan'
+  ],
+  'Geographical': [
+    '☐ 1 pebisnis di area tempat tinggalmu',
+    '☐ 1 owner toko/kantor dekat lokasimu',
+    '☐ 1 pebisnis di area klienmu',
+    '☐ 1 profesional yang sering muncul di area bisnismu',
+    '☐ 1 orang yang kuat di pasar lokal tertentu'
+  ],
+  'Social Sphere / Social Media': [
+    '☐ 1 orang yang sering posting bisnis di Instagram',
+    '☐ 1 LinkedIn connection yang aktif profesional',
+    '☐ 1 follower yang sering engage dengan kontenmu',
+    '☐ 1 pebisnis yang sering muncul di grup WhatsApp',
+    '☐ 1 kreator/owner yang punya audiens bisnis'
+  ],
+  'Other': [
+    '☐ 1 orang yang sedang butuh lebih banyak klien',
+    '☐ 1 orang yang merasa iklannya terlalu mahal',
+    '☐ 1 orang yang sering minta dikenalkan',
+    '☐ 1 orang yang punya layanan bagus tapi kurang jaringan',
+    '☐ 1 orang yang cocok masuk komunitas bisnis'
+  ]
+};
+
+function invTab(t){
+  var form=document.getElementById('inv-form');
+  var brain=document.getElementById('inv-brain');
+  if(form) form.style.display = t==='form' ? 'block' : 'none';
+  if(brain) brain.style.display = t==='brain' ? 'block' : 'none';
+  var b1=document.getElementById('invtab-form');
+  var b2=document.getElementById('invtab-brain');
+  if(b1) b1.classList.toggle('on', t==='form');
+  if(b2) b2.classList.toggle('on', t==='brain');
+
+  if(t==='brain'){
+    renderBrainJolter(document.getElementById('brain-category').value || 'Client');
+    loadBrainMemberList();
+    loadBrainTargets();
+  }
+}
+
+function brainCat(cat, btn){
+  document.getElementById('brain-category').value = cat;
+  document.querySelectorAll('.brain-cat').forEach(function(b){ b.classList.remove('on'); });
+  if(btn) btn.classList.add('on');
+  renderBrainJolter(cat);
+}
+
+function renderBrainJolter(cat){
+  var title=document.getElementById('jolt-category-title');
+  var list=document.getElementById('jolt-list');
+  if(!title || !list) return;
+  title.textContent = cat;
+  var arr = BRAIN_JOLTS[cat] || BRAIN_JOLTS.Other;
+  list.innerHTML = arr.map(function(x){
+    return '<div class="jolt-item">' + escapeHtml(x) + '</div>';
+  }).join('');
+}
+
+function loadBrainMemberList(){
+  google.script.run
+    .withSuccessHandler(function(members){
+      var dl=document.getElementById('brain-member-list');
+      if(!dl) return;
+      dl.innerHTML=(members||[]).map(function(m){
+        return '<option value="'+escapeAttr(m.memberName)+'"></option>';
+      }).join('');
+    })
+    .getMembers();
+}
+
+function loadBrainTargets(){
+  var pool=document.getElementById('brain-pool-list');
+  if(pool) pool.innerHTML='<div class="ldg">Loading...</div>';
+  google.script.run
+    .withSuccessHandler(function(data){
+      renderBrainProgress(data || {});
+      renderBrainPool((data && data.targets) ? data.targets : []);
+    })
+    .withFailureHandler(function(e){
+      if(pool) pool.innerHTML='<div class="ldg" style="color:var(--red);">Error: '+escapeHtml(e)+'</div>';
+    })
+    .getBrainTargets({memberName:(document.getElementById('brain-by')?document.getElementById('brain-by').value.trim():'')});
+}
+
+function renderBrainProgress(data){
+  var count = Math.min(3, Number(data.todayCount || 0));
+  var txt=document.getElementById('brain-progress-text');
+  if(txt) txt.textContent = count + ' / 3 nama';
+
+  [1,2,3].forEach(function(i){
+    var el=document.getElementById('brain-dot-' + i);
+    if(el) el.classList.toggle('on', i <= count);
+  });
+
+  var note=document.getElementById('brain-reward-note');
+  if(!note) return;
+  if(data.rewardUnlocked){
+    note.innerHTML='🔥 Reward +30 pts hari ini sudah unlocked.';
+    note.style.color='var(--red)';
+    note.style.fontWeight='700';
+  } else {
+    note.innerHTML='Reward diberikan setelah 3 nama valid masuk hari ini.';
+    note.style.color='var(--muted)';
+    note.style.fontWeight='400';
+  }
+}
+
+function renderBrainPool(list){
+  var el=document.getElementById('brain-pool-list');
+  if(!el) return;
+  if(!list.length){
+    el.innerHTML='<div class="ldg">Belum ada target. Jadilah yang pertama mengisi.</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(function(t){
+    var nm=t.targetName || '?';
+    var initials=nm.split(' ').filter(Boolean).map(function(w){return w[0];}).join('').slice(0,2).toUpperCase() || '?';
+    var requested=!!t.requested;
+    return '<div class="pool-item">'+
+      '<div class="pool-avatar">'+escapeHtml(initials)+'</div>'+
+      '<div class="pool-main">'+
+        '<div class="pool-name">'+escapeHtml(t.targetName || '-')+'</div>'+
+        '<div class="pool-cl">'+escapeHtml(t.classification || '-')+'</div>'+
+        '<div class="pool-by">Ditambahkan oleh '+escapeHtml(t.addedBy || '-')+' · '+escapeHtml(t.category || '-')+'</div>'+
+      '</div>'+
+      '<button class="pool-btn '+(requested?'done':'')+'" '+(requested?'disabled':'')+
+      ' onclick="requestBrainTarget(\''+escapeAttr(t.id || '')+'\',\''+escapeAttr(t.classification || '')+'\')">'+
+      (requested?'Requested':'Request')+'</button>'+
+    '</div>';
+  }).join('');
+}
+
+function addBrainTarget(){
+  var by=document.getElementById('brain-by').value.trim();
+  var name=document.getElementById('brain-name').value.trim();
+  var cl=document.getElementById('brain-classification').value.trim();
+  var cat=document.getElementById('brain-category').value || 'Client';
+  var res=document.getElementById('brain-result');
+
+  if(!by || !name || !cl){
+    res.innerHTML='<div class="al al-err">Nama kamu, nama target, dan classification wajib diisi.</div>';
+    return;
+  }
+  res.innerHTML='<div class="al al-info">Menyimpan target...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r || !r.success){
+        res.innerHTML='<div class="al al-err">'+escapeHtml((r && r.message) || 'Gagal menyimpan')+'</div>';
+        return;
+      }
+      res.innerHTML='<div class="al al-ok">✓ Target masuk. '+(r.rewardUnlocked?'+30 pts unlocked hari ini!':'Progress '+r.todayCount+'/3')+'</div>';
+      document.getElementById('brain-name').value='';
+      document.getElementById('brain-classification').value='';
+      loadBrainTargets();
+      if(CUR==='dashboard') loadDash();
+    })
+    .withFailureHandler(function(e){
+      res.innerHTML='<div class="al al-err">Error: '+escapeHtml(e)+'</div>';
+    })
+    .addBrainTarget({addedBy:by,targetName:name,classification:cl,category:cat});
+}
+
+function requestBrainTarget(id, classification){
+  var requester=document.getElementById('brain-by').value.trim();
+  var res=document.getElementById('brain-result');
+
+  if(!requester){
+    res.innerHTML='<div class="al al-err">Pilih Nama Kamu dulu supaya request bisa tercatat.</div>';
+    return;
+  }
+
+  res.innerHTML='<div class="al al-info">Mengirim request ke Most Wanted...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r || !r.success){
+        res.innerHTML='<div class="al al-err">'+escapeHtml((r && r.message) || 'Gagal request')+'</div>';
+        return;
+      }
+
+      res.innerHTML='<div class="al al-ok">✓ Request terkirim ke Most Wanted.</div>';
+      loadBrainTargets();
+
+      if(CUR==='dashboard') loadDash();
+    })
+    .withFailureHandler(function(e){
+      res.innerHTML='<div class="al al-err">Error: '+escapeHtml(e)+'</div>';
+    })
+    .requestBrainTarget({
+      id:id,
+      requestedBy:requester,
+      classification:classification
+    });
+}
+
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function escapeAttr(s){
+  return String(s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
+
+/* ── INIT ── */
+window.onload=function(){
+  loadDash();
+  setInterval(function(){if(CUR==='dashboard')loadDash();},15000);
+};
+</script>
+</body>
+</html>

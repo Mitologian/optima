@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1000px;
+      margin: 30px auto;
+      background: #fafafa;
+      padding: 20px;
+      color: #1f2937;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    input, select, button {
+      width: 100%;
+      margin: 8px 0 16px;
+      padding: 10px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    .nav-link, button {
+      display: inline-block;
+      background: black;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+
+    .success {
+      color: #0a7a2f;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #b00020;
+      font-weight: bold;
+    }
+
+    .top-actions {
+      margin-bottom: 20px;
+    }
+
+    .small-muted {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: -8px;
+      margin-bottom: 14px;
+    }
+
+    .attendance-toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .attendance-toolbar button {
+      width: auto;
+      padding: 8px 12px;
+      background: #374151;
+    }
+
+    .attendance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+      margin-bottom: 16px;
+    }
+
+    .attendance-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #f9fafb;
+    }
+
+    .attendance-item label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .attendance-item input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-actions">
+    <a
+      class="nav-link"
+      target="_top"
+      href="https://script.google.com/macros/s/AKfycbwj6qTK1TDGMrFc388JHb2zWJWRp31VEBBA2u9x-ObfnvzO32Bewm0f_vhRT5hUl85ueg/exec"
+    >
+      ← Back to Dashboard
+    </a>
+  </div>
+
+  <div class="card">
+    <h1>Ventura Admin</h1>
+    <p>Admin control panel for visitor status and Tuesday attendance.</p>
+  </div>
+
+  <div class="card">
+    <h2>Update Visitor Status</h2>
+
+    <label for="visitorSelect">Visitor</label>
+    <select id="visitorSelect">
+      <option value="">Loading visitors...</option>
+    </select>
+
+    <label for="status">New Status</label>
+    <select id="status">
+      <option value="Attended">Attended</option>
+      <option value="Applied">Applied</option>
+      <option value="Joined_Ventura">Joined_Ventura</option>
+      <option value="Joined_Other">Joined_Other</option>
+    </select>
+
+    <div class="small-muted">
+      Team assignment is automatic based on the original inviter team.
+      Visitors who already joined Ventura or another chapter will disappear from this dropdown.
+    </div>
+
+    <button onclick="updateStatus()">Update Status</button>
+    <div id="statusResult"></div>
+  </div>
+
+  <div class="card">
+    <h2>Submit Attendance (Tuesday Only)</h2>
+
+    <label for="attendanceDate">Date</label>
+    <input type="date" id="attendanceDate">
+
+    <label for="attendanceSession">Session</label>
+    <select id="attendanceSession">
+      <option value="Pagi">Pagi</option>
+      <option value="Siang">Siang</option>
+    </select>
+
+    <div class="attendance-toolbar">
+      <button type="button" onclick="selectAllAttendance()">Select All</button>
+      <button type="button" onclick="clearAllAttendance()">Clear All</button>
+    </div>
+
+    <label>Members Present</label>
+    <div id="attendanceMembers" class="attendance-grid"></div>
+
+    <button onclick="submitAttendanceForm()">Submit Attendance</button>
+    <div id="attendanceResult"></div>
+  </div>
+
+  <script>
+    function loadVisitors() {
+      google.script.run
+        .withSuccessHandler(function(visitors) {
+          const sel = document.getElementById('visitorSelect');
+          sel.innerHTML = '<option value="">Select Visitor</option>';
+
+          if (!visitors || visitors.length === 0) {
+            sel.innerHTML = '<option value="">No open visitors</option>';
+            return;
+          }
+
+          visitors.forEach(function(v) {
+            sel.innerHTML +=
+              '<option value="' + v.visitorName + '">' +
+              v.visitorName + ' — ' + v.currentStatus + ' — ' + v.invitedBy +
+              '</option>';
+          });
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('statusResult').innerHTML =
+            '<span class="error">Failed to load visitors: ' + JSON.stringify(err) + '</span>';
+        })
+        .getVisitors();
+    }
+
+    function loadMembersForAttendance() {
+      google.script.run
+        .withSuccessHandler(function(members) {
+          const box = document.getElementById('attendanceMembers');
+          box.innerHTML = '';
+
+          if (!members || members.length === 0) {
+            box.innerHTML = '<div class="error">No members found.</div>';
+            return;
+          }
+
+          members.forEach(function(m) {
+            const row = document.createElement('div');
+            row.className = 'attendance-item';
+            row.innerHTML = `
+              <label>
+                <input type="checkbox" class="attendance-check" value="${m.memberName}">
+                <span>${m.memberName} <span class="small-muted">(${m.team})</span></span>
+              </label>
+            `;
+            box.appendChild(row);
+          });
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('attendanceResult').innerHTML =
+            '<span class="error">Failed to load members: ' + JSON.stringify(err) + '</span>';
+        })
+        .getMembers();
+    }
+
+    function selectAllAttendance() {
+      document.querySelectorAll('.attendance-check').forEach(function(cb) {
+        cb.checked = true;
+      });
+    }
+
+    function clearAllAttendance() {
+      document.querySelectorAll('.attendance-check').forEach(function(cb) {
+        cb.checked = false;
+      });
+    }
+
+    function updateStatus() {
+      const visitorName = document.getElementById('visitorSelect').value;
+      const newStatus = document.getElementById('status').value;
+      const statusResult = document.getElementById('statusResult');
+
+      if (!visitorName || !newStatus) {
+        statusResult.innerHTML =
+          '<span class="error">Please select visitor and status.</span>';
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res.success) {
+            statusResult.innerHTML =
+              '<span class="error">' + (res.message || 'Update failed') + '</span>';
+            return;
+          }
+
+          let msg = 'Updated! +' + res.points + ' points';
+          if (res.memberAdded) {
+            msg += ' | New member added to ' + (res.joinTeam || 'team');
+          }
+
+          statusResult.innerHTML = '<span class="success">' + msg + '</span>';
+          loadVisitors();
+          loadMembersForAttendance();
+        })
+        .withFailureHandler(function(err) {
+          statusResult.innerHTML =
+            '<span class="error">Failed: ' + JSON.stringify(err) + '</span>';
+        })
+        .updateVisitorStatus({
+          visitorName: visitorName,
+          newStatus: newStatus
+        });
+    }
+
+    function submitAttendanceForm() {
+      const date = document.getElementById('attendanceDate').value;
+      const session = document.getElementById('attendanceSession').value;
+      const checked = Array.from(document.querySelectorAll('.attendance-check:checked'))
+        .map(function(cb) { return cb.value; });
+
+      const attendanceResult = document.getElementById('attendanceResult');
+
+      if (!date || checked.length === 0) {
+        attendanceResult.innerHTML =
+          '<span class="error">Please select date and at least one member.</span>';
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res.success) {
+            attendanceResult.innerHTML =
+              '<span class="error">' + res.message + '</span>';
+            return;
+          }
+
+          attendanceResult.innerHTML =
+            '<span class="success">Attendance submitted successfully.</span>';
+        })
+        .withFailureHandler(function(err) {
+          attendanceResult.innerHTML =
+            '<span class="error">Failed: ' + JSON.stringify(err) + '</span>';
+        })
+        .submitAttendance({
+          date: date,
+          session: session,
+          members: checked
+        });
+    }
+
+    window.onload = function() {
+      loadVisitors();
+      loadMembersForAttendance();
+    };
+  </script>
+</body>
+</html>

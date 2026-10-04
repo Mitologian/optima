@@ -840,6 +840,8 @@
     return isiToken(set[diri ? 'diri' : 'lain'][langkah], d);
   }
 
+  function timSlot(z) { return (z.pic_ldc ? 'Coach Dedy' : z.pic) + (z.pendamping && z.pendamping.length ? ' + ' + z.pendamping.join(', ') : ''); }
+
   /* o: {id_orang, nama, whatsapp, bidang, bisnis, tahap, idSlot?, segarkan} */
   async function lembarKopi(o) {
     bukaLembar('<div class="muat"></div>');
@@ -857,13 +859,13 @@
       var s = kosong.filter(function (z) { return z.id_slot === st.pilih; })[0];
       return s || dipesan;
     }
-    function chipSlot(s) { var j = jamCS(s.waktu); return '<button type="button" data-slot="' + esc(s.id_slot) + '" aria-pressed="' + (s.id_slot === st.pilih) + '">' + esc(j.hari) + ' · ' + esc(j.jam) + '<small> ' + esc(s.pic_ldc ? 'Coach Dedy' : s.pic) + '</small>' + '</button>'; }
+    function chipSlot(s) { var j = jamCS(s.waktu); return '<button type="button" data-slot="' + esc(s.id_slot) + '" aria-pressed="' + (s.id_slot === st.pilih) + '">' + esc(j.hari) + ' · ' + esc(j.jam) + '<small> ' + esc(timSlot(s)) + '</small>' + '</button>'; }
     var jd = dipesan ? jamCS(dipesan.waktu) : null;
     bukaLembar(
       '<h2>Coffee session with ' + esc(depan) + '</h2>' +
       '<p class="kecil" id="k-info" style="margin:4px 0 12px">' + (dipesan
-        ? 'Booked: <b>' + esc(jd.hari + ' ' + jd.jam) + '</b> · ' + esc(dipesan.tempat) + ' · with ' + esc(dipesan.pic_ldc ? 'Coach Dedy' : dipesan.pic) + '. Send message 3 to confirm.'
-        : 'A 30 minute 1 on 1 with Coach Dedy or the launch team. No Wednesday visit needed first. Book the time once ' + esc(depan) + ' says yes.') + '</p>' +
+        ? 'Booked: <b>' + esc(jd.hari + ' ' + jd.jam) + '</b> · ' + esc(dipesan.tempat) + ' · with ' + esc(timSlot(dipesan)) + '. Send message 3 to confirm.'
+        : 'A 30 minute chat with Coach Dedy, supported by the launch team. No Wednesday visit needed first. Book the time once ' + esc(depan) + ' says yes.') + '</p>' +
       (dipesan ? '<details class="lipat" style="margin-bottom:12px"><summary><span>Change time</span><em>' + kosong.length + ' open</em></summary>' : '<p class="kecil" style="margin-bottom:6px">Open times</p>') +
       '<div class="pilihan slot-pilih" id="k-slot" style="margin-bottom:12px">' + kosong.map(chipSlot).join('') +
         (isLT() ? '<button type="button" data-slot="lain" aria-pressed="' + (st.pilih === 'lain') + '">Other time</button>' : '') + '</div>' +
@@ -940,15 +942,20 @@
     var perHari = {};
     depan.forEach(function (s) { (perHari[s.tanggal] = perHari[s.tanggal] || []).push(s); });
     var nTerisi = depan.filter(function (s) { return s.status === 'Terisi'; }).length, nKosong = depan.length - nTerisi;
-    function siapa(s) { return s.pic_ldc ? 'Coach Dedy' : s.pic; }
+    function siapa(s) { return timSlot(s); }
+    function tombolDampingi(s) {
+      if (s.pic_id === S.profil.id_orang) return '';
+      return s.saya_dampingi ? '<button class="tombol kecil kedua" data-dampingi="0" data-id="' + esc(s.id_slot) + '" aria-label="Stop supporting">Joined &#10003;</button>'
+                             : '<button class="tombol kecil kedua" data-dampingi="1" data-id="' + esc(s.id_slot) + '">Join</button>';
+    }
     function baris(s) {
       var j = jamCS(s.waktu).jam;
-      if (s.status === 'Terisi') return '<li><button class="ketuk" data-pesanan="' + esc(s.id_slot) + '" style="flex:1;min-width:0"><span class="jam-slot">' + j + '</span><div class="utama"><b>' + esc(s.nama || '') + '</b><span>' + esc(s.bidang || '') + ' · via ' + esc(s.pengundang || '-') + ' · ' + esc(siapa(s)) + ', ' + esc(s.tempat) + '</span></div></button><span class="chip hijau">Booked</span></li>';
-      return '<li><span class="jam-slot redup">' + j + '</span><div class="utama"><b class="redup">Open</b><span>' + esc(siapa(s)) + ', ' + esc(s.tempat) + '</span></div><button class="tombol kecil" data-isi="' + esc(s.id_slot) + '">Book</button><button class="tombol kecil kedua" data-hapus="' + esc(s.id_slot) + '" aria-label="Remove this time">&#10005;</button></li>';
+      if (s.status === 'Terisi') return '<li><button class="ketuk" data-pesanan="' + esc(s.id_slot) + '" style="flex:1;min-width:0"><span class="jam-slot">' + j + '</span><div class="utama"><b>' + esc(s.nama || '') + '</b><span>' + esc(s.bidang || '') + ' · via ' + esc(s.pengundang || '-') + ' · ' + esc(siapa(s)) + ', ' + esc(s.tempat) + '</span></div></button>' + (tombolDampingi(s) || '<span class="chip hijau">Booked</span>') + '</li>';
+      return '<li><span class="jam-slot redup">' + j + '</span><div class="utama"><b class="redup">Open</b><span>' + esc(siapa(s)) + ', ' + esc(s.tempat) + '</span></div><button class="tombol kecil" data-isi="' + esc(s.id_slot) + '">Book</button>' + (s.boleh_hapus ? '<button class="tombol kecil kedua" data-hapus="' + esc(s.id_slot) + '" aria-label="Remove this time">&#10005;</button>' : tombolDampingi(s)) + '</li>';
     }
     var hasil = (r.perlu_hasil || []);
-    w.innerHTML = '<p class="kecil" style="margin:10px 2px">Coffee sessions are 30 minute interviews. Open times here; members and the team book them for their prospects.</p>' +
-      '<div class="baris-tombol" style="margin:0 0 12px"><button class="tombol" id="b-buka-jam">Open times</button></div>' +
+    w.innerHTML = '<p class="kecil" style="margin:10px 2px">' + (isLDC() ? 'Open the times you can interview. Members and the team book them for their prospects. LT members tap Join to support.' : 'Coach Dedy leads the interviews. Tap Join on a time to support him, or open a time for an LT pair interview.') + '</p>' +
+      '<div class="baris-tombol" style="margin:0 0 12px"><button class="tombol" id="b-buka-jam">' + (isLDC() ? 'Open times' : 'Open an LT pair time') + '</button></div>' +
       (hasil.length ? '<div class="judul-bagian"><h2>Needs an outcome</h2><span class="kecil">' + hasil.length + '</span></div><section class="kartu"><ul class="daftar">' + hasil.map(function (c) {
         var j = jamCS(c.waktu);
         return '<li><div class="utama"><b>' + esc(c.nama) + '</b><span>' + esc(j.hari + ' ' + j.jam) + ' · PIC ' + esc(c.pic || '-') + '</span></div><button class="tombol kecil" data-selesai="' + esc(c.id_orang) + '">Done</button><button class="tombol kecil kedua" data-absen="' + esc(c.id_orang) + '">No show</button></li>';
@@ -967,6 +974,9 @@
     w.querySelectorAll('[data-hapus]').forEach(function (b) {
       b.onclick = async function () { var h = await api('hapusSlot', { id_slot: b.dataset.hapus }); if (!h.ok) return toast(h.pesan); toast('Time removed.'); segar(); };
     });
+    w.querySelectorAll('[data-dampingi]').forEach(function (b) {
+      b.onclick = async function () { var ikut = b.dataset.dampingi === '1'; var h = await api('dampingiSlot', { id_slot: b.dataset.id, ikut: ikut }); if (!h.ok) return toast(h.pesan); toast(ikut ? 'You are supporting this coffee session.' : 'You are no longer supporting this time.'); segar(); };
+    });
     w.querySelectorAll('[data-selesai]').forEach(function (b) {
       b.onclick = async function () { var h = await api('tindakLanjut', { id_orang: b.dataset.selesai, tahap: 'Coffee_Session' }); if (!h.ok) return toast(h.pesan); toast('Moved to Interviewed. Record Applied or Declined in Interviews.'); segar(); };
     });
@@ -977,25 +987,32 @@
 
   function lembarBukaJam(pewawancara, segarkan) {
     var besok = new Date(Date.now() + 864e5 + 7 * 36e5).toISOString().slice(0, 10);
-    var dipilih = {};
+    var dipilih = {}, dampingi = {};
+    var ldc = isLDC();
+    var ltLain = pewawancara.filter(function (p) { return p.peran === 'LT' && p.id_orang !== S.profil.id_orang; });
     bukaLembar(
-      '<h2>Open coffee session times</h2><p class="kecil" style="margin:6px 0 14px">Pick a date and the times that are free. Members can then book them for their prospects.</p>' +
+      '<h2>' + (ldc ? 'Open coffee session times' : 'Open an LT pair time') + '</h2><p class="kecil" style="margin:6px 0 14px">' +
+        (ldc ? 'Pick a date and the times you are free. Members can then book them for their prospects.' : 'For an interview by two LT members without Coach Dedy. Coach Dedy opens his own times, and you can Join those to support.') + '</p>' +
       '<form id="f-jam"><label class="isian"><span>Date</span><input type="date" name="tanggal" value="' + besok + '" required></label>' +
       '<p class="kecil" style="margin-bottom:6px">Times (WIB)</p><div class="pilihan" id="j-jam" style="margin-bottom:10px">' + JAM_UMUM.map(function (j) { return '<button type="button" data-jam="' + j + '" aria-pressed="false">' + j + '</button>'; }).join('') + '</div>' +
       '<label class="isian"><span>Another time (optional)</span><input type="time" name="lain" step="900"></label>' +
-      (isLDC() && pewawancara.length ? '<label class="isian"><span>Interviewer</span><select name="pic">' + pewawancara.map(function (p) {
-        return '<option value="' + esc(p.id_orang) + '"' + (p.id_orang === S.profil.id_orang ? ' selected' : '') + '>' + esc(p.peran === 'LDC' ? 'Coach Dedy' : p.nama_depan) + '</option>';
-      }).join('') + '</select></label>' : '') +
+      (ltLain.length ? '<p class="kecil" style="margin-bottom:6px">' + (ldc ? 'LT support (optional, others can Join later)' : 'Interview partner') + '</p><div class="pilihan" id="j-damping" style="margin-bottom:12px">' + ltLain.map(function (p) {
+        return '<button type="button" data-damping="' + esc(p.id_orang) + '" aria-pressed="false">' + esc(p.nama_depan) + '</button>';
+      }).join('') + '</div>' : '') +
       '<label class="isian"><span>Place</span><input name="tempat" value="Zoom" placeholder="Zoom or a meeting place"></label>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save times</button></form>',
       function (el) {
         el.querySelectorAll('[data-jam]').forEach(function (b) { b.onclick = function () { dipilih[b.dataset.jam] = !dipilih[b.dataset.jam]; b.setAttribute('aria-pressed', !!dipilih[b.dataset.jam]); }; });
+        el.querySelectorAll('[data-damping]').forEach(function (b) { b.onclick = function () { dampingi[b.dataset.damping] = !dampingi[b.dataset.damping]; b.setAttribute('aria-pressed', !!dampingi[b.dataset.damping]); }; });
         el.querySelector('#f-jam').onsubmit = async function (e) {
           e.preventDefault();
           var f = e.target, jam = Object.keys(dipilih).filter(function (k) { return dipilih[k]; });
+          var pd = Object.keys(dampingi).filter(function (k) { return dampingi[k]; });
+          var sl = el.querySelector('#salah');
+          if (!ldc && !pd.length) { sl.textContent = 'Choose your interview partner.'; sl.hidden = false; return; }
           if (f.lain.value) jam.push(f.lain.value.slice(0, 5));
-          var h = await api('tambahSlot', { tanggal: f.tanggal.value, jam: jam, pic: f.pic ? f.pic.value : '', tempat: f.tempat.value.trim() || 'Zoom' });
-          if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
+          var h = await api('tambahSlot', { tanggal: f.tanggal.value, jam: jam, pendamping: pd, tempat: f.tempat.value.trim() || 'Zoom' });
+          if (!h.ok) { sl.textContent = h.pesan; sl.hidden = false; return; }
           tutupLembar(); toast(h.dibuat + (h.dibuat === 1 ? ' time' : ' times') + ' opened.'); segarkan();
         };
       });

@@ -365,6 +365,7 @@ var Inti = (function () {
     var a = k.tab('Akses').filter(function (x) { return teks(x.id_orang) === teks(id); })[0];
     return a ? teks(a.peran) : '';
   }
+  function daftarPendamping(r) { return teks(r.pendamping).split(',').map(teks).filter(Boolean); }
   function jamWIB(d) { return new Date(d.getTime() + WIB).toISOString().slice(11, 16); }
   function slotById(k, id) {
     var r = k.tab('Jadwal_CS').filter(function (x) { return teks(x.id_slot) === teks(id); })[0];
@@ -764,7 +765,9 @@ var Inti = (function () {
         return o && teks(o.diajukan_oleh) === id;
       }).map(function (r) {
         var o = k.orang(r.id_orang), x = o ? kursiById(k, o.id_kursi) : null;
-        var h = { id_slot: teks(r.id_slot), waktu: waktuSlot(r).toISOString(), tanggal: isoTanggal(tgl(r.tanggal) || waktuSlot(r)), jam: teks(r.jam), tempat: teks(r.tempat) || 'Zoom', pic: namaDepan(k.orang(r.PIC)), pic_id: teks(r.PIC), pic_ldc: perannya(k, r.PIC) === 'LDC', status: teks(r.status) };
+        var h = { id_slot: teks(r.id_slot), waktu: waktuSlot(r).toISOString(), tanggal: isoTanggal(tgl(r.tanggal) || waktuSlot(r)), jam: teks(r.jam), tempat: teks(r.tempat) || 'Zoom', pic: namaDepan(k.orang(r.PIC)), pic_id: teks(r.PIC), pic_ldc: perannya(k, r.PIC) === 'LDC', status: teks(r.status),
+          pendamping: daftarPendamping(r).map(function (x) { return namaDepan(k.orang(x)); }) };
+        if (lt) { h.saya_dampingi = daftarPendamping(r).indexOf(id) >= 0; h.boleh_hapus = k.isLDC() || teks(r.PIC) === id; }
         if (o) {
           h.id_orang = teks(o.id_orang); h.nama = teks(o.nama); h.tahap = teks(o.tahap); h.bisnis = teks(o.bisnis);
           if (lt) { h.bidang = x ? x.bidang : (teks(o.bisnis) || 'Undecided classification'); h.whatsapp = teks(o.whatsapp_norm); h.pengundang = namaDepan(k.orang(r.dipesan_oleh || o.diajukan_oleh)); }
@@ -789,6 +792,7 @@ var Inti = (function () {
       if (!jam.length) gagal('Choose at least one time.');
       var pic = teks(b.pic) || k.saya.id_orang;
       if (!k.isLDC() && pic !== k.saya.id_orang) gagal('Only Coach Dedy can open times for someone else.');
+      var dampingi = [].concat(b.pendamping || []).map(teks).filter(function (x) { return x && x !== pic; });
       var dibuat = 0;
       jam.forEach(function (j) {
         if (!/^\d{2}:\d{2}$/.test(j)) gagal('Time format is HH:MM.');
@@ -796,7 +800,7 @@ var Inti = (function () {
         if (w <= k.now) gagal(j + ' on that date has already passed.');
         var ada = k.tab('Jadwal_CS').some(function (r) { return teks(r.PIC) === pic && teks(r.status) !== 'Batal' && waktuSlot(r) && waktuSlot(r).getTime() === w.getTime(); });
         if (ada) return;
-        k.tambah('Jadwal_CS', { id_slot: idBaru(k.tab('Jadwal_CS'), 'id_slot', 'S', 4), tanggal: tanggal, jam: j, PIC: pic, tempat: teks(b.tempat) || 'Zoom', status: 'Kosong', id_orang: '', dipesan_oleh: '' });
+        k.tambah('Jadwal_CS', { id_slot: idBaru(k.tab('Jadwal_CS'), 'id_slot', 'S', 4), tanggal: tanggal, jam: j, PIC: pic, tempat: teks(b.tempat) || 'Zoom', status: 'Kosong', id_orang: '', dipesan_oleh: '', pendamping: dampingi.join(',') });
         dibuat++;
       });
       k.log('tambahSlot', dibuat + ' jam ' + tanggal);
@@ -806,9 +810,22 @@ var Inti = (function () {
     hapusSlot: function (k, b) {
       wajibLT(k);
       var r = slotById(k, b.id_slot);
+      if (!k.isLDC() && teks(r.PIC) !== k.saya.id_orang) gagal('Only the interviewer or Coach Dedy can remove this time.');
       if (teks(r.status) !== 'Kosong') gagal('This time is booked. Cancel the booking first.');
       k.ubah('Jadwal_CS', r, { status: 'Batal' });
       return { ok: true };
+    },
+
+    // LT ikut mendampingi (atau batal mendampingi) sebuah jam coffee session
+    dampingiSlot: function (k, b) {
+      wajibLT(k);
+      var r = slotById(k, b.id_slot), id = k.saya.id_orang;
+      if (teks(r.PIC) === id) gagal('You are the interviewer for this time.');
+      var d = daftarPendamping(r).filter(function (x) { return x !== id; });
+      if (benar(b.ikut)) d.push(id);
+      k.ubah('Jadwal_CS', r, { pendamping: d.join(',') });
+      k.log('dampingiSlot', teks(r.id_slot) + (benar(b.ikut) ? ' ikut' : ' batal'));
+      return { ikut: benar(b.ikut) };
     },
 
     pesanSlot: function (k, b) {

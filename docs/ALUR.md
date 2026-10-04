@@ -15,7 +15,9 @@ bergabung, menunggu pembayaran), Anggota (pembayaran masuk). Keluar: Joined_Othe
 
 ## Jadwal coffee session (Team, Schedule)
 
-1. LDC atau LT membuka jam kosong: Open times, pilih tanggal dan beberapa jam sekaligus, pewawancara, tempat.
+1. Coach Dedy (pewawancara utama) membuka jam kosong: Open times, pilih tanggal, beberapa jam sekaligus,
+   tempat, dan LT pendamping bila sudah pasti. LT lain menekan Join pada jam mana pun untuk ikut mendampingi.
+   Sesekali dua LT mewawancara tanpa Coach Dedy: LT menekan "Open an LT pair time" dan memilih rekannya.
 2. Siapa pun memesan jam untuk calonnya: pilih jam, kirim pesan 1 dan 2, setelah calon setuju tekan
    "They said yes: book this time", lalu kirim pesan 3 (konfirmasi dengan link Zoom).
 3. Sesudah jamnya lewat, nama muncul di "Needs an outcome": Done (sudah interview) atau No show (kembali

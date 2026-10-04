@@ -2,7 +2,7 @@
    Aktif saat CONFIG.API_URL kosong. Kode contoh: LDC001, LT0001, AGT001.
    Tambahkan ?fase=BOD di alamat untuk melihat layar setelah ESM. Tambahkan ?reset=1 untuk mengulang data. */
 var Tiruan = (function () {
-  var KUNCI = 'optima_tiruan_v4';
+  var KUNCI = 'optima_tiruan_v5';
   var HARI = 864e5;
   var data = null;
 
@@ -80,14 +80,15 @@ var Tiruan = (function () {
     ];
     var slot = [];
     [[1, '13:00'], [2, '11:00'], [2, '16:00'], [3, '11:00'], [5, '19:00'], [6, '10:00']].forEach(function (x) {
-      slot.push({ id_slot: 'S' + String(slot.length + 1).padStart(4, '0'), tanggal: tanggal(new Date(now.getTime() + x[0] * HARI)), jam: x[1], PIC: dedy.id_orang, tempat: 'Zoom', status: 'Kosong', id_orang: '', dipesan_oleh: '' });
+      slot.push({ id_slot: 'S' + String(slot.length + 1).padStart(4, '0'), tanggal: tanggal(new Date(now.getTime() + x[0] * HARI)), jam: x[1], PIC: dedy.id_orang, tempat: 'Zoom', status: 'Kosong', id_orang: '', dipesan_oleh: '', pendamping: slot.length === 1 ? agung.id_orang : '' });
     });
+    slot.push({ id_slot: 'S' + String(slot.length + 1).padStart(4, '0'), tanggal: tanggal(new Date(now.getTime() + 4 * HARI)), jam: '19:00', PIC: iman.id_orang, tempat: 'Zoom', status: 'Kosong', id_orang: '', dipesan_oleh: '', pendamping: sari.id_orang });
     calonContoh.forEach(function (c) {
       var o = orang(c[0], 'Calon', c[2], c[1], { PIC: c[3].id_orang, diajukan_oleh: c[3].id_orang, tanggal_masuk: lalu(c[4] + 1), tanggal_sentuh: lalu(c[4]), bisnis: '' });
       if (c[2] === 'Coffee_Scheduled') {
         var h = new Date(now.getTime() + (calonContoh.indexOf(c) % 3 + 1) * HARI), jm = calonContoh.indexOf(c) % 2 ? '14:00' : '10:00';
         o.jadwal_cs = tanggal(h) + 'T' + jm + ':00+07:00';
-        slot.push({ id_slot: 'S' + String(slot.length + 1).padStart(4, '0'), tanggal: tanggal(h), jam: jm, PIC: dedy.id_orang, tempat: 'Zoom', status: 'Terisi', id_orang: o.id_orang, dipesan_oleh: c[3].id_orang });
+        slot.push({ id_slot: 'S' + String(slot.length + 1).padStart(4, '0'), tanggal: tanggal(h), jam: jm, PIC: dedy.id_orang, tempat: 'Zoom', status: 'Terisi', id_orang: o.id_orang, dipesan_oleh: c[3].id_orang, pendamping: c[3] === dedy ? '' : c[3].id_orang });
       }
     });
 

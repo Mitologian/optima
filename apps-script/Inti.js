@@ -479,10 +479,15 @@ var Inti = (function () {
       var id = k.saya.id_orang;
       var hitung = {};
       k.undanganAktif().forEach(function (u) { hitung[teks(u.id_orang_calon)] = (hitung[teks(u.id_orang_calon)] || 0) + 1; });
+      var acara = {}, terakhir = {};
+      k.tab('Events').forEach(function (e) { acara[teks(e.id_event)] = e; });
+      k.undanganAktif().forEach(function (u) { terakhir[teks(u.id_orang_calon)] = u; });
       return {
         usulan: k.tab('Master').filter(function (r) { return teks(r.diajukan_oleh) === id && teks(r.kategori) === 'Calon'; }).map(function (r) {
           var x = kursiById(k, r.id_kursi);
-          return { id_orang: teks(r.id_orang), nama: teks(r.nama), bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), punya_wa: !!teks(r.whatsapp_norm), jumlah_undangan: hitung[teks(r.id_orang)] || 0 };
+          var u = terakhir[teks(r.id_orang)], e = u ? acara[teks(u.id_event)] : null;
+          return { id_orang: teks(r.id_orang), nama: teks(r.nama), bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), punya_wa: !!teks(r.whatsapp_norm), jumlah_undangan: hitung[teks(r.id_orang)] || 0,
+            status_undangan: u ? teks(u.status) : '', acara_undangan: e ? teks(e.nama_acara) : '', tanggal_undangan: e && tgl(e.tanggal) ? isoTanggal(tgl(e.tanggal)) : '' };
         }).reverse()
       };
     },
@@ -678,7 +683,7 @@ var Inti = (function () {
         var x = kursiById(k, o.id_kursi);
         tamu.push({
           nama: teks(o.nama), bidang: x ? x.bidang : (teks(o.bisnis) || 'Undecided classification'), sphere: x ? x.sphere : '',
-          pengundang: namaDepan(k.orang(u.id_pengundang)), acara: teks(e.nama_acara), jenis: teks(e.jenis),
+          pengundang: namaDepan(k.orang(u.id_pengundang)), saya: teks(u.id_pengundang) === k.saya.id_orang, acara: teks(e.nama_acara), jenis: teks(e.jenis),
           tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: teks(e.jam_mulai), status: st, bergabung: teks(o.tahap) === 'Anggota'
         });
       });
@@ -699,6 +704,15 @@ var Inti = (function () {
 
     daftarAnggota: function (k) {
       var urut = {};
+      var lt = k.isLT();
+      var bod = {}, nBod = 0, hadirOrang = {};
+      if (lt) {
+        k.tab('Events').forEach(function (e) {
+          var t = tgl(e.tanggal);
+          if (teks(e.jenis) === 'BOD' && teks(e.status) !== 'Batal' && t && t <= k.now) { bod[teks(e.id_event)] = true; nBod++; }
+        });
+        k.tab('Hadir').forEach(function (h) { if (bod[teks(h.id_event)]) hadirOrang[teks(h.id_orang)] = (hadirOrang[teks(h.id_orang)] || 0) + 1; });
+      }
       petaKursi(k).forEach(function (b, i) { b.kursi.forEach(function (x, j) { urut[x.id_kursi] = { n: i * 100 + j, x: x }; }); });
       return {
         anggota: k.anggota().map(function (r) {
@@ -706,6 +720,7 @@ var Inti = (function () {
           var s = teks(r.id_sponsor);
           return {
             nama: teks(r.nama), bidang: u ? u.x.bidang : '', sphere: u ? u.x.sphere : '', jenis_anggota: teks(r.jenis_anggota),
+            id_orang: lt ? teks(r.id_orang) : undefined, hadir_bod: lt ? (hadirOrang[teks(r.id_orang)] || 0) : undefined, total_bod: lt ? nBod : undefined,
             sponsor: s === 'BNI' ? 'BNI' : namaDepan(k.orang(s)), tanggal_bergabung: tgl(r.tanggal_bergabung) ? tgl(r.tanggal_bergabung).toISOString() : '', _n: u ? u.n : 99999
           };
         }).sort(function (a, b) { return a._n - b._n; }).map(function (a) { delete a._n; return a; })

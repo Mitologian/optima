@@ -1,69 +1,30 @@
 /* BNI Optima · tampilan
-   Arah: meja chapter. Kertas hangat, tinta gelap, merah sebagai satu-satunya aksen kuat,
-   emas hanya untuk perayaan (baris lengkap, lencana). */
+   Arah: putih bersih dengan merah sebagai warna utama. Judul Helvetica/Arial, isi Plus Jakarta Sans.
+   Emas hanya untuk perayaan (baris lengkap, lencana). Satu tema terang, sengaja tanpa mode gelap. */
 
 :root {
-  --kertas: #F5EFE4;
-  --kertas-2: #EDE4D3;
-  --kartu: #FFFCF6;
-  --tinta: #1E1814;
-  --tinta-2: #5B5047;
-  --abu: #8E8377;
-  --garis: #DCCFBA;
-  --merah: #B5121B;
-  --merah-2: #D8323B;
-  --merah-muda: #F6DCD8;
+  --kertas: #FFFFFF;
+  --kertas-2: #F5F3F3;
+  --kartu: #FFFFFF;
+  --tinta: #1A1718;
+  --tinta-2: #57504F;
+  --abu: #8C8584;
+  --garis: #E8E2E2;
+  --merah: #C8102E;
+  --merah-2: #E0303F;
+  --merah-muda: #FCE8EA;
   --emas: #B8862B;
-  --emas-muda: #F3E3BF;
+  --emas-muda: #F7EBCF;
   --hijau: #2F6B4F;
-  --bayang: 0 1px 0 rgba(30, 24, 20, .06), 0 8px 24px -12px rgba(30, 24, 20, .25);
-  --panel: #1E1814;
-  --panel-teks: #F5EFE4;
+  --bayang: 0 1px 2px rgba(26, 23, 24, .05), 0 8px 24px -14px rgba(26, 23, 24, .22);
+  --panel: #C8102E;
+  --panel-teks: #FFFFFF;
+  --nav: #FFFFFF;
+  --nav-teks: #6B6463;
   --r: 14px;
-  --huruf-judul: 'Bricolage Grotesque', 'Atkinson Hyperlegible', sans-serif;
-  --huruf: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --huruf-judul: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --huruf: 'Plus Jakarta Sans', 'Helvetica Neue', Arial, sans-serif;
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --kertas: #17120F;
-    --kertas-2: #221B16;
-    --kartu: #241D18;
-    --tinta: #F3EBDD;
-    --tinta-2: #C9BBA8;
-    --abu: #9A8D7E;
-    --garis: #3A2F27;
-    --merah: #E2454C;
-    --merah-2: #F06A6F;
-    --merah-muda: #3B1C1C;
-    --emas: #D9A845;
-    --emas-muda: #3A2E17;
-    --hijau: #6DBB93;
-    --bayang: 0 1px 0 rgba(0, 0, 0, .3), 0 10px 26px -14px rgba(0, 0, 0, .7);
-    --panel: #2B211B;
-    --panel-teks: #F3EBDD;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --kertas: #17120F;
-  --kertas-2: #221B16;
-  --kartu: #241D18;
-  --tinta: #F3EBDD;
-  --tinta-2: #C9BBA8;
-  --abu: #9A8D7E;
-  --garis: #3A2F27;
-  --merah: #E2454C;
-  --merah-2: #F06A6F;
-  --merah-muda: #3B1C1C;
-  --emas: #D9A845;
-  --emas-muda: #3A2E17;
-  --hijau: #6DBB93;
-  --bayang: 0 1px 0 rgba(0, 0, 0, .3), 0 10px 26px -14px rgba(0, 0, 0, .7);
-  --panel: #2B211B;
-  --panel-teks: #F3EBDD;
-  color-scheme: dark;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -74,9 +35,6 @@ body {
   line-height: 1.45;
   color: var(--tinta);
   background: var(--kertas);
-  background-image:
-    radial-gradient(circle at 1px 1px, rgba(120, 90, 60, .07) 1px, transparent 0);
-  background-size: 18px 18px;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
@@ -104,7 +62,7 @@ a { color: var(--merah); }
 .kepala .keluar { font-size: 13px; color: var(--abu); padding: 6px 4px; }
 
 h1, h2, h3 { font-family: var(--huruf-judul); letter-spacing: -.015em; line-height: 1.15; }
-h1 { font-size: 28px; font-weight: 800; }
+h1 { font-size: 28px; font-weight: 700; letter-spacing: -.02em; }
 h2 { font-size: 19px; font-weight: 700; }
 h3 { font-size: 16px; font-weight: 700; }
 .kecil { font-size: 13px; color: var(--tinta-2); }
@@ -188,7 +146,7 @@ h3 { font-size: 16px; font-weight: 700; }
 .ringkas-kursi i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 .saring { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; }
 .saring button { padding: 7px 14px; border-radius: 99px; border: 1px solid var(--garis); background: var(--kartu); font-size: 14px; white-space: nowrap; }
-.saring button[aria-pressed="true"] { background: var(--tinta); color: var(--kertas); border-color: var(--tinta); }
+.saring button[aria-pressed="true"] { background: var(--merah); color: #fff; border-color: var(--merah); }
 
 .papan-kursi { background: var(--kartu); border: 1px solid var(--garis); border-radius: var(--r); padding: 12px 6px 4px; margin: 0 -6px; box-shadow: var(--bayang); }
 .baris-kursi { margin-bottom: 12px; }
@@ -276,10 +234,10 @@ label.isian > span { display: block; font-size: 13px; font-weight: 700; color: v
 .nav {
   position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 6;
   display: flex; gap: 2px; padding: 6px; border-radius: 20px;
-  background: var(--panel); box-shadow: 0 12px 30px -10px rgba(0, 0, 0, .5); border: 1px solid var(--garis);
+  background: var(--nav); box-shadow: 0 10px 30px -12px rgba(26, 23, 24, .35); border: 1px solid var(--garis);
   width: min(528px, calc(100% - 24px));
 }
-.nav a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 14px; color: color-mix(in srgb, var(--panel-teks) 62%, transparent); text-decoration: none; font-size: 11px; font-weight: 700; }
+.nav a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 14px; color: var(--nav-teks); text-decoration: none; font-size: 11px; font-weight: 700; }
 .nav a svg { width: 22px; height: 22px; }
 .nav a[aria-current="page"] { background: var(--merah); color: #fff; }
 
@@ -336,12 +294,12 @@ label.isian > span { display: block; font-size: 13px; font-weight: 700; color: v
 .grafik svg { display: block; width: 100%; height: auto; overflow: visible; }
 .g-dasar { stroke: color-mix(in srgb, var(--panel-teks) 30%, transparent); stroke-width: 1; }
 .g-gerbang { stroke: color-mix(in srgb, var(--panel-teks) 28%, transparent); stroke-width: 1; stroke-dasharray: 3 4; }
-.g-gerbang.lewat { stroke: var(--emas); stroke-dasharray: none; opacity: .7; }
+.g-gerbang.lewat { stroke: var(--panel-teks); stroke-dasharray: none; opacity: .75; }
 .g-label { fill: color-mix(in srgb, var(--panel-teks) 60%, transparent); font-size: 10px; font-weight: 700; font-family: var(--huruf); }
-.g-label.lewat { fill: var(--emas); }
-.g-area { fill: color-mix(in srgb, var(--merah-2) 22%, transparent); stroke: none; }
-.g-garis { fill: none; stroke: var(--merah-2); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.g-ujung { fill: var(--merah-2); stroke: var(--panel); stroke-width: 2; }
+.g-label.lewat { fill: var(--panel-teks); }
+.g-area { fill: color-mix(in srgb, var(--panel-teks) 18%, transparent); stroke: none; }
+.g-garis { fill: none; stroke: var(--panel-teks); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.g-ujung { fill: var(--panel-teks); stroke: var(--panel); stroke-width: 2; }
 .g-silang { stroke: color-mix(in srgb, var(--panel-teks) 55%, transparent); stroke-width: 1; }
 .g-tgl { fill: color-mix(in srgb, var(--panel-teks) 55%, transparent); font-size: 10px; font-family: var(--huruf); font-variant-numeric: tabular-nums; }
 .g-sentuh { fill: transparent; cursor: pointer; }

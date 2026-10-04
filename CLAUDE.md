@@ -29,6 +29,7 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
 ## Aturan bahasa di app dan dokumen
 
 - Bahasa Indonesia, kalimat pendek.
+- Tampilan: latar putih, merah sebagai warna utama. Judul Helvetica/Arial, isi Plus Jakarta Sans. Satu tema terang.
 - Tanpa em dash. Tanpa kata "kamu". Sapaan ke pengguna memakai nama atau kalimat tanpa kata ganti.
 - Sebut "Coach Dedy", bukan "Dedy" saja, di teks yang dibaca orang lain.
 

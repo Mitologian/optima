@@ -12,10 +12,13 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
   Form, Telegram, otomasi lain, dan `clasp push/deploy`. Claude tidak bisa menaikkan ke Apps Script.
 - Tahap pembentukan: Pembentukan (kumpulkan 17 sampai 20 founding member, oleh LDC dan LT) → ESM →
   era BOD setiap **Rabu** (BOD pagi, Lunch Networking siang, 10 sampai 12 kali) → **CGT di 37 anggota** →
-  Soft Launch → Grand Launch (51).
-- Sebelum ESM, app hanya dipakai LDC dan LT. Setiap LT memasukkan **20 nama**.
-  Member memakai app mulai hari ESM.
-- Gamifikasi: Misi Chapter (gerbang 20, 37, 51), Papan 64 Kursi (8 baris contact sphere x 8 kursi),
+  Soft Launch → Grand Launch (**52**).
+- Sebelum ESM, app hanya dipakai LDC dan LT. Setelah ESM semua anggota. Setiap orang mengisi **20 sampai 40
+  nama**, terikat ke kursi atau "bidang belum pasti".
+- **Tanpa poin.** Hanya angka nyata (undangan, tamu hadir, sponsor) dan lencana.
+- Semua anggota melihat nama lengkap dan bidang tamu yang terdaftar hadir Rabu itu, tanpa nomor telepon.
+- Notifikasi hanya di dalam app (sorotan saat app dibuka).
+- Gamifikasi: Misi Chapter (gerbang 20, 37, 52, dengan grafik garis), Papan 64 Kursi (8 baris contact sphere x 8 kursi),
   Ronde Rabu (satu undangan per pekan), 5 lencana, papan pengundang ronde ini, dinding sponsor.
 - Dibuang dari app Ventura: poin, tim dan bonus tim, gold progress, persentase konversi, member
   mengundang ke coffee session, PIN bersama, halaman terpisah. Brain jolter dan permintaan klasifikasi

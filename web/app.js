@@ -36,6 +36,21 @@
     return h === 1 ? 'kemarin' : h + ' hari lalu';
   }
   function inisial(n) { return esc(String(n || '?').trim().charAt(0).toUpperCase()); }
+  function jamCS(iso) {
+    var w = wib(iso);
+    var jam = String(w.getUTCHours()).padStart(2, '0') + '.' + String(w.getUTCMinutes()).padStart(2, '0');
+    return { jam: jam, hari: HARI[w.getUTCDay()].slice(0, 3) + ' ' + w.getUTCDate() + ' ' + BULAN[w.getUTCMonth()], pendek: w.getUTCDate() + ' ' + BULAN[w.getUTCMonth()] + ' ' + jam };
+  }
+  function nilaiLokal(iso) {
+    if (!iso) return '';
+    var w = wib(iso);
+    return w.toISOString().slice(0, 16);
+  }
+  function pilihKursiKosong(nama, wajib) {
+    var opsi = [];
+    (S.cache.kursi || []).forEach(function (b) { b.kursi.forEach(function (x) { if (x.status !== 'terisi') opsi.push('<option value="' + esc(x.id_kursi) + '">' + esc(x.bidang) + '</option>'); }); });
+    return '<label class="isian"><span>Kursi klasifikasi' + (wajib ? '' : ' (opsional)') + '</span><select name="' + nama + '"' + (wajib ? ' required' : '') + '><option value="">Pilih kursi</option>' + opsi.join('') + '</select></label>';
+  }
   function waLink(nomor, teks) { return 'https://wa.me/' + (nomor || '') + (teks ? '?text=' + encodeURIComponent(teks) : ''); }
 
   function toast(pesan, rayakan) {
@@ -176,22 +191,99 @@
   window.addEventListener('hashchange', rute);
 
   /* ---------- MISI ---------- */
-  function kartuMisi(m) {
-    var maks = Math.max(m.gerbang[2], m.anggota) * 1.06;
+  function grafikMisi(m) {
+    var data = m.riwayat && m.riwayat.length ? m.riwayat : [{ selesai: new Date().toISOString(), jumlah: m.anggota }];
+    var W = 320, H = 160, kiri = 8, kanan = 62, atas = 12, bawah = 24;
+    var ymax = Math.max(m.gerbang[2], m.anggota) * 1.08;
+    var n = data.length;
+    var x = function (i) { return n === 1 ? kiri + (W - kiri - kanan) : kiri + i * (W - kiri - kanan) / (n - 1); };
+    var y = function (v) { return atas + (H - atas - bawah) * (1 - v / ymax); };
     var nama = ['ESM', 'CGT', 'Launch'];
-    var gerbang = m.gerbang.map(function (g, i) {
-      var cls = m.anggota >= g ? 'lewat' : (g === m.target ? 'kini' : '');
-      return '<div class="gerbang ' + cls + '" style="left:' + (g / maks * 100) + '%"><em class="atas">' + nama[i] + '</em><i></i><em class="bawah">' + g + '</em></div>';
+    var garis = m.gerbang.map(function (g, i) {
+      var lewat = m.anggota >= g;
+      return '<line x1="' + kiri + '" x2="' + (W - kanan) + '" y1="' + y(g) + '" y2="' + y(g) + '" class="g-gerbang' + (lewat ? ' lewat' : '') + '"/>' +
+        '<text x="' + (W - kanan + 6) + '" y="' + (y(g) + 4) + '" class="g-label' + (lewat ? ' lewat' : '') + '">' + g + ' ' + nama[i] + '</text>';
     }).join('');
+    var titik = data.map(function (d, i) { return x(i).toFixed(1) + ',' + y(d.jumlah).toFixed(1); });
+    var area = n > 1 ? '<path class="g-area" d="M' + x(0) + ',' + y(0) + ' L' + titik.join(' L') + ' L' + x(n - 1) + ',' + y(0) + ' Z"/>' : '';
+    var jalur = n > 1 ? '<polyline class="g-garis" points="' + titik.join(' ') + '"/>' : '';
+    var akhir = data[n - 1];
+    var sentuh = data.map(function (d, i) {
+      var lebar = n === 1 ? 40 : (W - kiri - kanan) / (n - 1);
+      return '<rect class="g-sentuh" x="' + (x(i) - lebar / 2) + '" y="0" width="' + lebar + '" height="' + H + '" data-i="' + i + '"/>';
+    }).join('');
+    return '<div class="grafik" data-titik="' + esc(JSON.stringify(data)) + '">' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Pertumbuhan anggota per pekan, sekarang ' + akhir.jumlah + ' anggota">' +
+        '<line x1="' + kiri + '" x2="' + (W - kanan) + '" y1="' + y(0) + '" y2="' + y(0) + '" class="g-dasar"/>' +
+        garis + area + jalur +
+        '<line class="g-silang" x1="0" x2="0" y1="' + atas + '" y2="' + y(0) + '" style="display:none"/>' +
+        '<circle class="g-ujung" cx="' + x(n - 1) + '" cy="' + y(akhir.jumlah) + '" r="5"/>' +
+        '<text class="g-tgl" x="' + kiri + '" y="' + (H - 6) + '">' + esc(tglPendek(data[0].selesai)) + '</text>' +
+        (n > 1 ? '<text class="g-tgl" text-anchor="end" x="' + (W - kanan) + '" y="' + (H - 6) + '">' + esc(tglPendek(akhir.selesai)) + '</text>' : '') +
+        sentuh +
+      '</svg><p class="g-info">Ketuk grafik untuk melihat jumlah per pekan.</p></div>';
+  }
+
+  function pasangGrafik(akar) {
+    var g = akar.querySelector('.grafik');
+    if (!g) return;
+    var data = JSON.parse(g.dataset.titik);
+    var info = g.querySelector('.g-info');
+    var silang = g.querySelector('.g-silang');
+    g.querySelectorAll('.g-sentuh').forEach(function (r) {
+      var tunjuk = function () {
+        var d = data[Number(r.dataset.i)];
+        var cx = Number(r.getAttribute('x')) + Number(r.getAttribute('width')) / 2;
+        silang.setAttribute('x1', cx); silang.setAttribute('x2', cx); silang.style.display = '';
+        info.textContent = 'Pekan sampai ' + tglHari(d.selesai) + ': ' + d.jumlah + ' anggota';
+      };
+      r.addEventListener('click', tunjuk);
+      r.addEventListener('mouseenter', tunjuk);
+    });
+  }
+
+  function kartuMisi(m) {
     var sisa = Math.max(0, m.target - m.anggota);
     var sub = sisa ? sisa + ' anggota lagi menuju ' + (m.target === m.gerbang[0] ? 'ESM' : m.target === m.gerbang[1] ? 'Core Group Training' : 'Grand Launch')
                    : 'Target fase ini tercapai. Saatnya gerbang berikutnya.';
     return '<section class="kartu misi">' +
       '<div class="label">Misi Chapter</div>' +
       '<div class="angka">' + m.anggota + ' <small>/ ' + m.target + ' anggota</small></div>' +
-      '<div class="sub">' + esc(sub) + '</div>' +
-      '<div class="lintasan"><div class="isi" style="width:0" data-lebar="' + (m.anggota / maks * 100) + '%"></div>' + gerbang + '</div>' +
+      '<div class="sub">' + esc(sub) + '. Target akhir ' + m.gerbang[2] + '.</div>' +
+      grafikMisi(m) +
     '</section>';
+  }
+
+  function kartuDaftar(st) {
+    var min = st.target_nama_min, maks = st.target_nama_maks, n = st.nama_daftar;
+    var pesan = n >= maks ? 'Sasaran ' + maks + ' nama tercapai.' : n >= min ? 'Minimal ' + min + ' tercapai. Lanjut menuju ' + maks + '.' : (min - n) + ' nama lagi menuju minimal ' + min + '.';
+    return '<section class="kartu"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Daftar nama saya</h3><b style="font-family:var(--huruf-judul);font-size:22px">' + n + '<span class="redup" style="font-size:14px"> / ' + maks + '</span></b></div>' +
+      '<div class="bilah-ganda"><div class="bilah' + (n >= min ? ' emas' : '') + '"><i style="width:' + Math.min(100, n / maks * 100) + '%"></i></div><span class="tanda-min" style="left:' + (min / maks * 100) + '%"></span></div>' +
+      '<p class="kecil">' + esc(pesan) + ' Setiap nama terikat ke satu kursi di Papan Kursi.</p>' +
+      '<div class="baris-tombol"><a class="tombol kecil" href="#kursi">Tambah nama</a>' + (isLT() ? '<a class="tombol kecil kedua" href="#tim">Calon saya</a>' : fasePra() ? '' : '<a class="tombol kecil kedua" href="#undang">Lihat daftar</a>') + '</div></section>';
+  }
+
+  function sorotan(undangan) {
+    var dilihat = {};
+    try { dilihat = JSON.parse(ambil('optima_dilihat') || '{}'); } catch (e) {}
+    return undangan.filter(function (u) {
+      return (u.status === 'Hadir' || u.status === 'Bergabung') && !dilihat[u.id_undangan + u.status];
+    });
+  }
+  function tandaiDilihat(daftar) {
+    var dilihat = {};
+    try { dilihat = JSON.parse(ambil('optima_dilihat') || '{}'); } catch (e) {}
+    daftar.forEach(function (u) { dilihat[u.id_undangan + u.status] = 1; });
+    simpan('optima_dilihat', JSON.stringify(dilihat));
+  }
+
+  function kartuTamu(tm) {
+    var isi = tm.tamu.length ? '<ul class="daftar">' + tm.tamu.map(function (g) {
+      var chip = g.bergabung ? '<span class="chip emas">Bergabung</span>' : g.status === 'Hadir' ? '<span class="chip hijau">Hadir</span>' : '<span class="chip">' + esc(g.jenis === 'BOD' ? 'BOD' : 'Lunch') + '</span>';
+      return '<li><span class="lambang">' + inisial(g.nama) + '</span><div class="utama"><b>' + esc(g.nama) + '</b><span>' + esc(g.bidang) + ' · diundang ' + esc(g.pengundang || 'chapter') + '</span></div>' + chip + '</li>';
+    }).join('') + '</ul>' : '<p class="kosong-isi">Belum ada tamu yang mendaftar untuk Rabu ini.</p>';
+    return '<div class="judul-bagian"><h2>Tamu Rabu ini</h2><span class="kecil">' + tm.tamu.length + ' terdaftar</span></div>' +
+      '<section class="kartu">' + isi + '<p class="catatan-main">Kenali bidangnya sebelum Rabu, supaya bisa menyapa dan menyambungkan.</p></section>';
   }
 
   function kartuRonde(b) {
@@ -211,23 +303,23 @@
 
   async function layarMisi(isi) {
     var tugas = [api('beranda')];
-    if (isLT()) tugas.push(api('regroup'));
+    if (!fasePra()) { tugas.push(api('undanganSaya')); tugas.push(api('tamuPekanIni')); }
     var h = await Promise.all(tugas);
-    var b = h[0], rg = h[1];
+    var b = h[0], ud = h[1], tm = h[2];
     if (!b.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(b.pesan) + '</p>'; return; }
     var html = '<div class="sapa"><h1>Halo, ' + esc(S.profil.nama_depan) + '</h1>' +
       '<p class="kecil">' + (fasePra() ? 'Masa pembentukan. Setiap nama yang masuk membawa chapter lebih dekat ke ESM.' : 'Satu undangan setiap pekan sudah cukup untuk menggerakkan chapter.') + '</p></div>';
-    html += kartuMisi(b.misi);
 
-    if (isLT() && rg && rg.ok) {
-      var saya = rg.lt.filter(function (x) { return x.nama_depan === S.profil.nama_depan; })[0];
-      if (saya && fasePra()) {
-        html += '<section class="kartu"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Nama yang saya masukkan</h3><b style="font-family:var(--huruf-judul);font-size:22px">' + saya.total + '<span class="redup" style="font-size:14px"> / ' + saya.target + '</span></b></div>' +
-          '<div class="bilah' + (saya.total >= saya.target ? ' emas' : '') + '" style="margin:10px 0 8px"><i style="width:' + Math.min(100, saya.total / saya.target * 100) + '%"></i></div>' +
-          '<p class="kecil">' + (saya.ronde ? '+' + saya.ronde + ' pekan ini. ' : 'Belum ada nama baru pekan ini. ') + (saya.total >= saya.target ? 'Target 20 nama tercapai.' : 'Ketuk kursi kosong untuk menambah nama.') + '</p>' +
-          '<div class="baris-tombol"><a class="tombol kecil" href="#kursi">Buka Papan Kursi</a><a class="tombol kecil kedua" href="#tim">Calon saya</a></div></section>';
-      }
+    var sorot = ud && ud.ok ? sorotan(ud.undangan) : [];
+    if (sorot.length) {
+      html += '<section class="kartu sorotan"><h3>Kabar dari undangan</h3><ul class="kabar">' + sorot.map(function (u) {
+        return '<li class="k-' + (u.status === 'Bergabung' ? 'baris' : 'anggota') + '"><span class="titik"></span><div>' + esc(u.nama_depan) + (u.status === 'Bergabung' ? ' sudah bergabung dengan chapter. Selamat, ini hasil undangan.' : ' hadir di ' + esc(u.acara) + ' ' + esc(tglPendek(u.tanggal)) + '.') + '</div></li>';
+      }).join('') + '</ul><div class="baris-tombol"><button class="tombol kecil kedua" id="b-sorot">Tandai sudah dibaca</button></div></section>';
     }
+
+    html += kartuMisi(b.misi);
+    html += kartuDaftar(b.saya);
+
     if (!fasePra()) {
       html += kartuRonde(b);
       html += '<section class="kartu"><div class="statistik">' +
@@ -235,6 +327,7 @@
         '<div class="stat"><b>' + b.saya.tamu_hadir + '</b><span>tamu hadir</span></div>' +
         '<div class="stat"><b>' + b.saya.sponsor + '</b><span>disponsori</span></div>' +
       '</div></section>';
+      if (tm && tm.ok) html += kartuTamu(tm);
     }
     html += '<div class="judul-bagian"><h2>Lencana</h2><span class="kecil">' + b.lencana.filter(function (l) { return l.didapat; }).length + ' dari 5</span></div>' +
       '<section class="kartu"><div class="lencana-baris">' + b.lencana.map(function (l) {
@@ -247,61 +340,94 @@
       }).join('') + '</ul>' : '<p class="kosong-isi">Belum ada kabar. Kabar baik pertama segera datang.</p>') + '</section>';
 
     isi.innerHTML = html;
-    requestAnimationFrame(function () {
-      var bar = isi.querySelector('.lintasan .isi');
-      if (bar) setTimeout(function () { bar.style.width = bar.dataset.lebar; }, 60);
-    });
+    pasangGrafik(isi);
+    var bs = isi.querySelector('#b-sorot');
+    if (bs) bs.onclick = function () { tandaiDilihat(sorot); isi.querySelector('.sorotan').remove(); };
+    if (sorot.some(function (u) { return u.status === 'Bergabung'; })) toast('Undangan Anda membawa anggota baru', true);
     var baru = b.lencana.filter(function (l) { return l.baru; })[0];
-    if (baru) toast('Lencana baru: ' + baru.nama, true);
+    if (baru) setTimeout(function () { toast('Lencana baru: ' + baru.nama, true); }, sorot.length ? 4400 : 0);
   }
 
   /* ---------- KURSI ---------- */
   var saringKursi = 'semua';
+  var tabKursi = 'papan';
   async function layarKursi(isi) {
+    var tabs = '<div class="tab" role="tablist" style="margin-top:18px"><button role="tab" data-tk="papan" aria-selected="' + (tabKursi === 'papan') + '">Papan Kursi</button><button role="tab" data-tk="anggota" aria-selected="' + (tabKursi === 'anggota') + '">Daftar anggota</button></div>';
+    if (tabKursi === 'anggota') return layarAnggota(isi, tabs);
     var r = await api('kursi');
     if (!r.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
     S.cache.kursi = r.baris;
     var n = { terisi: 0, ada_calon: 0, kosong: 0 };
-    r.baris.forEach(function (b) { b.kursi.forEach(function (x) { n[x.status]++; }); });
+    var milik = 0;
+    r.baris.forEach(function (b) { b.kursi.forEach(function (x) { n[x.status]++; milik += x.saya_calon; }); });
     var lengkap = r.baris.filter(function (b) { return b.lengkap; }).length;
-    isi.innerHTML =
-      '<div class="sapa"><h1>Papan 64 Kursi</h1><p class="kecil">Satu bidang bisnis, satu kursi. Ketuk kursi untuk memasukkan nama calon dari bidang itu.</p></div>' +
+    var saring = [['semua', 'Semua'], ['saya', 'Daftar saya' + (milik ? ' (' + milik + ')' : '')], ['kosong', 'Kosong'], ['ada_calon', 'Ada calon'], ['dicari', 'Dicari anggota']];
+    function lolos(x) {
+      if (saringKursi === 'semua') return true;
+      if (saringKursi === 'saya') return x.saya_calon > 0;
+      if (saringKursi === 'dicari') return x.jumlah_butuh > 0 && x.status !== 'terisi';
+      return saringKursi === x.status;
+    }
+    isi.innerHTML = tabs +
+      '<div class="sapa" style="margin-top:4px"><h1>Papan 64 Kursi</h1><p class="kecil">Satu bidang bisnis, satu kursi. Ketuk kursi untuk memasukkan nama calon dari bidang itu.</p></div>' +
       '<div class="ringkas-kursi">' +
         '<span><i style="background:var(--merah)"></i>' + n.terisi + ' terisi</span>' +
         '<span><i style="background:var(--merah-muda);border:1.5px solid var(--merah)"></i>' + n.ada_calon + ' ada calon</span>' +
         '<span><i style="border:1.5px dashed var(--abu)"></i>' + n.kosong + ' kosong</span>' +
         (lengkap ? '<span><i style="background:var(--emas)"></i>' + lengkap + ' baris lengkap</span>' : '') +
       '</div>' +
-      '<div class="saring" role="group" aria-label="Saring kursi">' +
-        [['semua', 'Semua'], ['kosong', 'Kosong'], ['ada_calon', 'Ada calon'], ['dicari', 'Dicari anggota']].map(function (s) {
-          return '<button data-saring="' + s[0] + '" aria-pressed="' + (saringKursi === s[0]) + '">' + s[1] + '</button>';
-        }).join('') +
-      '</div>' +
+      '<div class="saring" role="group" aria-label="Saring kursi">' + saring.map(function (s) {
+        return '<button data-saring="' + s[0] + '" aria-pressed="' + (saringKursi === s[0]) + '">' + s[1] + '</button>';
+      }).join('') + '</div>' +
       '<div class="papan-kursi">' + r.baris.map(function (b) {
         return '<section class="baris-kursi' + (b.lengkap ? ' lengkap' : '') + '">' +
           '<header><span class="no">' + (b.nomor > 8 ? '+' : b.nomor) + '</span><h3>' + esc(b.sphere) + '</h3><span class="hitung">' + b.terisi + '/' + b.kursi.length + '</span></header>' +
           '<div class="kisi">' + b.kursi.map(function (x) {
-            var redam = saringKursi !== 'semua' && !(saringKursi === x.status || (saringKursi === 'dicari' && x.jumlah_butuh > 0 && x.status !== 'terisi'));
-            return '<button class="kursi ' + x.status + (redam ? ' redam' : '') + '" data-kursi="' + esc(x.id_kursi) + '" aria-label="' + esc(x.bidang) + ', ' + (x.status === 'terisi' ? 'terisi ' + x.pemilik : x.status === 'ada_calon' ? x.jumlah_calon + ' calon' : 'kosong') + '">' +
+            var redam = !lolos(x);
+            return '<button class="kursi ' + x.status + (redam ? ' redam' : '') + (x.saya_calon ? ' milik' : '') + '" data-kursi="' + esc(x.id_kursi) + '" aria-label="' + esc(x.bidang) + ', ' + (x.status === 'terisi' ? 'terisi ' + x.pemilik : x.status === 'ada_calon' ? x.jumlah_calon + ' calon' : 'kosong') + (x.saya_calon ? ', ' + x.saya_calon + ' dari daftar saya' : '') + '">' +
               (x.jumlah_butuh && x.status !== 'terisi' ? '<span class="dicari"></span>' : '') +
               (x.status === 'ada_calon' ? '<span class="badge">' + x.jumlah_calon + '</span>' : '') +
               '<span class="t">' + esc(x.singkat) + '</span></button>';
           }).join('') + '</div></section>';
       }).join('') + '</div>' +
-      '<p class="catatan-main"><span class="kursi" style="display:inline-block;width:8px;height:8px;aspect-ratio:auto;padding:0;border-radius:50%;background:var(--emas);vertical-align:middle"></span> titik emas: bidang yang sedang dicari anggota</p>';
+      '<p class="catatan-main"><span class="titik-emas"></span> bidang yang sedang dicari anggota &nbsp; <span class="cincin-saya"></span> ada nama dari daftar saya</p>' +
+      '<button class="tombol kedua" id="b-tanpa-kursi" style="margin-top:6px">Tambah nama, bidang belum pasti</button>';
+    isi.querySelectorAll('[data-tk]').forEach(function (t) { t.onclick = function () { tabKursi = t.dataset.tk; layarKursi(isi); }; });
     isi.querySelectorAll('[data-saring]').forEach(function (t) {
       t.onclick = function () { saringKursi = t.dataset.saring; layarKursi(isi); };
     });
     isi.querySelectorAll('[data-kursi]').forEach(function (t) {
       t.onclick = function () { bukaKursi(t.dataset.kursi, function () { layarKursi(isi); }); };
     });
+    isi.querySelector('#b-tanpa-kursi').onclick = function () { bukaKursi('', function () { layarKursi(isi); }); };
+  }
+
+  async function layarAnggota(isi, tabs) {
+    isi.innerHTML = tabs + '<div class="muat"></div>';
+    var r = await api('daftarAnggota');
+    if (!r.ok) { isi.innerHTML = tabs + '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
+    var per = {};
+    r.anggota.forEach(function (a) { var s = a.sphere || 'Lainnya'; (per[s] = per[s] || []).push(a); });
+    isi.innerHTML = tabs +
+      '<div class="sapa" style="margin-top:4px"><h1>' + r.anggota.length + ' anggota</h1><p class="kecil">Setiap anggota memegang satu klasifikasi. Bidang di bawah sudah terkunci.</p></div>' +
+      '<input class="cari" id="cari" placeholder="Cari nama atau bidang" type="search">' +
+      Object.keys(per).map(function (s) {
+        return '<div class="judul-bagian"><h2>' + esc(s) + '</h2><span class="kecil">' + per[s].length + '</span></div><section class="kartu"><ul class="daftar">' + per[s].map(function (a) {
+          return '<li data-cari="' + esc((a.nama + ' ' + a.bidang).toLowerCase()) + '"><span class="lambang">' + inisial(a.nama) + '</span><div class="utama"><b>' + esc(a.nama) + '</b><span>' + esc(a.bidang) + (a.sponsor ? ' · sponsor ' + esc(a.sponsor) : '') + '</span></div><span class="chip' + (a.jenis_anggota === 'Founding' ? ' merah' : '') + '">' + esc(a.jenis_anggota || 'Anggota') + '</span></li>';
+        }).join('') + '</ul></section>';
+      }).join('');
+    isi.querySelectorAll('[data-tk]').forEach(function (t) { t.onclick = function () { tabKursi = t.dataset.tk; layarKursi(isi); }; });
+    isi.querySelector('#cari').oninput = function (e) {
+      var q = e.target.value.toLowerCase();
+      isi.querySelectorAll('[data-cari]').forEach(function (li) { li.hidden = q && li.dataset.cari.indexOf(q) < 0; });
+    };
   }
 
   function ubinKursi(x) { return '<span class="kursi ' + x.status + '"><span class="t">' + esc(x.singkat) + '</span></span>'; }
 
   async function bukaKursi(id, segarkan) {
     bukaLembar('<div class="muat"></div>');
-    var tugas = [api('kursiDetail', { id_kursi: id })];
+    var tugas = [id ? api('kursiDetail', { id_kursi: id }) : Promise.resolve({ ok: true, kursi: { id_kursi: '', bidang: 'Bidang belum pasti', singkat: '?', sphere: 'Tanpa kursi', status: 'kosong', jumlah_calon: 0, jumlah_butuh: 0, saya_butuh: false }, calon: [], calon_saya: [] })];
     if (!fasePra()) tugas.push(api('acara'));
     var h = await Promise.all(tugas);
     var d = h[0], ac = h[1];
@@ -320,6 +446,12 @@
     if (x.jumlah_butuh) info.push('<span class="chip emas">dicari ' + x.jumlah_butuh + ' anggota</span>');
     if (info.length) html += '<p style="display:flex;gap:6px;margin:-4px 0 14px">' + info.join('') + '</p>';
 
+    if (!id) html += '<p class="kecil" style="margin:-4px 0 14px">Untuk nama yang bidangnya belum jelas. Launch team akan memasangkannya ke kursi yang tepat.</p>';
+    if (!isLT() && d.calon_saya && d.calon_saya.length) {
+      html += '<section class="kartu" style="box-shadow:none"><h3>Dari daftar saya</h3><ul class="daftar">' + d.calon_saya.map(function (c) {
+        return '<li><div class="utama"><b>' + esc(c.nama) + '</b></div><span class="chip">' + esc(c.tahap) + '</span></li>';
+      }).join('') + '</ul></section>';
+    }
     if (d.calon && d.calon.length) {
       html += '<section class="kartu" style="box-shadow:none"><h3>Calon di kursi ini</h3><ul class="daftar">' + d.calon.map(function (c) {
         return '<li><div class="utama"><b>' + esc(c.nama) + '</b><span>PIC ' + esc(c.pic || 'belum ada') + (c.diajukan && c.diajukan !== c.pic ? ' · diajukan ' + esc(c.diajukan) : '') + '</span></div><span class="chip">' + esc(c.tahap) + '</span></li>';
@@ -328,7 +460,7 @@
 
     var pilihanAcara = (ac && ac.ok ? ac.acara : []).filter(function (e) { return e.jenis === 'BOD' || e.jenis === 'Lunch Networking'; }).slice(0, 4);
     html += '<form id="f-calon">' +
-      '<h3 style="margin:4px 0 10px">Masukkan calon ' + esc(x.bidang.toLowerCase()) + '</h3>' +
+      '<h3 style="margin:4px 0 10px">' + (id ? 'Masukkan calon ' + esc(x.bidang.toLowerCase()) : 'Masukkan nama') + '</h3>' +
       '<label class="isian"><span>Nama lengkap</span><input name="nama" required autocomplete="off"></label>' +
       '<label class="isian"><span>Nama atau jenis bisnis</span><input name="bisnis" required autocomplete="off"></label>' +
       '<label class="isian"><span>WhatsApp' + (isLT() ? '' : ' (boleh menyusul)') + '</span><input name="whatsapp" inputmode="tel" autocomplete="off" placeholder="08..."' + (isLT() ? ' required' : '') + '></label>' +
@@ -339,7 +471,7 @@
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<button class="tombol" type="submit">Masukkan nama</button>' +
     '</form>';
-    if (!isLT() || !fasePra()) {
+    if (id && (!isLT() || !fasePra())) {
       html += '<div class="baris-tombol"><button class="tombol kedua" id="b-butuh" aria-pressed="' + x.saya_butuh + '">' + (x.saya_butuh ? 'Batalkan tanda butuh' : 'Saya butuh bidang ini di chapter') + '</button></div>';
     }
 
@@ -370,7 +502,7 @@
           lembarKirim(f.nama.value.trim().split(/\s+/)[0], f.whatsapp.value, e2);
         } else {
           tutupLembar();
-          toast(x.status === 'kosong' ? 'Kursi ' + x.bidang + ' kini punya calon' : 'Nama masuk ke kursi ' + x.bidang, x.status === 'kosong');
+          toast(!id ? 'Nama masuk ke daftar' : x.status === 'kosong' ? 'Kursi ' + x.bidang + ' kini punya calon' : 'Nama masuk ke kursi ' + x.bidang, !!id && x.status === 'kosong');
         }
         if (segarkan) segarkan();
       };
@@ -411,8 +543,7 @@
     if (!b.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(b.pesan) + '</p>'; return; }
     var acara = (ac.acara || []).filter(function (e) { return e.jenis === 'BOD' || e.jenis === 'Lunch Networking'; }).slice(0, 4);
     var html = '<div class="sapa"><h1>Undang</h1><p class="kecil">Satu undangan per pekan. Tamu boleh diundang paling banyak dua kali.</p></div>' +
-      kartuRonde(b) +
-      '<a class="tombol" href="#kursi" style="margin:4px 0 4px">Pilih kursi, undang nama baru</a>' +
+      kartuRonde(b) + kartuDaftar(b.saya) +
       '<div class="judul-bagian"><h2>Nama usulan saya</h2><span class="kecil">' + us.usulan.length + '</span></div>' +
       '<section class="kartu">' + (us.usulan.length ? '<ul class="daftar">' + us.usulan.map(function (u) {
         var bisa = u.jumlah_undangan < 2 && u.tahap !== 'Anggota';
@@ -421,7 +552,7 @@
       }).join('') + '</ul>' : '<p class="kosong-isi">Belum ada nama. Mulai dari Papan Kursi: ketuk kursi kosong dan masukkan satu nama.</p>') + '</section>' +
       '<div class="judul-bagian"><h2>Undangan saya</h2></div>' +
       '<section class="kartu">' + (ud.undangan.length ? '<ul class="daftar">' + ud.undangan.map(function (u) {
-        var warna = u.status === 'Hadir' ? 'hijau' : u.status === 'Batal' ? '' : 'merah';
+        var warna = u.status === 'Bergabung' ? 'emas' : u.status === 'Hadir' ? 'hijau' : u.status === 'Batal' ? '' : 'merah';
         return '<li><div class="utama"><b>' + esc(u.nama_depan) + '</b><span>' + esc(u.acara) + ' · ' + esc(tglPendek(u.tanggal)) + '</span></div><span class="chip ' + warna + '">' + esc(u.status) + '</span></li>';
       }).join('') + '</ul>' : '<p class="kosong-isi">Belum ada undangan.</p>') + '</section>';
     isi.innerHTML = html;
@@ -492,14 +623,22 @@
 
   var semuaCalon = false;
   async function subCalon(w) {
-    var r = await api('calonSaya', { semua: semuaCalon });
+    var h = await Promise.all([api('calonSaya', { semua: semuaCalon }), api('jadwalCS')]);
+    var r = h[0], cs = h[1];
     if (!r.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
-    var html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><h2>' + (semuaCalon ? 'Semua calon' : 'Calon saya') + ' <span class="redup">' + r.calon.length + '</span></h2>' +
+    var html = '';
+    if (cs.ok && cs.cs.length) {
+      html += '<div class="judul-bagian" style="margin-top:4px"><h2>Coffee session mendatang</h2><span class="kecil">' + cs.cs.length + '</span></div><section class="kartu"><ul class="daftar">' + cs.cs.map(function (c) {
+        return '<li><div class="jam-cs"><b>' + esc(jamCS(c.jadwal_cs).jam) + '</b><span>' + esc(jamCS(c.jadwal_cs).hari) + '</span></div><div class="utama"><b>' + esc(c.nama) + '</b><span>' + esc(c.bidang) + ' · PIC ' + esc(c.pic) + '</span></div>' +
+          (c.whatsapp ? '<a class="tombol kecil kedua" target="_blank" rel="noopener" href="' + esc(waLink(c.whatsapp)) + '">WA</a>' : '') + '</li>';
+      }).join('') + '</ul></section>';
+    }
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><h2>' + (semuaCalon ? 'Semua calon' : 'Calon saya') + ' <span class="redup">' + r.calon.length + '</span></h2>' +
       (isLDC() ? '<button class="tombol teks" id="b-semua">' + (semuaCalon ? 'Hanya milik saya' : 'Lihat semua') + '</button>' : '') + '</div>' +
       '<input class="cari" id="cari" placeholder="Cari nama atau bidang" type="search">' +
       '<section class="kartu">' + (r.calon.length ? '<ul class="daftar" id="dc">' + r.calon.map(function (c) {
         return '<li data-cari="' + esc((c.nama + ' ' + c.bidang).toLowerCase()) + '"><button class="ketuk" data-calon="' + esc(c.id_orang) + '"><span class="lambang">' + inisial(c.nama) + '</span><div class="utama"><b>' + esc(c.nama) + '</b><span>' + esc(c.bidang) + (semuaCalon ? ' · PIC ' + esc(c.pic) : '') + '</span></div>' +
-          '<span style="text-align:right"><span class="chip">' + esc(c.tahap) + '</span><br><span class="kecil ' + (c.hari_diam >= 7 ? '' : 'redup') + '" style="' + (c.hari_diam >= 7 ? 'color:var(--merah);font-weight:700' : '') + '">' + (c.hari_diam ? c.hari_diam + ' hari diam' : 'hari ini') + '</span></span></button></li>';
+          '<span style="text-align:right"><span class="chip' + (c.tahap === 'CS' ? ' emas' : '') + '">' + esc(c.tahap === 'CS' && c.jadwal_cs ? 'CS ' + jamCS(c.jadwal_cs).pendek : c.tahap) + '</span><br><span class="kecil ' + (c.hari_diam >= 7 ? '' : 'redup') + '" style="' + (c.hari_diam >= 7 ? 'color:var(--merah);font-weight:700' : '') + '">' + (c.hari_diam ? c.hari_diam + ' hari diam' : 'hari ini') + '</span></span></button></li>';
       }).join('') + '</ul>' : '<p class="kosong-isi">Belum ada calon. Tambahkan dari Papan Kursi.</p>') + '</section>';
     w.innerHTML = html;
     var bs = w.querySelector('#b-semua');
@@ -513,8 +652,9 @@
     });
   }
 
-  function lembarCalon(c, segarkan) {
+  async function lembarCalon(c, segarkan) {
     var tahap = ['Dihubungi', 'Tertarik', 'CS', 'Bimbang', 'Tidak Lanjut', 'Parkir'];
+    if (!c.id_kursi && !S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
     bukaLembar(
       '<div class="tajuk"><span class="lambang" style="width:52px;height:52px;font-size:20px">' + inisial(c.nama) + '</span><div><p class="kecil">' + esc(c.bidang) + '</p><h2>' + esc(c.nama) + '</h2>' + (c.bisnis ? '<p class="kecil">' + esc(c.bisnis) + '</p>' : '') + '</div></div>' +
       (c.whatsapp ? '<a class="tombol kedua" target="_blank" rel="noopener" href="' + esc(waLink(c.whatsapp)) + '" style="margin-bottom:14px">Chat WhatsApp</a>' : '') +
@@ -522,6 +662,8 @@
       '<div class="pilihan" style="margin-bottom:14px">' + tahap.map(function (t) {
         return '<button type="button" data-tahap="' + t + '" aria-pressed="' + (t === c.tahap) + '">' + t + '</button>';
       }).join('') + '</div>' +
+      '<label class="isian" id="isi-cs"' + (c.tahap === 'CS' ? '' : ' hidden') + '><span>Jadwal coffee session</span><input type="datetime-local" name="jadwal_cs" value="' + esc(nilaiLokal(c.jadwal_cs)) + '"></label>' +
+      (c.id_kursi ? '' : pilihKursiKosong('id_kursi', false)) +
       '<label class="isian"><span>Catatan singkat (opsional)</span><textarea name="catatan" placeholder="Contoh: minta dihubungi lagi setelah tanggal 15"></textarea></label>' +
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<button class="tombol" type="submit">Simpan tindak lanjut</button></form>' +
@@ -529,14 +671,19 @@
       function (el) {
         var pilih = c.tahap;
         el.querySelectorAll('[data-tahap]').forEach(function (b) {
-          b.onclick = function () { pilih = b.dataset.tahap; el.querySelectorAll('[data-tahap]').forEach(function (z) { z.setAttribute('aria-pressed', z === b); }); };
+          b.onclick = function () {
+            pilih = b.dataset.tahap;
+            el.querySelectorAll('[data-tahap]').forEach(function (z) { z.setAttribute('aria-pressed', z === b); });
+            el.querySelector('#isi-cs').hidden = pilih !== 'CS';
+          };
         });
         el.querySelector('#f-tl').onsubmit = async function (e) {
           e.preventDefault();
           if (TAHAP_VALID.indexOf(pilih) < 0) { var s0 = el.querySelector('#salah'); s0.textContent = 'Pilih tahap barunya.'; s0.hidden = false; return; }
-          var r = await api('tindakLanjut', { id_orang: c.id_orang, tahap: pilih, catatan: e.target.catatan.value });
+          var jcs = e.target.jadwal_cs.value;
+          var r = await api('tindakLanjut', { id_orang: c.id_orang, tahap: pilih, catatan: e.target.catatan.value, jadwal_cs: jcs ? new Date(jcs).toISOString() : '', id_kursi: e.target.id_kursi ? e.target.id_kursi.value : '' });
           if (!r.ok) { var s = el.querySelector('#salah'); s.textContent = r.pesan; s.hidden = false; return; }
-          tutupLembar(); toast(c.nama.split(/\s+/)[0] + ' sekarang ' + r.tahap); segarkan();
+          tutupLembar(); toast(c.nama.split(/\s+/)[0] + ' sekarang ' + r.tahap); S.cache.kursi = null; segarkan();
         };
         el.querySelector('#b-anggota').onclick = function () { lembarAnggota(c, segarkan); };
       });
@@ -546,17 +693,18 @@
   async function lembarAnggota(c, segarkan) {
     bukaLembar('<div class="muat"></div>');
     var r = await api('anggota');
+    if (!c.id_kursi && !S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
     var opsi = '<option value="">Pilih sponsor</option><option value="BNI">BNI (tidak ada member yang dikenal secara pribadi)</option>' +
       (r.anggota || []).map(function (a) { return '<option value="' + esc(a.id_orang) + '">' + esc(a.nama) + '</option>'; }).join('');
     bukaLembar(
       '<h2>Jadikan ' + esc(c.nama.split(/\s+/)[0]) + ' anggota</h2><p class="kecil" style="margin:6px 0 14px">Kursi: <b>' + esc(c.bidang) + '</b>. Jenis: ' + (fasePra() ? 'Founding' : 'Core Group') + '.</p>' +
-      '<form id="f-ang"><label class="isian"><span>Sponsor</span><select name="sponsor" required>' + opsi + '</select></label>' +
+      '<form id="f-ang">' + (c.id_kursi ? '' : pilihKursiKosong('id_kursi', true)) + '<label class="isian"><span>Sponsor</span><select name="sponsor" required>' + opsi + '</select></label>' +
       '<p class="kecil" style="margin:-4px 0 14px">Aturan BNI: sponsor adalah member yang mengundang dan dikenal calon secara pribadi. Kalau tidak ada, pilih BNI, kecuali calon sendiri menunjuk member tertentu.</p>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Resmikan</button></form>',
       function (el) {
         el.querySelector('#f-ang').onsubmit = async function (e) {
           e.preventDefault();
-          var h = await api('jadikanAnggota', { id_orang: c.id_orang, id_sponsor: e.target.sponsor.value });
+          var h = await api('jadikanAnggota', { id_orang: c.id_orang, id_sponsor: e.target.sponsor.value, id_kursi: e.target.id_kursi ? e.target.id_kursi.value : c.id_kursi });
           if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
           tutupLembar(); toast(c.nama.split(/\s+/)[0] + ' resmi mengisi kursi ' + h.kursi, true); segarkan();
         };

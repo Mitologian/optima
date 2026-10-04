@@ -2,7 +2,7 @@
    Aktif saat CONFIG.API_URL kosong. Kode contoh: LDC001, LT0001, AGT001.
    Tambahkan ?fase=BOD di alamat untuk melihat layar setelah ESM. Tambahkan ?reset=1 untuk mengulang data. */
 var Tiruan = (function () {
-  var KUNCI = 'optima_tiruan_v1';
+  var KUNCI = 'optima_tiruan_v2';
   var HARI = 864e5;
   var data = null;
 
@@ -79,7 +79,8 @@ var Tiruan = (function () {
       ['Candra Wibowo', 'K60', 'Tertarik', agung, 2], ['Dian Novita', 'K36', 'Baru', dedy, 1], ['Erwin Gunawan', 'K05', 'Baru', dhika, 10]
     ];
     calonContoh.forEach(function (c) {
-      orang(c[0], 'Calon', c[2], c[1], { PIC: c[3].id_orang, diajukan_oleh: c[3].id_orang, tanggal_masuk: lalu(c[4] + 1), tanggal_sentuh: lalu(c[4]), bisnis: '' });
+      var o = orang(c[0], 'Calon', c[2], c[1], { PIC: c[3].id_orang, diajukan_oleh: c[3].id_orang, tanggal_masuk: lalu(c[4] + 1), tanggal_sentuh: lalu(c[4]), bisnis: '' });
+      if (c[2] === 'CS') { var h = new Date(now.getTime() + (calonContoh.indexOf(c) % 3 + 1) * HARI); o.jadwal_cs = tanggal(h) + 'T' + (calonContoh.indexOf(c) % 2 ? '14:00' : '10:00') + ':00+07:00'; }
     });
 
     var akses = [
@@ -106,13 +107,13 @@ var Tiruan = (function () {
     und.push({ id_undangan: 'U0001', tanggal: lalu(9), id_pengundang: a0.id_orang, id_orang_calon: calonA0.id_orang, id_event: 'E0', status: 'Hadir', sumber: 'app' });
     hadir.push({ id_hadir: 'H00001', id_event: 'E0', id_orang: calonA0.id_orang, peran: 'Visitor', waktu_checkin: iso(lewat), dicatat_oleh: agung.id_orang });
     [[agung, 'P0010'], [dhika, 'P0013'], [sari, 'P0016']].forEach(function (p, i) {
-      und.push({ id_undangan: 'U000' + (i + 2), tanggal: lalu(i), id_pengundang: p[0].id_orang, id_orang_calon: M[14 + i * 3].id_orang, id_event: 'E1', status: 'Diundang', sumber: 'app' });
+      und.push({ id_undangan: 'U000' + (i + 2), tanggal: lalu(i), id_pengundang: p[0].id_orang, id_orang_calon: M[14 + i * 3].id_orang, id_event: 'E1', status: i < 2 ? 'Terdaftar' : 'Diundang', sumber: i < 2 ? 'form' : 'app' });
     });
 
     return {
       Pengaturan: [
-        ['nama_chapter', 'Optima'], ['fase', 'Pembentukan'], ['target_founding', 20], ['target_cgt', 37], ['target_launch', 51],
-        ['target_nama_lt', 20], ['hari_bod', 'Rabu'], ['tanggal_esm', '2027-05-24'], ['tanggal_grand_launch', '2027-08-02'],
+        ['nama_chapter', 'Optima'], ['fase', 'Pembentukan'], ['target_founding', 20], ['target_cgt', 37], ['target_launch', 52],
+        ['target_nama_min', 20], ['target_nama_maks', 40], ['hari_bod', 'Rabu'], ['tanggal_esm', '2027-05-24'], ['tanggal_grand_launch', '2027-08-02'],
         ['tautan_form', 'https://forms.gle/contoh-optima']
       ].map(function (x) { return { kunci: x[0], nilai: x[1] }; }),
       Klasifikasi: klasifikasi,

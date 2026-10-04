@@ -36,7 +36,7 @@ Fase aktif disimpan di `Pengaturan.fase`. Hanya Coach Dedy yang mengubahnya.
 |---|---|---|---|
 | `Pembentukan` | Mengumpulkan founding member, oleh LDC dan LT | LDC dan LT | `target_founding` (20) |
 | `BOD` | Dimulai hari ESM. BOD pagi dan Lunch Networking setiap Rabu | Semua | `target_cgt` (37) |
-| `CGT` | Mulai saat 37 anggota. Rabu diisi Core Group Training | Semua | `target_launch` (51) |
+| `CGT` | Mulai saat 37 anggota. Rabu diisi Core Group Training | Semua | `target_launch` (52) |
 | `Soft Launch` | Uji coba rangkaian | Semua | `target_launch` |
 | `Grand Launch` | Chapter resmi | Semua | `target_launch` |
 
@@ -76,8 +76,9 @@ Dua kolom: `kunci` · `nilai`.
 | `fase` | Pembentukan |
 | `target_founding` | 20 |
 | `target_cgt` | 37 |
-| `target_launch` | 51 |
-| `target_nama_lt` | 20 |
+| `target_launch` | 52 |
+| `target_nama_min` | 20 (nama minimal per orang, berlaku untuk LDC, LT, dan anggota) |
+| `target_nama_maks` | 40 (sasaran nama per orang) |
 | `hari_bod` | Rabu |
 | `tanggal_esm` | 2027-05-24 |
 | `tanggal_grand_launch` | 2027-08-02 |
@@ -98,7 +99,7 @@ Satu baris per orang, dari calon sampai anggota.
 
 `id_orang` · `nama` · `nama_depan` · `whatsapp_norm` · `email` · `perusahaan` · `bisnis` · `id_kursi` ·
 `kota` · `sumber` · `kategori` · `tahap` · `jenis_anggota` · `tanggal_bergabung` · `id_sponsor` · `PIC` ·
-`diajukan_oleh` · `tanggal_masuk` · `tanggal_sentuh` · `alasan_tidak_lanjut` · `catatan` · `terakhir_diubah`
+`diajukan_oleh` · `tanggal_masuk` · `tanggal_sentuh` · `alasan_tidak_lanjut` · `catatan` · `terakhir_diubah` · `jadwal_cs`
 
 | Kolom | Nilai |
 |---|---|
@@ -109,6 +110,8 @@ Satu baris per orang, dari calon sampai anggota.
 | `PIC` | `id_orang` LT atau LDC yang menindaklanjuti |
 | `diajukan_oleh` | `id_orang` yang memasukkan nama ini |
 | `tanggal_sentuh` | terakhir kali tahap atau catatan diubah |
+| `id_kursi` | boleh kosong untuk calon yang bidangnya belum pasti; LT memasangkan kursinya kemudian |
+| `jadwal_cs` | tanggal dan jam coffee session, diisi saat tahap diubah ke `CS` |
 
 LT dan LDC juga punya baris di `Master` (kategori `LT` atau `LDC`) supaya punya `id_orang`.
 Kalau LT juga anggota chapter, `kategori` tetap `LT` dan `tahap` = `Anggota`.
@@ -118,7 +121,9 @@ Kalau LT juga anggota chapter, `kategori` tetap `LT` dan `tahap` = `Anggota`.
 
 - `status`: `Diundang` · `Terdaftar` · `Hadir` · `Batal`
 - `sumber`: `app` · `form`. Form yang diisi visitor dicocokkan ke undangan lewat `whatsapp_norm`;
-  kalau cocok, status menjadi `Terdaftar`.
+  kalau cocok, status menjadi `Terdaftar`. Kalau tidak ada undangan yang cocok, Lapis membuat baris baru
+  dengan `sumber` = `form`, `status` = `Terdaftar`, dan `id_pengundang` dari isian `diundang_oleh` bila
+  namanya cocok dengan anggota (kosong bila tidak).
 
 ### `Hadir`
 `id_hadir` · `id_event` · `id_orang` · `peran` · `waktu_checkin` · `dicatat_oleh`
@@ -176,7 +181,17 @@ Semua dihitung `Api.js` dari data di atas. Tidak ada poin dan tidak ada tim.
 
 **Ronde Rabu.** Satu ronde = Kamis 00.00 sampai Rabu 23.59 WIB. Misi member setiap ronde: satu undangan.
 
-**Misi Chapter.** Jumlah `Master` dengan `tahap` = `Anggota`, dibandingkan gerbang 20, 37, 51.
+**Misi Chapter.** Jumlah `Master` dengan `tahap` = `Anggota`, dibandingkan gerbang 20, 37, 52, plus grafik
+garis jumlah anggota di akhir setiap ronde.
+
+**Daftar nama.** Setiap orang (LDC, LT, anggota) mengisi 20 sampai 40 nama, masing-masing terikat ke satu
+kursi atau ke "bidang belum pasti".
+
+**Tanpa poin.** Keputusan Coach Dedy 4 Oktober: tidak ada poin. Yang dihitung hanya angka nyata (undangan,
+tamu hadir, sponsor) dan lencana.
+
+**Sorotan.** Saat app dibuka, pengundang melihat kabar bila tamunya hadir atau bergabung. Notifikasi hanya
+di dalam app.
 
 **Papan 64 Kursi.** Setiap kursi punya satu keadaan:
 - `terisi` · ada anggota dengan `id_kursi` ini
@@ -215,28 +230,31 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | action | Masukan | Balasan |
 |---|---|---|
 | `masuk` | | `profil {id_orang, nama, nama_depan, peran}`, `pengaturan {...}` |
-| `beranda` | | `misi {anggota, gerbang[], fase, target}`, `ronde {mulai, selesai, acara_berikut}`, `saya {undangan_ronde, undangan_total, tamu_hadir, sponsor, rabu_beruntun}`, `lencana [{kode, nama, didapat, tanggal}]`, `kabar [{jenis, teks, waktu}]` |
-| `kursi` | | `baris [{nomor, sphere, terisi, kursi [{id_kursi, bidang, singkat, status, pemilik, jumlah_calon, jumlah_butuh, saya_butuh}]}]` |
-| `kursiDetail` | `id_kursi` | `kursi {...}`, `calon [...]` (LT dan LDC saja, member menerima daftar kosong) |
-| `tambahCalon` | `id_kursi, nama, bisnis, whatsapp?, id_event?` | `{id_orang, id_undangan?}` atau `ok:false` dengan `duplikat {nama_depan, tahap?, pic?}` |
+| `beranda` | | `misi {anggota, gerbang[], fase, target, riwayat [{selesai, jumlah}]}`, `ronde {mulai, selesai, acara_berikut}`, `saya {undangan_ronde, undangan_total, tamu_hadir, sponsor, rabu_beruntun, nama_daftar, target_nama_min, target_nama_maks}`, `lencana [{kode, nama, didapat, tanggal}]`, `kabar [{jenis, teks, waktu}]` |
+| `kursi` | | `baris [{nomor, sphere, terisi, kursi [{id_kursi, bidang, singkat, status, pemilik, jumlah_calon, jumlah_butuh, saya_butuh, saya_calon}]}]` |
+| `kursiDetail` | `id_kursi` | `kursi {...}`, `calon [...]` (LT dan LDC saja), `calon_saya [{id_orang, nama, tahap}]` nama milik sendiri |
+| `tambahCalon` | `id_kursi?` (kosong = bidang belum pasti), `nama, bisnis, whatsapp?, id_event?` | `{id_orang, id_undangan?}` atau `ok:false` dengan `duplikat {nama_depan, tahap?, pic?}` |
 | `butuh` | `id_kursi` | `{saya_butuh}` (sakelar) |
 | `acara` | | `acara [{id_event, tanggal, jam_mulai, nama_acara, jenis, mode, lokasi}]` yang akan datang |
 | `undang` | `id_orang, id_event, whatsapp?` | `{id_undangan}` atau `ok:false` kalau sudah dua kali diundang. `whatsapp` mengisi nomor calon kalau sebelumnya kosong |
 | `usulanSaya` | | `usulan [{id_orang, nama, bidang, tahap, punya_wa, jumlah_undangan}]` nama yang diajukan sendiri |
-| `undanganSaya` | | `undangan [{id_undangan, nama_depan, bidang, acara, tanggal, status}]` |
+| `undanganSaya` | | `undangan [{id_undangan, nama_depan, bidang, acara, tanggal, status}]`. `status` = `Bergabung` bila tamunya sudah anggota |
 | `papan` | | `pengundang [{nama_depan, jumlah}]`, `sponsor [{nama_depan, jumlah}]` |
+| `tamuPekanIni` | | `tamu [{nama, bidang, sphere, pengundang, acara, jenis, tanggal, jam_mulai, status, bergabung}]` tamu berstatus `Terdaftar` atau `Hadir` di acara ronde ini. Tanpa nomor telepon |
+| `daftarAnggota` | | `anggota [{nama, bidang, sphere, jenis_anggota, sponsor, tanggal_bergabung}]` tanpa kontak |
 
 ### 6.2 Khusus LT dan LDC
 
 | action | Masukan | Balasan |
 |---|---|---|
-| `calonSaya` | `semua?` (LDC) | `calon [{id_orang, nama, bisnis, bidang, tahap, whatsapp, hari_diam, pic}]` |
-| `tindakLanjut` | `id_orang, tahap, catatan?` | `{tahap}` |
+| `calonSaya` | `semua?` (LDC) | `calon [{id_orang, nama, bisnis, id_kursi, bidang, tahap, whatsapp, hari_diam, pic, jadwal_cs}]` |
+| `jadwalCS` | | `cs [{id_orang, nama, bidang, pic, jadwal_cs, whatsapp}]` coffee session mendatang |
+| `tindakLanjut` | `id_orang, tahap, catatan?, jadwal_cs?` (wajib bila tahap `CS`), `id_kursi?` | `{tahap}` |
 | `regroup` | | `founding {jumlah, target}`, `lt [{nama_depan, total, ronde, target}]`, `kursi_tanpa_calon`, `calon_diam [{nama, pic, hari}]` |
 | `daftarHadir` | `id_event` | `orang [{id_orang, nama, peran, hadir}]` |
 | `checkin` | `id_event, id_orang, hadir` | `{hadir}` |
 | `anggota` | | `anggota [{id_orang, nama}]` untuk pemilih sponsor |
-| `jadikanAnggota` | `id_orang, id_kursi, id_sponsor` | `{jenis_anggota}` |
+| `jadikanAnggota` | `id_orang, id_kursi` (wajib bila calon belum punya kursi), `id_sponsor` | `{jenis_anggota, kursi}` |
 
 ### 6.3 Khusus LDC
 
@@ -247,7 +265,8 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 ### 6.4 Aturan wajib
 
 1. Tidak pernah mengirim WhatsApp, email, atau catatan orang lain ke peran `Anggota`.
-2. Papan dan kursi hanya memuat nama depan.
+2. Papan dan kursi hanya memuat nama depan. Pengecualian: `tamuPekanIni` dan `daftarAnggota` memuat nama
+   lengkap dan bidang untuk semua anggota (keputusan Coach Dedy), tetap tanpa nomor telepon.
 3. Kode salah: setelah 20 kali gagal dalam 10 menit dari semua sumber, semua `masuk` dikunci 10 menit
    dan Coach Dedy diberi tahu. (Kode yang salah tidak bisa dikaitkan ke orang tertentu.)
 4. Semua aksi tulis dicatat di `Log`.
@@ -259,4 +278,5 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | Tanggal | Perubahan | Disetujui |
 |---|---|---|
 | 2026-10-04 | Versi 1 | menunggu Coach Dedy |
+| 2026-10-04 | Putaran 2: target 52, daftar 20 sampai 40 nama untuk semua, tanpa poin, kolom `jadwal_cs`, aksi `tamuPekanIni`, `jadwalCS`, `daftarAnggota`, kursi boleh kosong | menunggu Coach Dedy |
 | 2026-10-04 | Tambah aksi `usulanSaya`, parameter `whatsapp` di `undang`, aturan format Plain text | menunggu Coach Dedy |

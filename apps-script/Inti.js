@@ -122,6 +122,7 @@ var Inti = (function () {
     a.nama_chapter = teks(a.nama_chapter) || 'Optima';
     a.hari_bod = teks(a.hari_bod) || 'Rabu';
     a.tautan_form = teks(a.tautan_form);
+    a.tautan_zoom_cs = teks(a.tautan_zoom_cs);
     if (a.tanggal_esm instanceof Date) a.tanggal_esm = isoTanggal(a.tanggal_esm);
     if (a.tanggal_grand_launch instanceof Date) a.tanggal_grand_launch = isoTanggal(a.tanggal_grand_launch);
     this._atur = a;
@@ -353,6 +354,32 @@ var Inti = (function () {
     return hasil.sort(function (a, b) { return a.waktu < b.waktu ? 1 : -1; }).slice(0, 12);
   }
 
+  function waktuSlot(r) {
+    var t = r.tanggal instanceof Date ? isoTanggal(r.tanggal) : teks(r.tanggal).slice(0, 10);
+    var j = r.jam instanceof Date ? jamWIB(r.jam) : teks(r.jam).replace('.', ':');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(t) || !/^\d{1,2}:\d{2}$/.test(j)) return null;
+    if (j.length === 4) j = '0' + j;
+    return tgl(t + 'T' + j + ':00+07:00');
+  }
+  function perannya(k, id) {
+    var a = k.tab('Akses').filter(function (x) { return teks(x.id_orang) === teks(id); })[0];
+    return a ? teks(a.peran) : '';
+  }
+  function jamWIB(d) { return new Date(d.getTime() + WIB).toISOString().slice(11, 16); }
+  function slotById(k, id) {
+    var r = k.tab('Jadwal_CS').filter(function (x) { return teks(x.id_slot) === teks(id); })[0];
+    if (!r) gagal('That time is no longer available.');
+    return r;
+  }
+  // bebaskan slot lama milik calon (saat jadwal diganti atau dibatalkan)
+  function lepasSlot(k, o) {
+    k.tab('Jadwal_CS').forEach(function (r) {
+      if (teks(r.id_orang) !== teks(o.id_orang) || teks(r.status) !== 'Terisi') return;
+      var w = waktuSlot(r);
+      if (w && w < k.now) return;
+      k.ubah('Jadwal_CS', r, { status: 'Kosong', id_orang: '', dipesan_oleh: '' });
+    });
+  }
   function wajibLT(k) { if (!k.isLT()) gagal('This feature is for the launch team only.'); }
   function wajibLDC(k) { if (!k.isLDC()) gagal('This feature is for the LDC only.'); }
 
@@ -390,7 +417,7 @@ var Inti = (function () {
       return {
         profil: { id_orang: k.saya.id_orang, nama: k.saya.nama, nama_depan: k.saya.nama_depan, peran: k.saya.peran },
         pengaturan: {
-          nama_chapter: a.nama_chapter, fase: a.fase, hari_bod: a.hari_bod, tautan_form: a.tautan_form,
+          nama_chapter: a.nama_chapter, fase: a.fase, hari_bod: a.hari_bod, tautan_form: a.tautan_form, tautan_zoom_cs: a.tautan_zoom_cs,
           target_founding: a.target_founding, target_cgt: a.target_cgt, target_launch: a.target_launch,
           target_nama_min: a.target_nama_min, target_nama_maks: a.target_nama_maks, tanggal_esm: teks(a.tanggal_esm), tanggal_grand_launch: teks(a.tanggal_grand_launch)
         }
@@ -503,7 +530,7 @@ var Inti = (function () {
           var x = kursiById(k, r.id_kursi);
           var u = terakhir[teks(r.id_orang)], e = u ? acara[teks(u.id_event)] : null;
           return { id_orang: teks(r.id_orang), nama: teks(r.nama), bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), punya_wa: !!teks(r.whatsapp_norm), whatsapp: teks(r.whatsapp_norm), bisnis: teks(r.bisnis), jumlah_undangan: hitung[teks(r.id_orang)] || 0,
-            status_undangan: u ? teks(u.status) : '', acara_undangan: e ? teks(e.nama_acara) : '', tanggal_undangan: e && tgl(e.tanggal) ? isoTanggal(tgl(e.tanggal)) : '' };
+            jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '', status_undangan: u ? teks(u.status) : '', acara_undangan: e ? teks(e.nama_acara) : '', tanggal_undangan: e && tgl(e.tanggal) ? isoTanggal(tgl(e.tanggal)) : '' };
         }).reverse()
       };
     },
@@ -565,6 +592,8 @@ var Inti = (function () {
         var j = tgl(b.jadwal_cs);
         if (!j) gagal('Enter the date and time of the coffee session.');
         ubah.jadwal_cs = j.toISOString();
+        lepasSlot(k, o);
+        k.tambah('Jadwal_CS', { id_slot: idBaru(k.tab('Jadwal_CS'), 'id_slot', 'S', 4), tanggal: isoTanggal(j), jam: jamWIB(j), PIC: teks(o.PIC) || k.saya.id_orang, tempat: 'Zoom', status: 'Terisi', id_orang: teks(o.id_orang), dipesan_oleh: k.saya.id_orang });
       }
       if (teks(b.id_kursi) && teks(b.id_kursi) !== teks(o.id_kursi)) {
         var kx = kursiById(k, b.id_kursi);
@@ -720,6 +749,114 @@ var Inti = (function () {
       };
     },
 
+    /* ---------- jadwal coffee session (slot) ----------
+       LT dan LDC membuka jam kosong. Anggota memesan jam kosong untuk calon miliknya sendiri,
+       LT boleh untuk semua calon dan boleh memakai jam di luar slot. */
+    slotCS: function (k, b) {
+      var lt = k.isLT(), id = k.saya.id_orang;
+      var dari = new Date(k.now.getTime() - (lt ? 3 * HARI : 0)), sampai = new Date(k.now.getTime() + 28 * HARI);
+      var slot = k.tab('Jadwal_CS').filter(function (r) {
+        var w = waktuSlot(r);
+        if (!w || w < dari || w > sampai || teks(r.status) === 'Batal') return false;
+        if (lt) return true;
+        if (teks(r.status) === 'Kosong') return w > k.now;
+        var o = k.orang(r.id_orang);
+        return o && teks(o.diajukan_oleh) === id;
+      }).map(function (r) {
+        var o = k.orang(r.id_orang), x = o ? kursiById(k, o.id_kursi) : null;
+        var h = { id_slot: teks(r.id_slot), waktu: waktuSlot(r).toISOString(), tanggal: isoTanggal(tgl(r.tanggal) || waktuSlot(r)), jam: teks(r.jam), tempat: teks(r.tempat) || 'Zoom', pic: namaDepan(k.orang(r.PIC)), pic_id: teks(r.PIC), pic_ldc: perannya(k, r.PIC) === 'LDC', status: teks(r.status) };
+        if (o) {
+          h.id_orang = teks(o.id_orang); h.nama = teks(o.nama); h.tahap = teks(o.tahap); h.bisnis = teks(o.bisnis);
+          if (lt) { h.bidang = x ? x.bidang : (teks(o.bisnis) || 'Undecided classification'); h.whatsapp = teks(o.whatsapp_norm); h.pengundang = namaDepan(k.orang(r.dipesan_oleh || o.diajukan_oleh)); }
+        }
+        return h;
+      }).sort(function (a, c) { return a.waktu < c.waktu ? -1 : 1; });
+      var hasil = { slot: slot };
+      if (lt) {
+        hasil.pewawancara = k.tab('Akses').filter(function (x) { return (teks(x.peran) === 'LT' || teks(x.peran) === 'LDC') && benar(x.aktif); }).map(function (x) { return { id_orang: teks(x.id_orang), nama_depan: namaDepan(k.orang(x.id_orang)), peran: teks(x.peran) }; });
+        // coffee session yang sudah lewat tetapi belum diberi hasil
+        hasil.perlu_hasil = k.tab('Master').filter(function (r) { var j = tgl(r.jadwal_cs); return teks(r.tahap) === 'Coffee_Scheduled' && j && j < k.now; }).map(function (r) {
+          return { id_orang: teks(r.id_orang), nama: teks(r.nama), waktu: tgl(r.jadwal_cs).toISOString(), pic: namaDepan(k.orang(r.PIC)) };
+        });
+      }
+      return hasil;
+    },
+
+    tambahSlot: function (k, b) {
+      wajibLT(k);
+      var tanggal = teks(b.tanggal), jam = [].concat(b.jam || []).map(teks).filter(Boolean);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(tanggal)) gagal('Choose a date.');
+      if (!jam.length) gagal('Choose at least one time.');
+      var pic = teks(b.pic) || k.saya.id_orang;
+      if (!k.isLDC() && pic !== k.saya.id_orang) gagal('Only Coach Dedy can open times for someone else.');
+      var dibuat = 0;
+      jam.forEach(function (j) {
+        if (!/^\d{2}:\d{2}$/.test(j)) gagal('Time format is HH:MM.');
+        var w = tgl(tanggal + 'T' + j + ':00+07:00');
+        if (w <= k.now) gagal(j + ' on that date has already passed.');
+        var ada = k.tab('Jadwal_CS').some(function (r) { return teks(r.PIC) === pic && teks(r.status) !== 'Batal' && waktuSlot(r) && waktuSlot(r).getTime() === w.getTime(); });
+        if (ada) return;
+        k.tambah('Jadwal_CS', { id_slot: idBaru(k.tab('Jadwal_CS'), 'id_slot', 'S', 4), tanggal: tanggal, jam: j, PIC: pic, tempat: teks(b.tempat) || 'Zoom', status: 'Kosong', id_orang: '', dipesan_oleh: '' });
+        dibuat++;
+      });
+      k.log('tambahSlot', dibuat + ' jam ' + tanggal);
+      return { dibuat: dibuat };
+    },
+
+    hapusSlot: function (k, b) {
+      wajibLT(k);
+      var r = slotById(k, b.id_slot);
+      if (teks(r.status) !== 'Kosong') gagal('This time is booked. Cancel the booking first.');
+      k.ubah('Jadwal_CS', r, { status: 'Batal' });
+      return { ok: true };
+    },
+
+    pesanSlot: function (k, b) {
+      var o = k.orang(b.id_orang);
+      if (!o || teks(o.kategori) !== 'Calon') gagal('Prospect not found.');
+      var lt = k.isLT();
+      if (!lt && teks(o.diajukan_oleh) !== k.saya.id_orang) gagal('Only prospects on your own list can be booked.');
+      if (TAHAP_TUTUP.indexOf(teks(o.tahap)) >= 0 || teks(o.tahap) === 'Anggota') gagal('This prospect is closed or already a member.');
+      var waktu, slot = null;
+      if (teks(b.id_slot)) {
+        slot = slotById(k, b.id_slot);
+        if (teks(slot.status) !== 'Kosong') gagal('That time was just taken. Pick another one.');
+        waktu = waktuSlot(slot);
+      } else {
+        if (!lt) gagal('Pick one of the open times.');
+        waktu = tgl(b.waktu);
+        if (!waktu) gagal('Enter the date and time of the coffee session.');
+      }
+      if (waktu <= k.now) gagal('That time has already passed.');
+      var waBaru = normWa(b.whatsapp);
+      if (!teks(o.whatsapp_norm)) {
+        if (!waBaru || waBaru.length < 10) gagal('Enter the WhatsApp number first.');
+        var dobel = k.tab('Master').some(function (r) { return r !== o && teks(r.whatsapp_norm) === waBaru; });
+        if (dobel) gagal('This WhatsApp number is already on the chapter list.');
+        k.ubah('Master', o, { whatsapp_norm: waBaru });
+      }
+      lepasSlot(k, o);
+      if (slot) k.ubah('Jadwal_CS', slot, { status: 'Terisi', id_orang: teks(o.id_orang), dipesan_oleh: k.saya.id_orang });
+      else k.tambah('Jadwal_CS', { id_slot: idBaru(k.tab('Jadwal_CS'), 'id_slot', 'S', 4), tanggal: isoTanggal(waktu), jam: jamWIB(waktu), PIC: teks(b.pic) || k.saya.id_orang, tempat: teks(b.tempat) || 'Zoom', status: 'Terisi', id_orang: teks(o.id_orang), dipesan_oleh: k.saya.id_orang });
+      var ubah = { tahap: 'Coffee_Scheduled', jadwal_cs: waktu.toISOString(), tanggal_sentuh: k.now.toISOString(), terakhir_diubah: k.now.toISOString() };
+      if (!teks(o.PIC)) ubah.PIC = slot ? teks(slot.PIC) : k.saya.id_orang;
+      k.ubah('Master', o, ubah);
+      k.log('pesanSlot', namaDepan(o) + ' ' + waktu.toISOString());
+      return { waktu: waktu.toISOString(), tempat: slot ? (teks(slot.tempat) || 'Zoom') : (teks(b.tempat) || 'Zoom'), pic: namaDepan(k.orang(slot ? slot.PIC : (teks(b.pic) || k.saya.id_orang))) };
+    },
+
+    batalSlot: function (k, b) {
+      var o = k.orang(b.id_orang);
+      if (!o) gagal('Prospect not found.');
+      if (!k.isLT() && teks(o.diajukan_oleh) !== k.saya.id_orang) gagal('Only prospects on your own list can be changed.');
+      if (teks(o.tahap) !== 'Coffee_Scheduled') gagal('No coffee session is booked.');
+      lepasSlot(k, o);
+      var adaUndangan = k.tab('Undangan').some(function (u) { return teks(u.id_orang_calon) === teks(o.id_orang); });
+      var adaHadir = k.tab('Hadir').some(function (h) { return teks(h.id_orang) === teks(o.id_orang); });
+      k.ubah('Master', o, { tahap: adaHadir ? 'Attended' : adaUndangan ? 'Invited' : 'Listed', jadwal_cs: '', terakhir_diubah: k.now.toISOString() });
+      return { tahap: teks(o.tahap) };
+    },
+
     daftarAnggota: function (k) {
       var urut = {};
       var lt = k.isLT();
@@ -784,7 +921,7 @@ var Inti = (function () {
     }
   };
 
-  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1 };
+  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1 };
 
   /* Titik masuk tunggal. db = adaptor; badan = objek dari JSON. */
   function jalankan(db, badan, sekarang) {

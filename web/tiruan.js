@@ -2,7 +2,7 @@
    Aktif saat CONFIG.API_URL kosong. Kode contoh: LDC001, LT0001, AGT001.
    Tambahkan ?fase=BOD di alamat untuk melihat layar setelah ESM. Tambahkan ?reset=1 untuk mengulang data. */
 var Tiruan = (function () {
-  var KUNCI = 'optima_tiruan_v3';
+  var KUNCI = 'optima_tiruan_v4';
   var HARI = 864e5;
   var data = null;
 
@@ -78,9 +78,17 @@ var Tiruan = (function () {
       ['Zaki Mubarak', 'K50', 'Listed', iman, 6], ['Arif Rahman', 'K51', 'Declined', iman, 3], ['Bella Safitri', 'K21', 'Listed', dhika, 7],
       ['Candra Wibowo', 'K60', 'Joined_Other', agung, 2], ['Dian Novita', 'K36', 'Listed', dedy, 1], ['Erwin Gunawan', 'K05', 'Listed', dhika, 10]
     ];
+    var slot = [];
+    [[1, '13:00'], [2, '11:00'], [2, '16:00'], [3, '11:00'], [5, '19:00'], [6, '10:00']].forEach(function (x) {
+      slot.push({ id_slot: 'S' + String(slot.length + 1).padStart(4, '0'), tanggal: tanggal(new Date(now.getTime() + x[0] * HARI)), jam: x[1], PIC: dedy.id_orang, tempat: 'Zoom', status: 'Kosong', id_orang: '', dipesan_oleh: '' });
+    });
     calonContoh.forEach(function (c) {
       var o = orang(c[0], 'Calon', c[2], c[1], { PIC: c[3].id_orang, diajukan_oleh: c[3].id_orang, tanggal_masuk: lalu(c[4] + 1), tanggal_sentuh: lalu(c[4]), bisnis: '' });
-      if (c[2] === 'Coffee_Scheduled') { var h = new Date(now.getTime() + (calonContoh.indexOf(c) % 3 + 1) * HARI); o.jadwal_cs = tanggal(h) + 'T' + (calonContoh.indexOf(c) % 2 ? '14:00' : '10:00') + ':00+07:00'; }
+      if (c[2] === 'Coffee_Scheduled') {
+        var h = new Date(now.getTime() + (calonContoh.indexOf(c) % 3 + 1) * HARI), jm = calonContoh.indexOf(c) % 2 ? '14:00' : '10:00';
+        o.jadwal_cs = tanggal(h) + 'T' + jm + ':00+07:00';
+        slot.push({ id_slot: 'S' + String(slot.length + 1).padStart(4, '0'), tanggal: tanggal(h), jam: jm, PIC: dedy.id_orang, tempat: 'Zoom', status: 'Terisi', id_orang: o.id_orang, dipesan_oleh: c[3].id_orang });
+      }
     });
 
     var akses = [
@@ -114,7 +122,7 @@ var Tiruan = (function () {
       Pengaturan: [
         ['nama_chapter', 'Optima'], ['fase', 'Pembentukan'], ['target_founding', 20], ['target_cgt', 37], ['target_launch', 52],
         ['target_nama_min', 20], ['target_nama_maks', 40], ['hari_bod', 'Rabu'], ['tanggal_esm', '2027-05-24'], ['tanggal_grand_launch', '2027-08-02'],
-        ['tautan_form', 'https://forms.gle/contoh-optima']
+        ['tautan_form', 'https://forms.gle/contoh-optima'], ['tautan_zoom_cs', 'https://zoom.us/j/contoh-coffee']
       ].map(function (x) { return { kunci: x[0], nilai: x[1] }; }),
       Klasifikasi: klasifikasi,
       Master: M,
@@ -124,7 +132,7 @@ var Tiruan = (function () {
       Hadir: hadir,
       Butuh: [{ id_kursi: 'K15', id_orang: anggota[1].id_orang, tanggal: lalu(2) }, { id_kursi: 'K15', id_orang: anggota[3].id_orang, tanggal: lalu(1) }, { id_kursi: 'K12', id_orang: anggota[2].id_orang, tanggal: lalu(1) }],
       Wawancara: [{ id_wawancara: 'W1', tanggal: lalu(1), id_orang: 'P0015', kanal: 'Online', PIC: dedy.id_orang, hasil: 'Tertarik' }],
-      Jadwal_CS: [], Responses: [], Lencana: [], Log: []
+      Jadwal_CS: slot, Responses: [], Lencana: [], Log: []
     };
   }
 

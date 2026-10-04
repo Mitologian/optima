@@ -84,6 +84,7 @@ Dua kolom: `kunci` · `nilai`.
 | `tanggal_esm` | 2027-05-24 |
 | `tanggal_grand_launch` | 2027-08-02 |
 | `tautan_form` | https://forms.gle/... |
+| `tautan_zoom_cs` | tautan Zoom tetap untuk coffee session, ikut di pesan konfirmasi |
 
 ### `Klasifikasi`
 `id_kursi` · `baris` · `sphere` · `bidang` · `singkat` · `aktif`
@@ -166,7 +167,15 @@ Member menandai bidang yang mereka butuhkan di chapter.
 - Diisi Lapis dari pintu Telegram Coach Dedy, dan oleh aksi `tindakLanjut` kalau ada catatan.
 
 ### `Jadwal_CS`
-`id_slot` · `tanggal` · `jam` · `PIC` · `status` · `id_orang`. `status`: `Kosong` · `Ditahan` · `Terisi`.
+`id_slot` · `tanggal` · `jam` · `PIC` · `tempat` · `status` · `id_orang` · `dipesan_oleh`
+
+- Satu baris = satu jam coffee session (30 menit). `tanggal` YYYY-MM-DD, `jam` HH:MM WIB, keduanya Plain text.
+- `PIC` = pewawancara (LDC atau LT). `tempat`: `Zoom` atau nama tempat. `dipesan_oleh` = yang memesan.
+- `status`: `Kosong` (dibuka LT/LDC) · `Terisi` (sudah dipesan untuk `id_orang`) · `Batal` (jam dihapus).
+- Anggota hanya boleh memesan jam `Kosong` untuk calon yang ia ajukan sendiri. LT boleh untuk semua calon
+  dan boleh memakai jam di luar slot (baris baru langsung `Terisi`).
+- Memesan mengubah calon ke `Coffee_Scheduled` dan mengisi `jadwal_cs`. Ganti jam atau batal membebaskan
+  slot lama kembali ke `Kosong`.
 
 ### `Responses`
 Mentah dari Google Form, tidak diubah tangan:
@@ -252,11 +261,14 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `butuh` | `id_kursi` | `{saya_butuh}` (sakelar) |
 | `acara` | | `acara [{id_event, tanggal, jam_mulai, nama_acara, jenis, mode, lokasi}]` yang akan datang |
 | `undang` | `id_orang, id_event, whatsapp?` | `{id_undangan}` atau `ok:false` kalau sudah dua kali diundang. `whatsapp` mengisi nomor calon kalau sebelumnya kosong |
-| `usulanSaya` | | `usulan [{id_orang, nama, bidang, tahap, punya_wa, jumlah_undangan}]` nama yang diajukan sendiri |
+| `usulanSaya` | | `usulan [{id_orang, nama, bidang, tahap, punya_wa, whatsapp, bisnis, jumlah_undangan, jadwal_cs, status_undangan, acara_undangan, tanggal_undangan}]` nama yang diajukan sendiri |
 | `undanganSaya` | | `undangan [{id_undangan, nama_depan, bidang, acara, tanggal, status}]`. `status` = `Bergabung` bila tamunya sudah anggota |
 | `papan` | | `pengundang [{nama_depan, jumlah}]`, `sponsor [{nama_depan, jumlah}]` |
 | `tamuPekanIni` | | `tamu [{nama, bidang, sphere, pengundang, acara, jenis, tanggal, jam_mulai, status, bergabung}]` tamu berstatus `Terdaftar` atau `Hadir` di acara ronde ini. Tanpa nomor telepon |
 | `daftarAnggota` | | `anggota [{nama, bidang, sphere, jenis_anggota, sponsor, tanggal_bergabung}]` tanpa kontak |
+| `slotCS` | | `slot [{id_slot, waktu, tanggal, jam, tempat, pic, pic_id, pic_ldc, status, id_orang?, nama?, tahap?}]` 4 pekan ke depan. Anggota: jam `Kosong` dan pesanan calonnya sendiri. LT: semua, ditambah `bidang, whatsapp, bisnis, pengundang`, `pewawancara [...]`, `perlu_hasil [{id_orang, nama, waktu, pic}]` |
+| `pesanSlot` | `id_orang, id_slot` atau `waktu` (LT saja), `whatsapp?`, `pic?`, `tempat?` | `{waktu, tempat, pic}`. Calon menjadi `Coffee_Scheduled` |
+| `batalSlot` | `id_orang` | `{tahap}` calon kembali ke `Attended`, `Invited`, atau `Listed` sesuai riwayatnya |
 
 ### 6.2 Khusus LT dan LDC
 
@@ -264,7 +276,9 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 |---|---|---|
 | `calonSaya` | `semua?` (LDC) | `calon [{id_orang, nama, bisnis, id_kursi, bidang, tahap, whatsapp, hari_diam, pic, jadwal_cs}]` |
 | `jadwalCS` | | `cs [{id_orang, nama, bidang, pic, jadwal_cs, whatsapp}]` coffee session mendatang |
-| `tindakLanjut` | `id_orang, tahap, catatan?, jadwal_cs?` (wajib bila tahap `CS`), `id_kursi?` | `{tahap}` |
+| `tindakLanjut` | `id_orang, tahap, catatan?, jadwal_cs?` (wajib bila tahap `Coffee_Scheduled`, sekaligus membuat baris `Jadwal_CS`), `id_kursi?` | `{tahap}` |
+| `tambahSlot` | `tanggal, jam[]` (HH:MM), `pic?` (LDC boleh untuk orang lain), `tempat?` | `{dibuat}` |
+| `hapusSlot` | `id_slot` (hanya yang `Kosong`) | `{ok}` |
 | `regroup` | | `founding {jumlah, target}`, `lt [{nama_depan, total, ronde, target}]`, `kursi_tanpa_calon`, `calon_diam [{nama, pic, hari}]` |
 | `daftarHadir` | `id_event` | `orang [{id_orang, nama, peran, hadir}]` |
 | `checkin` | `id_event, id_orang, hadir` | `{hadir}` |
@@ -295,3 +309,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-04 | Versi 1 | menunggu Coach Dedy |
 | 2026-10-04 | Putaran 2: target 52, daftar 20 sampai 40 nama untuk semua, tanpa poin, kolom `jadwal_cs`, aksi `tamuPekanIni`, `jadwalCS`, `daftarAnggota`, kursi boleh kosong | menunggu Coach Dedy |
 | 2026-10-04 | Tambah aksi `usulanSaya`, parameter `whatsapp` di `undang`, aturan format Plain text | menunggu Coach Dedy |
+| 2026-10-05 | Jadwal coffee session: kolom `tempat`, `dipesan_oleh` di `Jadwal_CS`, aksi `slotCS`, `tambahSlot`, `hapusSlot`, `pesanSlot`, `batalSlot`, pengaturan `tautan_zoom_cs`. Anggota boleh mengundang langsung ke coffee session. Opsi `Tidak Ada` di Form | menunggu Coach Dedy |

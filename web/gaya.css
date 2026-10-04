@@ -243,8 +243,8 @@ label.isian > span { display: block; font-size: 13px; font-weight: 700; color: v
 .nav a[aria-current="page"] { background: var(--merah); color: #fff; }
 
 /* ---------- tab dalam halaman ---------- */
-.tab { display: flex; background: var(--kertas-2); border-radius: 12px; padding: 4px; margin: 18px 0 12px; }
-.tab button { flex: 1; padding: 9px 6px; border-radius: 9px; font-size: 14px; font-weight: 700; color: var(--tinta-2); }
+.tab { display: flex; gap: 2px; background: var(--kertas-2); border-radius: 12px; padding: 4px; margin: 18px 0 12px; }
+.tab button { flex: 1; min-width: 0; padding: 9px 4px; border-radius: 9px; font-size: 13px; font-weight: 700; color: var(--tinta-2); }
 .tab button[aria-selected="true"] { background: var(--kartu); color: var(--tinta); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
 
 /* ---------- lembar bawah ---------- */
@@ -360,3 +360,15 @@ details.lipat > :not(summary) { margin: 0 14px 14px; }
 .balasan:first-child { border-top: 0; }
 .balasan b { font-size: 13px; }
 .balasan p { font-size: 13px; color: var(--tinta-2); margin: 4px 0 8px; }
+
+.langkah-seg.tiga { grid-template-columns: repeat(3, 1fr); }
+.slot-pilih button small { display: block; font-size: 11px; font-weight: 500; color: var(--tinta-2); }
+.pilihan.kolom { flex-direction: column; }
+.pilihan.kolom button { text-align: left; padding: 12px 14px; }
+.pilihan.kolom button b { display: block; font-size: 15px; }
+.pilihan.kolom button small { display: block; font-size: 12px; color: var(--tinta-2); font-weight: 400; margin-top: 2px; }
+.jam-slot { flex: 0 0 48px; font-weight: 700; font-size: 14px; color: var(--merah); font-variant-numeric: tabular-nums; }
+.jam-slot.redup { color: var(--tinta-2); }
+.hari-slot { font-size: 13px; font-weight: 700; margin: 14px 2px 6px; }
+b.redup { color: var(--tinta-2); }
+.slot-pilih button { font-size: 13px; padding: 7px 10px; }

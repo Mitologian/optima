@@ -13,7 +13,7 @@ function doPost(e) {
   try {
     badan = JSON.parse((e && e.postData && e.postData.contents) || '{}');
   } catch (err) {
-    return api_json_({ ok: false, pesan: 'Permintaan tidak bisa dibaca.' });
+    return api_json_({ ok: false, pesan: 'Request could not be read.' });
   }
   var kunci = LockService.getScriptLock();
   var tulis = !Inti._tanpaLog[badan.action];
@@ -25,7 +25,7 @@ function doPost(e) {
     return api_json_(hasil);
   } catch (err) {
     console.error(err && err.stack ? err.stack : err);
-    return api_json_({ ok: false, pesan: 'Terjadi kendala di server. Coba lagi sebentar.' });
+    return api_json_({ ok: false, pesan: 'Server error. Try again shortly.' });
   } finally {
     if (tulis) try { kunci.releaseLock(); } catch (x) {}
   }

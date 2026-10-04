@@ -1,14 +1,14 @@
 {
   "name": "BNI Optima",
   "short_name": "Optima",
-  "description": "App launch team dan member BNI Optima",
+  "description": "Launch team and member app for BNI Optima",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FFFFFF",
   "theme_color": "#C8102E",
-  "lang": "id",
+  "lang": "en",
   "icons": [
     { "src": "ikon/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "ikon/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }

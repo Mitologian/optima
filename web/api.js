@@ -15,10 +15,10 @@ var Api = (function () {
         redirect: 'follow'
       });
     } catch (e) {
-      return { ok: false, pesan: 'Tidak tersambung ke internet. Coba lagi.' };
+      return { ok: false, pesan: 'No internet connection. Try again.' };
     }
     try { return await res.json(); }
-    catch (e) { return { ok: false, pesan: 'Server membalas tidak wajar. Coba lagi sebentar.' }; }
+    catch (e) { return { ok: false, pesan: 'Unexpected server response. Try again shortly.' }; }
   }
 
   return { panggil: panggil, setKode: setKode, tiruan: !CONFIG.API_URL };

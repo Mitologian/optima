@@ -149,7 +149,7 @@ h3 { font-size: 15px; font-weight: 700; }
 .saring button[aria-pressed="true"] { background: var(--merah); color: #fff; border-color: var(--merah); }
 
 .papan-kursi { background: var(--kartu); border: 1px solid var(--garis); border-radius: var(--r); padding: 12px 6px 4px; margin: 0 -6px; box-shadow: var(--bayang); }
-.baris-kursi { margin-bottom: 12px; }
+.baris-kursi { margin-bottom: 18px; }
 .baris-kursi header { display: flex; align-items: center; gap: 8px; margin: 0 2px 6px; }
 .baris-kursi header .no { font-family: var(--huruf-judul); font-weight: 800; font-size: 12px; width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; background: var(--kertas-2); color: var(--tinta-2); }
 .baris-kursi header h3 { font-size: 13px; font-weight: 700; flex: 1; letter-spacing: 0; font-family: var(--huruf); }
@@ -157,11 +157,11 @@ h3 { font-size: 15px; font-weight: 700; }
 .baris-kursi.lengkap header .no { background: var(--emas); color: #fff; }
 .baris-kursi.lengkap { background: linear-gradient(90deg, var(--emas-muda), transparent 80%); border-radius: 10px; margin-left: -6px; margin-right: -6px; padding: 6px 6px 2px; }
 
-.kisi { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 3px; }
+.kisi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
 .kursi {
-  position: relative; aspect-ratio: 1; border-radius: 7px; padding: 1px;
+  position: relative; min-height: 54px; border-radius: 10px; padding: 6px 8px;
   display: flex; align-items: center; justify-content: center; text-align: center;
-  font-family: var(--huruf-judul); font-size: 8px; line-height: 1.05; font-weight: 700; letter-spacing: -.03em; overflow: hidden; word-break: keep-all; overflow-wrap: normal;
+  font-family: var(--huruf); font-size: 11px; line-height: 1.2; font-weight: 600; letter-spacing: 0; overflow: hidden; word-break: normal; overflow-wrap: anywhere; hyphens: auto;
   transition: transform .15s ease;
 }
 .kursi:active { transform: scale(.94); }
@@ -169,11 +169,11 @@ h3 { font-size: 15px; font-weight: 700; }
 .kursi.ada_calon { background: var(--merah-muda); color: var(--merah); border: 1.5px solid color-mix(in srgb, var(--merah) 40%, transparent); }
 .kursi.terisi { background: var(--merah); color: #fff; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18); }
 .baris-kursi.lengkap .kursi.terisi { background: linear-gradient(160deg, #CF9A36, var(--emas)); }
-.kursi .badge { position: absolute; top: -1px; right: -1px; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 0 7px 0 7px; background: var(--merah); color: #fff; font-size: 9.5px; line-height: 15px; }
+.kursi .badge { position: absolute; top: 0; right: 0; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 0 7px 0 7px; background: var(--merah); color: #fff; font-size: 9.5px; line-height: 15px; }
 .kursi .dicari { position: absolute; left: 3px; top: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--emas); box-shadow: 0 0 0 2px var(--kartu); }
 .kursi.redam { opacity: .18; }
 .kursi .t { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-@media (min-width: 420px) { .kursi { font-size: 10px; } }
+
 
 /* ---------- daftar ---------- */
 .daftar { list-style: none; }
@@ -333,3 +333,5 @@ details.lipat summary em { font-style: normal; font-family: var(--huruf); font-w
 details.lipat summary em::after { content: ' \203A'; display: inline-block; transition: transform .2s; }
 details.lipat[open] summary em::after { transform: rotate(90deg); }
 details.lipat > :not(summary) { margin: 0 14px 14px; }
+
+.kepala .fase.ganti { cursor: pointer; border-color: var(--merah); color: var(--merah); }

@@ -55,6 +55,7 @@ Sumber: BNI Indonesia Official Handbook.
 4. **Guest dan Observer** (4.5.4, 4.5.5) dicatat di `Master.kategori` dan tidak dihitung sebagai calon.
 5. Istilah **referral** tidak dipakai di app. Referral adalah potensi bisnis antar member dan dicatat di
    BNI Connect.
+6. Bahasa tampilan app adalah Inggris. Pesan galat dari API (`pesan`) juga Inggris. Nilai data di sheet (tahap, status, jenis) tetap seperti tertulis di kontrak ini.
 
 ## 4. Spreadsheet `Optima - Data Chapter`
 

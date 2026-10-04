@@ -121,10 +121,19 @@ Kalau LT juga anggota chapter, `kategori` tetap `LT` dan `tahap` = `Anggota`.
 `id_undangan` · `tanggal` · `id_pengundang` · `id_orang_calon` · `id_event` · `status` · `sumber`
 
 - `status`: `Diundang` · `Terdaftar` · `Hadir` · `Batal`
-- `sumber`: `app` · `form`. Form yang diisi visitor dicocokkan ke undangan lewat `whatsapp_norm`;
-  kalau cocok, status menjadi `Terdaftar`. Kalau tidak ada undangan yang cocok, Lapis membuat baris baru
-  dengan `sumber` = `form`, `status` = `Terdaftar`, dan `id_pengundang` dari isian `diundang_oleh` bila
-  namanya cocok dengan anggota (kosong bila tidak).
+- `sumber`: `app` · `form`.
+- **Pencocokan registrasi Form (tanpa kode undangan).** Pesan undangan dari app meminta tamu memilih nama
+  pengundang di kolom `diundang_oleh` (pilihan dropdown berisi nama anggota, LT, dan LDC, disinkronkan Lapis
+  dari `Master`) dan memakai nomor WhatsApp yang diundang. Lapis mencocokkan tiap baris `Responses` begini:
+  1. `whatsapp_norm` sama **dan** pengundang sama dengan `id_pengundang` di Undangan: cocok penuh.
+  2. `whatsapp_norm` sama, pengundang beda atau kosong: cocok. Undangan tetap milik pengundang aslinya.
+  3. Nomor tidak ada di Master, tetapi pengundang cocok dan nama tamu mirip dengan calon milik pengundang itu
+     (token nama sama, urutan boleh beda): **jangan digabung otomatis.** Beri `status_cocok` = `Perlu_Cek`;
+     LT mengonfirmasi, lalu nomor baru disimpan ke baris calon.
+  4. Tidak ada yang cocok: buat baris Master dan Undangan baru dengan `sumber` = `form`, `id_pengundang` dari
+     `diundang_oleh`.
+  Pada cocok penuh atau cocok, status Undangan menjadi `Terdaftar` dan `id_event` Undangan diganti ke acara
+  yang dipilih tamu di Form. Kolom tambahan di `Responses`: `status_cocok` (`Cocok` · `Perlu_Cek` · `Baru`).
 
 ### `Hadir`
 `id_hadir` · `id_event` · `id_orang` · `peran` · `waktu_checkin` · `dicatat_oleh`
@@ -157,7 +166,7 @@ Member menandai bidang yang mereka butuhkan di chapter.
 ### `Responses`
 Mentah dari Google Form, tidak diubah tangan:
 `timestamp` · `nama` · `whatsapp` · `email` · `perusahaan` · `bisnis` · `kota` · `id_event` · `slot_cs` ·
-`diundang_oleh` · `catatan`
+`diundang_oleh` · `catatan` · `status_cocok`
 
 ### `Akses`
 `id_orang` · `kode_akses` · `peran` · `aktif` · `terakhir_masuk`

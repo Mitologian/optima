@@ -406,7 +406,7 @@
       }
     }
     var dapat = b.lencana.filter(function (l) { return l.didapat; }).length;
-    html += lipat('Badges', dapat + ' of 5',
+    html += lipat('My badges', dapat + ' of 5',
       '<div class="lencana-baris">' + b.lencana.map(function (l) {
         return '<div class="lencana' + (l.didapat ? ' dapat' : '') + (l.baru ? ' baru' : '') + '" title="' + esc(l.ket) + '"><div class="koin">' + IK['L_' + l.kode] + '</div>' + esc(l.nama) + '</div>';
       }).join('') + '</div><p class="catatan-main">A game to cheer each other on, not a ranking.</p>', b.lencana.some(function (l) { return l.baru; }));

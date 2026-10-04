@@ -61,6 +61,9 @@ Sumber: BNI Indonesia Official Handbook.
 Akun `dedydahlan@gmail.com`, privat. Editor hanya Coach Dedy dan Lapis. LT dan member tidak membuka sheet.
 Baris pertama setiap tab adalah nama kolom persis seperti di bawah.
 
+Format sel **Plain text** wajib untuk kolom yang berisi kode atau nomor, supaya angka nol di depan tidak hilang:
+`Akses.kode_akses`, `Master.whatsapp_norm`, semua kolom `id_...`.
+
 Identitas orang: `id_orang` berbentuk `P0001`, `P0002`, dan seterusnya. Kunci penggabung adalah
 `whatsapp_norm`: hanya angka, diawali `62` (contoh `0812-3456` dan `+62 812 3456` menjadi `628123456`).
 
@@ -218,7 +221,8 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `tambahCalon` | `id_kursi, nama, bisnis, whatsapp?, id_event?` | `{id_orang, id_undangan?}` atau `ok:false` dengan `duplikat {nama_depan, tahap?, pic?}` |
 | `butuh` | `id_kursi` | `{saya_butuh}` (sakelar) |
 | `acara` | | `acara [{id_event, tanggal, jam_mulai, nama_acara, jenis, mode, lokasi}]` yang akan datang |
-| `undang` | `id_orang, id_event` | `{id_undangan}` atau `ok:false` kalau sudah dua kali diundang |
+| `undang` | `id_orang, id_event, whatsapp?` | `{id_undangan}` atau `ok:false` kalau sudah dua kali diundang. `whatsapp` mengisi nomor calon kalau sebelumnya kosong |
+| `usulanSaya` | | `usulan [{id_orang, nama, bidang, tahap, punya_wa, jumlah_undangan}]` nama yang diajukan sendiri |
 | `undanganSaya` | | `undangan [{id_undangan, nama_depan, bidang, acara, tanggal, status}]` |
 | `papan` | | `pengundang [{nama_depan, jumlah}]`, `sponsor [{nama_depan, jumlah}]` |
 
@@ -255,3 +259,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | Tanggal | Perubahan | Disetujui |
 |---|---|---|
 | 2026-10-04 | Versi 1 | menunggu Coach Dedy |
+| 2026-10-04 | Tambah aksi `usulanSaya`, parameter `whatsapp` di `undang`, aturan format Plain text | menunggu Coach Dedy |

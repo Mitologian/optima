@@ -1,18 +1,37 @@
-# BNI Optima — Chapter Apps
+# BNI Optima · Chapter App
 
-Turunan sistem BNI Ventura, disiapkan sebagai template untuk chapter **BNI Optima** (2027).
-Dibuat 24 September 2026 atas permintaan Dedy Dahlan.
+App pendamping peluncuran chapter BNI Optima (nama kerja). Dipakai launch team sejak masa pembentukan,
+dan semua member mulai hari ESM.
+
+Mulai dari `KONTRAK.md` (sheet, API, fase, aturan permainan) dan `CLAUDE.md` (keputusan dan aturan kerja).
 
 ## Isi repo
 
-- `index.html` · cangkang PWA yang memuat web app Apps Script di dalam iframe
-- `manifest.json` · identitas aplikasi yang dipasang di ponsel
-- `sw.js` · service worker supaya bisa di-install
-- `icons/` · ikon aplikasi
+| Folder atau berkas | Isi | Pemilik |
+|---|---|---|
+| `web/` | PWA baru: Misi Chapter, Papan 64 Kursi, Undang, Papan, layar launch team dan LDC | Claude |
+| `apps-script/Inti.js` | Logika permainan dan aturan data, dipakai server dan mode tiruan | Claude |
+| `apps-script/Api.js` | Endpoint `doPost` untuk PWA | Claude |
+| `apps-script/` lainnya | App lama turunan Ventura, masih jalan sampai app baru dipakai | Lapis |
+| `data/klasifikasi-awal.csv` | Draf 64 kursi, 8 contact sphere | Coach Dedy |
+| `index.html`, `manifest.json`, `sw.js` di akar | Cangkang lama (iframe ke app lama) | Lapis |
+| Skrip `.sh` di akar | Alat kerja Lapis | Lapis |
 
-## Yang belum dikerjakan
+## Mencoba tanpa sheet
 
-1. Tulisan masih "BNI Ventura", diganti "BNI Optima" pada tahap penyesuaian
-2. Alamat iframe masih menunjuk ke web app Ventura. Diganti setelah web app Optima punya alamat sendiri
-3. Kode Apps Script belum ada di repo ini. Menunggu akses ke proyek script Ventura, lalu dinaikkan lewat clasp
-4. Tagline belum ditetapkan, jangan diarang. Menunggu keputusan Dedy
+`web/config.js` dengan `API_URL` kosong menjalankan mode tiruan berisi data contoh.
+
+```
+python3 -m http.server 8000
+# buka http://localhost:8000/web/
+```
+
+Kode contoh: `LDC001` (Coach Dedy), `LT0001` (launch team), `AGT001` (anggota).
+Tambahkan `?fase=BOD` untuk layar setelah ESM, `?reset=1` untuk mengulang data contoh.
+
+## Menyambung ke sheet asli
+
+1. Lapis membuat sheet `Optima - Data Chapter` sesuai `KONTRAK.md` bagian 4.
+2. Script Properties: `DATA_SHEET_ID` (ID sheet tadi) dan `ADMIN_PIN` (PIN baru untuk halaman admin lama).
+3. `clasp push`, lalu `clasp deploy -i <id deployment yang sudah ada>` supaya alamat tidak berubah.
+4. Isi `API_URL` di `web/config.js` dengan alamat `/exec` web app.

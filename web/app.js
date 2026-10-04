@@ -193,7 +193,7 @@
   /* ---------- MISI ---------- */
   function grafikMisi(m) {
     var data = m.riwayat && m.riwayat.length ? m.riwayat : [{ selesai: new Date().toISOString(), jumlah: m.anggota }];
-    var W = 320, H = 160, kiri = 8, kanan = 62, atas = 12, bawah = 24;
+    var W = 320, H = 118, kiri = 8, kanan = 62, atas = 12, bawah = 24;
     var ymax = Math.max(m.gerbang[2], m.anggota) * 1.08;
     var n = data.length;
     var x = function (i) { return n === 1 ? kiri + (W - kiri - kanan) : kiri + i * (W - kiri - kanan) / (n - 1); };
@@ -221,7 +221,7 @@
         '<text class="g-tgl" x="' + kiri + '" y="' + (H - 6) + '">' + esc(tglPendek(data[0].selesai)) + '</text>' +
         (n > 1 ? '<text class="g-tgl" text-anchor="end" x="' + (W - kanan) + '" y="' + (H - 6) + '">' + esc(tglPendek(akhir.selesai)) + '</text>' : '') +
         sentuh +
-      '</svg><p class="g-info">Ketuk grafik untuk melihat jumlah per pekan.</p></div>';
+      '</svg><p class="g-info">Ketuk grafik untuk jumlah per pekan.</p></div>';
   }
 
   function pasangGrafik(akar) {
@@ -261,6 +261,35 @@
       '<div class="bilah-ganda"><div class="bilah' + (n >= min ? ' emas' : '') + '"><i style="width:' + Math.min(100, n / maks * 100) + '%"></i></div><span class="tanda-min" style="left:' + (min / maks * 100) + '%"></span></div>' +
       '<p class="kecil">' + esc(pesan) + ' Setiap nama terikat ke satu kursi di Papan Kursi.</p>' +
       '<div class="baris-tombol"><a class="tombol kecil" href="#kursi">Tambah nama</a>' + (isLT() ? '<a class="tombol kecil kedua" href="#tim">Calon saya</a>' : fasePra() ? '' : '<a class="tombol kecil kedua" href="#undang">Lihat daftar</a>') + '</div></section>';
+  }
+
+
+  function kartuLangkah(b) {
+    var st = b.saya, min = st.target_nama_min, maks = st.target_nama_maks, n = st.nama_daftar;
+    var judul, isi, tombol, href;
+    if (n < min) {
+      judul = 'Tambah nama calon'; href = '#kursi'; tombol = 'Pilih kursi';
+      isi = (min - n) + ' nama lagi menuju minimal ' + min + '. Pilih kursi di Papan, lalu isi nama calon dari bidang itu.';
+    } else if (!fasePra() && st.undangan_ronde < 1) {
+      judul = 'Undang satu tamu'; href = '#undang'; tombol = 'Undang tamu';
+      isi = 'Pilih satu nama dari daftar dan kirim undangan lewat WhatsApp sebelum Rabu malam.';
+    } else if (n < maks) {
+      judul = 'Lanjutkan daftar nama'; href = '#kursi'; tombol = 'Tambah nama';
+      isi = 'Minimal ' + min + ' tercapai. Sasaran ' + maks + ' nama.';
+    } else {
+      judul = 'Semua langkah selesai'; href = fasePra() ? '#kursi' : '#undang'; tombol = fasePra() ? 'Lihat Papan' : 'Lihat daftar';
+      isi = 'Sasaran ' + maks + ' nama tercapai' + (fasePra() ? '.' : ' dan misi Rabu ini beres.');
+    }
+    var api = !fasePra() ? '<span class="chip emas">' + b.saya.rabu_beruntun + ' Rabu beruntun</span>' : '';
+    return '<section class="kartu langkah"><div class="langkah-atas"><span class="chip merah">Langkah berikutnya</span>' + api + '</div>' +
+      '<h2>' + esc(judul) + '</h2><p class="kecil">' + esc(isi) + '</p>' +
+      '<div class="bilah-ganda"><div class="bilah' + (n >= min ? ' emas' : '') + '"><i style="width:' + Math.min(100, n / maks * 100) + '%"></i></div><span class="tanda-min" style="left:' + (min / maks * 100) + '%"></span></div>' +
+      '<p class="kecil redup" style="margin:6px 0 12px">' + n + ' dari ' + maks + ' nama (minimal ' + min + ')</p>' +
+      '<div class="baris-tombol"><a class="tombol" href="' + href + '">' + esc(tombol) + '</a>' + (isLT() ? '<a class="tombol kedua" href="#tim">Calon saya</a>' : '') + '</div></section>';
+  }
+
+  function lipat(judul, info, isi, buka) {
+    return '<details class="lipat"' + (buka ? ' open' : '') + '><summary><span>' + judul + '</span><em>' + info + '</em></summary>' + isi + '</details>';
   }
 
   function sorotan(undangan) {
@@ -308,7 +337,7 @@
     var b = h[0], ud = h[1], tm = h[2];
     if (!b.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(b.pesan) + '</p>'; return; }
     var html = '<div class="sapa"><h1>Halo, ' + esc(S.profil.nama_depan) + '</h1>' +
-      '<p class="kecil">' + (fasePra() ? 'Masa pembentukan. Setiap nama yang masuk membawa chapter lebih dekat ke ESM.' : 'Satu undangan setiap pekan sudah cukup untuk menggerakkan chapter.') + '</p></div>';
+      '</div>';
 
     var sorot = ud && ud.ok ? sorotan(ud.undangan) : [];
     if (sorot.length) {
@@ -317,11 +346,10 @@
       }).join('') + '</ul><div class="baris-tombol"><button class="tombol kecil kedua" id="b-sorot">Tandai sudah dibaca</button></div></section>';
     }
 
+    html += kartuLangkah(b);
     html += kartuMisi(b.misi);
-    html += kartuDaftar(b.saya);
 
     if (!fasePra()) {
-      html += kartuRonde(b);
       html += '<section class="kartu"><div class="statistik">' +
         '<div class="stat"><b>' + b.saya.undangan_total + '</b><span>undangan</span></div>' +
         '<div class="stat"><b>' + b.saya.tamu_hadir + '</b><span>tamu hadir</span></div>' +
@@ -329,15 +357,15 @@
       '</div></section>';
       if (tm && tm.ok) html += kartuTamu(tm);
     }
-    html += '<div class="judul-bagian"><h2>Lencana</h2><span class="kecil">' + b.lencana.filter(function (l) { return l.didapat; }).length + ' dari 5</span></div>' +
-      '<section class="kartu"><div class="lencana-baris">' + b.lencana.map(function (l) {
+    var dapat = b.lencana.filter(function (l) { return l.didapat; }).length;
+    html += lipat('Lencana', dapat + ' dari 5',
+      '<div class="lencana-baris">' + b.lencana.map(function (l) {
         return '<div class="lencana' + (l.didapat ? ' dapat' : '') + (l.baru ? ' baru' : '') + '" title="' + esc(l.ket) + '"><div class="koin">' + IK['L_' + l.kode] + '</div>' + esc(l.nama) + '</div>';
-      }).join('') + '</div><p class="catatan-main">Ini permainan untuk saling menyemangati, bukan tingkatan.</p></section>';
-
-    html += '<div class="judul-bagian"><h2>Kabar chapter</h2></div><section class="kartu">' +
-      (b.kabar.length ? '<ul class="kabar">' + b.kabar.map(function (k) {
+      }).join('') + '</div><p class="catatan-main">Ini permainan untuk saling menyemangati, bukan tingkatan.</p>', b.lencana.some(function (l) { return l.baru; }));
+    html += lipat('Kabar chapter', b.kabar.length ? b.kabar.length + ' terbaru' : 'belum ada',
+      b.kabar.length ? '<ul class="kabar">' + b.kabar.map(function (k) {
         return '<li class="k-' + esc(k.jenis) + '"><span class="titik"></span><div>' + esc(k.teks) + '<time>' + esc(lalu(k.waktu)) + '</time></div></li>';
-      }).join('') + '</ul>' : '<p class="kosong-isi">Belum ada kabar. Kabar baik pertama segera datang.</p>') + '</section>';
+      }).join('') + '</ul>' : '<p class="kosong-isi">Belum ada kabar. Kabar baik pertama segera datang.</p>', false);
 
     isi.innerHTML = html;
     pasangGrafik(isi);
@@ -361,7 +389,7 @@
     var milik = 0;
     r.baris.forEach(function (b) { b.kursi.forEach(function (x) { n[x.status]++; milik += x.saya_calon; }); });
     var lengkap = r.baris.filter(function (b) { return b.lengkap; }).length;
-    var saring = [['semua', 'Semua'], ['saya', 'Daftar saya' + (milik ? ' (' + milik + ')' : '')], ['kosong', 'Kosong'], ['ada_calon', 'Ada calon'], ['dicari', 'Dicari anggota']];
+    var saring = [['semua', 'Semua'], ['saya', 'Daftar saya' + (milik ? ' (' + milik + ')' : '')], ['kosong', 'Kosong'], ['dicari', 'Dicari']];
     function lolos(x) {
       if (saringKursi === 'semua') return true;
       if (saringKursi === 'saya') return x.saya_calon > 0;
@@ -369,7 +397,7 @@
       return saringKursi === x.status;
     }
     isi.innerHTML = tabs +
-      '<div class="sapa" style="margin-top:4px"><h1>Papan 64 Kursi</h1><p class="kecil">Satu bidang bisnis, satu kursi. Ketuk kursi untuk memasukkan nama calon dari bidang itu.</p></div>' +
+      '<div class="sapa" style="margin-top:4px"><h1>Papan 64 Kursi</h1><p class="kecil">Ketuk satu kursi, lalu isi nama calon dari bidang itu.</p></div>' +
       '<div class="ringkas-kursi">' +
         '<span><i style="background:var(--merah)"></i>' + n.terisi + ' terisi</span>' +
         '<span><i style="background:var(--merah-muda);border:1.5px solid var(--merah)"></i>' + n.ada_calon + ' ada calon</span>' +
@@ -390,8 +418,8 @@
               '<span class="t">' + esc(x.singkat) + '</span></button>';
           }).join('') + '</div></section>';
       }).join('') + '</div>' +
-      '<p class="catatan-main"><span class="titik-emas"></span> bidang yang sedang dicari anggota &nbsp; <span class="cincin-saya"></span> ada nama dari daftar saya</p>' +
-      '<button class="tombol kedua" id="b-tanpa-kursi" style="margin-top:6px">Tambah nama, bidang belum pasti</button>';
+      '<p class="catatan-main"><span class="titik-emas"></span> dicari anggota &nbsp; <span class="cincin-saya"></span> dari daftar saya</p>' +
+      '<button class="tombol kedua" id="b-tanpa-kursi" style="margin-top:6px">Nama dengan bidang belum pasti</button>';
     isi.querySelectorAll('[data-tk]').forEach(function (t) { t.onclick = function () { tabKursi = t.dataset.tk; layarKursi(isi); }; });
     isi.querySelectorAll('[data-saring]').forEach(function (t) {
       t.onclick = function () { saringKursi = t.dataset.saring; layarKursi(isi); };

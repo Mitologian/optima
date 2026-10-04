@@ -55,10 +55,10 @@ var Tiruan = (function () {
       return o;
     }
     var dedy = orang('Dedy Dahlan', 'LDC', 'Anggota', 'K33', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(30), id_sponsor: 'BNI', bisnis: 'Mitologi Inspira' });
-    var agung = orang('Agung Pratama', 'LT', 'Anggota', 'K11', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(28), id_sponsor: dedy.id_orang, bisnis: 'Kantor Notaris' });
-    var dhika = orang('Dhika Ramadhan', 'LT', 'Anggota', 'K19', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(28), id_sponsor: dedy.id_orang, bisnis: 'Studio Foto' });
+    var agung = orang('Agung Pratama', 'LT', 'Anggota', 'K11', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(28), id_sponsor: dedy.id_orang, bisnis: 'Notary Office' });
+    var dhika = orang('Dhika Ramadhan', 'LT', 'Anggota', 'K19', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(28), id_sponsor: dedy.id_orang, bisnis: 'Photo Studio' });
     var iman = orang('Iman Santoso', 'LT', 'Anggota', 'K49', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(25), id_sponsor: dedy.id_orang, bisnis: 'IT Support' });
-    var sari = orang('Sari Wulandari', 'LT', 'Anggota', 'K27', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(25), id_sponsor: agung.id_orang, bisnis: 'Katering Rumahan' });
+    var sari = orang('Sari Wulandari', 'LT', 'Anggota', 'K27', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(25), id_sponsor: agung.id_orang, bisnis: 'Home Catering' });
     var lt = [dedy, agung, dhika, iman, sari];
 
     var anggotaContoh = [

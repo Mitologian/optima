@@ -1,65 +1,65 @@
 id_kursi,baris,sphere,bidang,singkat
-K01,1,Properti dan Konstruksi,Agen properti,Properti
-K02,1,Properti dan Konstruksi,Kontraktor bangunan,Bangunan
-K03,1,Properti dan Konstruksi,Arsitek,Arsitek
-K04,1,Properti dan Konstruksi,Desain interior,Interior
-K05,1,Properti dan Konstruksi,Mekanikal elektrikal,ME
-K06,1,Properti dan Konstruksi,Material bangunan,Material
-K07,1,Properti dan Konstruksi,Furnitur custom,Furnitur
-K08,1,Properti dan Konstruksi,Pengecatan dan waterproofing,Cat Anti Bocor
-K09,2,Keuangan dan Legal,Konsultan pajak,Pajak
-K10,2,Keuangan dan Legal,Akuntan,Akuntan
-K11,2,Keuangan dan Legal,Notaris dan PPAT,Notaris
-K12,2,Keuangan dan Legal,Lawyer korporat,Lawyer
-K13,2,Keuangan dan Legal,Asuransi jiwa dan kesehatan,Asuransi Jiwa
-K14,2,Keuangan dan Legal,Asuransi umum,Asuransi Umum
-K15,2,Keuangan dan Legal,Perencana keuangan,Planner Uang
-K16,2,Keuangan dan Legal,Perizinan usaha,Izin Usaha
-K17,3,Pemasaran dan Kreatif,Digital marketing,Digital Mktg
-K18,3,Pemasaran dan Kreatif,Desain grafis dan branding,Branding
-K19,3,Pemasaran dan Kreatif,Foto dan video,Foto Video
-K20,3,Pemasaran dan Kreatif,Percetakan,Cetak
-K21,3,Pemasaran dan Kreatif,Merchandise dan souvenir,Souvenir
-K22,3,Pemasaran dan Kreatif,Website dan aplikasi,Web & App
-K23,3,Pemasaran dan Kreatif,Public relations,PR
-K24,3,Pemasaran dan Kreatif,Signage dan reklame,Signage
-K25,4,Acara dan Hospitality,Event organizer,EO
-K26,4,Acara dan Hospitality,Wedding organizer,WO
-K27,4,Acara dan Hospitality,Katering,Katering
-K28,4,Acara dan Hospitality,Venue dan hotel,Venue
-K29,4,Acara dan Hospitality,Dekorasi dan florist,Florist
-K30,4,Acara dan Hospitality,Sound system dan lighting,Sound Light
-K31,4,Acara dan Hospitality,Travel agent,Travel
-K32,4,Acara dan Hospitality,MC dan hiburan,MC
-K33,5,SDM dan Pengembangan,Training dan coaching,Training
-K34,5,SDM dan Pengembangan,Rekrutmen,Rekrut
-K35,5,SDM dan Pengembangan,Outsourcing tenaga kerja,Tenaga Kerja
-K36,5,SDM dan Pengembangan,Konsultan manajemen,Konsul Bisnis
-K37,5,SDM dan Pengembangan,Asesmen psikologi,Psikolog
-K38,5,SDM dan Pengembangan,Kursus bahasa,Bahasa
-K39,5,SDM dan Pengembangan,Seragam kerja,Seragam
-K40,5,SDM dan Pengembangan,Software HR dan payroll,HR App
-K41,6,Kesehatan dan Kecantikan,Klinik umum,Klinik
-K42,6,Kesehatan dan Kecantikan,Dokter gigi,Dokter Gigi
-K43,6,Kesehatan dan Kecantikan,Klinik kecantikan,Klinik Cantik
-K44,6,Kesehatan dan Kecantikan,Fisioterapi,Fisio
-K45,6,Kesehatan dan Kecantikan,Alat kesehatan,Alkes
-K46,6,Kesehatan dan Kecantikan,Fitness dan personal trainer,Fitness
-K47,6,Kesehatan dan Kecantikan,Spa,Spa
-K48,6,Kesehatan dan Kecantikan,Optik,Optik
-K49,7,Teknologi dan Operasional Kantor,IT support dan jaringan,IT Support
-K50,7,Teknologi dan Operasional Kantor,CCTV dan keamanan,CCTV
-K51,7,Teknologi dan Operasional Kantor,Software bisnis dan ERP,ERP
-K52,7,Teknologi dan Operasional Kantor,Pengadaan ATK,ATK
-K53,7,Teknologi dan Operasional Kantor,Mesin fotokopi dan printer,Printer
-K54,7,Teknologi dan Operasional Kantor,Internet provider,Internet
-K55,7,Teknologi dan Operasional Kantor,Telekomunikasi,Telko
-K56,7,Teknologi dan Operasional Kantor,Jasa kebersihan,Cleaning
-K57,8,"Otomotif, Logistik, dan Perdagangan",Dealer mobil,Dealer Mobil
-K58,8,"Otomotif, Logistik, dan Perdagangan",Bengkel dan detailing,Bengkel
-K59,8,"Otomotif, Logistik, dan Perdagangan",Rental kendaraan,Rental
-K60,8,"Otomotif, Logistik, dan Perdagangan",Ekspedisi dan kurir,Kurir
-K61,8,"Otomotif, Logistik, dan Perdagangan",Freight forwarding,Cargo
-K62,8,"Otomotif, Logistik, dan Perdagangan",Importir dan distributor,Importir
-K63,8,"Otomotif, Logistik, dan Perdagangan",Supplier F&B,F&B Supply
-K64,8,"Otomotif, Logistik, dan Perdagangan",Kemasan,Kemasan
+K01,1,Property & Construction,Real estate agent,Real Estate
+K02,1,Property & Construction,General contractor,Builder
+K03,1,Property & Construction,Architect,Architect
+K04,1,Property & Construction,Interior designer,Interior
+K05,1,Property & Construction,MEP engineering,MEP
+K06,1,Property & Construction,Building materials,Materials
+K07,1,Property & Construction,Custom furniture,Joinery
+K08,1,Property & Construction,Painting & waterproofing,Painting
+K09,2,Finance & Legal,Tax consultant,Tax
+K10,2,Finance & Legal,Accountant,Accounts
+K11,2,Finance & Legal,Notary & land deed official,Notary
+K12,2,Finance & Legal,Corporate lawyer,Lawyer
+K13,2,Finance & Legal,Life & health insurance,Life Insurance
+K14,2,Finance & Legal,General insurance,Gen. Insurance
+K15,2,Finance & Legal,Financial planner,Fin. Planner
+K16,2,Finance & Legal,Business licensing,Permits
+K17,3,Marketing & Creative,Digital marketing,Digital Mktg
+K18,3,Marketing & Creative,Graphic design & branding,Branding
+K19,3,Marketing & Creative,Photo & video,Photo & Video
+K20,3,Marketing & Creative,Printing,Printing
+K21,3,Marketing & Creative,Merchandise & souvenirs,Merch
+K22,3,Marketing & Creative,Website & app development,Web & App
+K23,3,Marketing & Creative,Public relations,PR
+K24,3,Marketing & Creative,Signage & advertising,Signage
+K25,4,Events & Hospitality,Event organizer,Event Org.
+K26,4,Events & Hospitality,Wedding organizer,Wedding Org.
+K27,4,Events & Hospitality,Catering,Catering
+K28,4,Events & Hospitality,Venue & hotel,Venue
+K29,4,Events & Hospitality,Decor & florist,Florist
+K30,4,Events & Hospitality,Sound system & lighting,Sound & Light
+K31,4,Events & Hospitality,Travel agent,Travel
+K32,4,Events & Hospitality,MC & entertainment,MC
+K33,5,HR & Development,Training & coaching,Training
+K34,5,HR & Development,Recruitment,Recruiter
+K35,5,HR & Development,Manpower outsourcing,Staffing
+K36,5,HR & Development,Management consultant,Advisor
+K37,5,HR & Development,Psychological assessment,Psych
+K38,5,HR & Development,Language course,Language
+K39,5,HR & Development,Corporate uniforms,Uniforms
+K40,5,HR & Development,HR & payroll software,HR Software
+K41,6,Health & Beauty,General clinic,Clinic
+K42,6,Health & Beauty,Dentist,Dentist
+K43,6,Health & Beauty,Aesthetic clinic,Aesthetics
+K44,6,Health & Beauty,Physiotherapy,Physio
+K45,6,Health & Beauty,Medical equipment,Med Gear
+K46,6,Health & Beauty,Fitness & personal trainer,Fitness
+K47,6,Health & Beauty,Spa,Spa
+K48,6,Health & Beauty,Optician,Optician
+K49,7,Technology & Office Ops,IT support & networking,IT Support
+K50,7,Technology & Office Ops,CCTV & security,CCTV
+K51,7,Technology & Office Ops,Business software & ERP,ERP
+K52,7,Technology & Office Ops,Office supplies,Office Supplies
+K53,7,Technology & Office Ops,Copier & printer,Copiers
+K54,7,Technology & Office Ops,Internet provider,Internet
+K55,7,Technology & Office Ops,Telecommunications,Telecom
+K56,7,Technology & Office Ops,Cleaning services,Cleaning
+K57,8,"Automotive, Logistics & Trade",Car dealer,Car Dealer
+K58,8,"Automotive, Logistics & Trade",Auto repair & detailing,Auto Repair
+K59,8,"Automotive, Logistics & Trade",Vehicle rental,Rental
+K60,8,"Automotive, Logistics & Trade",Courier & delivery,Courier
+K61,8,"Automotive, Logistics & Trade",Freight forwarding,Freight
+K62,8,"Automotive, Logistics & Trade",Importer & distributor,Importer
+K63,8,"Automotive, Logistics & Trade",F&B supplier,F&B Supply
+K64,8,"Automotive, Logistics & Trade",Packaging,Packing

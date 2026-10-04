@@ -31,7 +31,7 @@
 html { -webkit-text-size-adjust: 100%; }
 body {
   font-family: var(--huruf);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.45;
   color: var(--tinta);
   background: var(--kertas);
@@ -57,17 +57,17 @@ a { color: var(--merah); }
 .kepala-dalam { max-width: 560px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
 .merek { display: flex; align-items: baseline; gap: 6px; }
 .merek b { font-family: var(--huruf-judul); font-weight: 800; font-size: 13px; letter-spacing: .14em; color: var(--merah); }
-.merek span { font-family: var(--huruf-judul); font-weight: 800; font-size: 22px; letter-spacing: -.02em; }
+.merek span { font-family: var(--huruf-judul); font-weight: 800; font-size: 19px; letter-spacing: -.02em; }
 .kepala .fase { margin-left: auto; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; background: var(--kertas-2); color: var(--tinta-2); border: 1px solid var(--garis); }
 .kepala .keluar { font-size: 13px; color: var(--abu); padding: 6px 4px; }
 
 h1, h2, h3 { font-family: var(--huruf-judul); letter-spacing: -.015em; line-height: 1.15; }
-h1 { font-size: 28px; font-weight: 700; letter-spacing: -.02em; }
-h2 { font-size: 19px; font-weight: 700; }
-h3 { font-size: 16px; font-weight: 700; }
-.kecil { font-size: 13px; color: var(--tinta-2); }
+h1 { font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+h2 { font-size: 17px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 700; }
+.kecil { font-size: 12.5px; color: var(--tinta-2); }
 .redup { color: var(--abu); }
-.sapa { margin: 22px 0 14px; }
+.sapa { margin: 18px 0 12px; }
 .sapa p { margin-top: 4px; }
 
 /* ---------- kartu ---------- */
@@ -75,20 +75,20 @@ h3 { font-size: 16px; font-weight: 700; }
   background: var(--kartu);
   border: 1px solid var(--garis);
   border-radius: var(--r);
-  padding: 16px;
-  margin-bottom: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
   box-shadow: var(--bayang);
 }
 .kartu > h2, .kartu > h3 { margin-bottom: 10px; }
-.judul-bagian { display: flex; align-items: baseline; justify-content: space-between; margin: 22px 2px 10px; }
-.judul-bagian h2 { font-size: 17px; }
+.judul-bagian { display: flex; align-items: baseline; justify-content: space-between; margin: 18px 2px 8px; }
+.judul-bagian h2 { font-size: 15px; }
 
 /* ---------- misi chapter ---------- */
 .misi { position: relative; overflow: hidden; background: var(--panel); color: var(--panel-teks); border: 0; }
 .misi .label { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; opacity: .7; font-weight: 700; }
-.misi .angka { font-family: var(--huruf-judul); font-size: 56px; font-weight: 800; line-height: 1; letter-spacing: -.04em; margin-top: 6px; }
-.misi .angka small { font-size: 20px; font-weight: 700; opacity: .6; letter-spacing: 0; }
-.misi .sub { font-size: 14px; opacity: .8; margin-top: 4px; }
+.misi .angka { font-family: var(--huruf-judul); font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -.04em; margin-top: 6px; }
+.misi .angka small { font-size: 15px; font-weight: 700; opacity: .6; letter-spacing: 0; }
+.misi .sub { font-size: 13px; opacity: .8; margin-top: 4px; }
 .lintasan { position: relative; height: 10px; border-radius: 99px; background: rgba(255, 255, 255, .14); margin: 34px 4px 30px; }
 .lintasan .isi { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: linear-gradient(90deg, var(--merah), var(--merah-2)); transition: width 1s cubic-bezier(.2, .8, .2, 1); }
 .gerbang { position: absolute; top: 50%; transform: translate(-50%, -50%); }
@@ -111,7 +111,7 @@ h3 { font-size: 16px; font-weight: 700; }
 /* ---------- statistik ---------- */
 .statistik { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stat { background: var(--kertas-2); border-radius: 10px; padding: 10px; }
-.stat b { display: block; font-family: var(--huruf-judul); font-size: 24px; font-weight: 800; line-height: 1.1; }
+.stat b { display: block; font-family: var(--huruf-judul); font-size: 20px; font-weight: 800; line-height: 1.1; }
 .stat span { font-size: 12px; color: var(--tinta-2); }
 
 /* ---------- bilah ---------- */
@@ -125,7 +125,7 @@ h3 { font-size: 16px; font-weight: 700; }
 /* ---------- lencana ---------- */
 .lencana-baris { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .lencana { text-align: center; font-size: 11px; line-height: 1.2; color: var(--tinta-2); }
-.lencana .koin { width: 52px; height: 52px; margin: 0 auto 6px; border-radius: 50%; display: grid; place-items: center; background: var(--kertas-2); border: 1.5px dashed var(--garis); color: var(--abu); }
+.lencana .koin { width: 44px; height: 44px; margin: 0 auto 6px; border-radius: 50%; display: grid; place-items: center; background: var(--kertas-2); border: 1.5px dashed var(--garis); color: var(--abu); }
 .lencana .koin svg { width: 24px; height: 24px; }
 .lencana.dapat .koin { background: radial-gradient(circle at 35% 30%, #F6DDA0, var(--emas)); border: 0; color: #4A3410; box-shadow: 0 6px 14px -6px rgba(184, 134, 43, .8); }
 .lencana.baru .koin { animation: denyut 1.2s ease 3; }
@@ -161,7 +161,7 @@ h3 { font-size: 16px; font-weight: 700; }
 .kursi {
   position: relative; aspect-ratio: 1; border-radius: 7px; padding: 1px;
   display: flex; align-items: center; justify-content: center; text-align: center;
-  font-family: var(--huruf-judul); font-size: 8.5px; line-height: 1.05; font-weight: 700; letter-spacing: -.03em; overflow: hidden; word-break: keep-all; overflow-wrap: normal;
+  font-family: var(--huruf-judul); font-size: 8px; line-height: 1.05; font-weight: 700; letter-spacing: -.03em; overflow: hidden; word-break: keep-all; overflow-wrap: normal;
   transition: transform .15s ease;
 }
 .kursi:active { transform: scale(.94); }
@@ -177,7 +177,7 @@ h3 { font-size: 16px; font-weight: 700; }
 
 /* ---------- daftar ---------- */
 .daftar { list-style: none; }
-.daftar li { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--garis); }
+.daftar li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--garis); }
 .daftar li:first-child { border-top: 0; }
 .daftar .utama { flex: 1; min-width: 0; }
 .daftar .utama b { display: block; }
@@ -318,3 +318,18 @@ label.isian > span { display: block; font-size: 13px; font-weight: 700; color: v
 .jam-cs span { font-size: 11px; color: var(--tinta-2); }
 .sorotan { border-color: var(--emas); background: linear-gradient(160deg, var(--emas-muda), var(--kartu) 70%); }
 .isian input[type="datetime-local"] { min-height: 48px; }
+
+/* ---------- langkah berikutnya & lipatan ---------- */
+.langkah { border: 1.5px solid var(--merah); }
+.langkah-atas { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.langkah h2 { margin-bottom: 4px; }
+.langkah .bilah-ganda { margin-top: 12px; }
+.langkah .baris-tombol { display: flex; gap: 8px; }
+.langkah .baris-tombol .tombol { flex: 1; }
+details.lipat { background: var(--kartu); border: 1px solid var(--garis); border-radius: var(--r); margin-bottom: 8px; }
+details.lipat summary { list-style: none; display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; cursor: pointer; font-family: var(--huruf-judul); font-weight: 700; font-size: 15px; }
+details.lipat summary::-webkit-details-marker { display: none; }
+details.lipat summary em { font-style: normal; font-family: var(--huruf); font-weight: 500; font-size: 12.5px; color: var(--abu); }
+details.lipat summary em::after { content: ' \203A'; display: inline-block; transition: transform .2s; }
+details.lipat[open] summary em::after { transform: rotate(90deg); }
+details.lipat > :not(summary) { margin: 0 14px 14px; }

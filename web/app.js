@@ -132,8 +132,16 @@
           '<button class="tombol" type="submit">Masuk</button>' +
         '</form>' +
         '<p class="kecil redup" style="margin-top:14px">Kode akses dibagikan oleh Coach Dedy atau launch team.</p>' +
-        (Api.tiruan ? '<div class="petunjuk-tiruan"><b>Mode contoh.</b> Data tiruan, tidak tersambung ke sheet. Coba kode <b>LDC001</b> (Coach Dedy), <b>LT0001</b> (launch team), atau <b>AGT001</b> (anggota). Tambahkan <b>?fase=BOD</b> di alamat untuk melihat layar setelah ESM.</div>' : '') +
+        (Api.tiruan ? '<div class="petunjuk-tiruan"><b>Mode contoh.</b> Data tiruan, tidak tersambung ke sheet. Coba kode <b>LDC001</b> (Coach Dedy), <b>LT0001</b> (launch team), atau <b>AGT001</b> (anggota, hanya setelah ESM).' +
+          '<p style="margin:10px 0 6px">Lihat app pada fase:</p><div class="pilihan" id="pil-fase"><button type="button" data-fase="Pembentukan">Pembentukan</button><button type="button" data-fase="BOD">Setelah ESM</button></div></div>' : '') +
       '</div>';
+    var pf = document.getElementById('pil-fase');
+    if (pf) {
+      Tiruan.fase().then(function (now) { pf.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.fase === now); }); });
+      pf.querySelectorAll('button').forEach(function (b) {
+        b.onclick = async function () { await Tiruan.setFase(b.dataset.fase); pf.querySelectorAll('button').forEach(function (z) { z.setAttribute('aria-pressed', z === b); }); };
+      });
+    }
     var f = document.getElementById('f-masuk');
     f.onsubmit = async function (e) {
       e.preventDefault();

@@ -159,5 +159,12 @@ var Tiruan = (function () {
     return JSON.parse(JSON.stringify(Inti.jalankan(db, badan, new Date())));
   }
 
-  return { panggil: panggil };
+  async function setFase(f) {
+    await siapkan();
+    data.Pengaturan.forEach(function (r) { if (r.kunci === 'fase') r.nilai = f; });
+    simpanLokal();
+  }
+  async function fase() { await siapkan(); return data.Pengaturan.filter(function (r) { return r.kunci === 'fase'; })[0].nilai; }
+
+  return { panggil: panggil, setFase: setFase, fase: fase };
 })();

@@ -131,9 +131,14 @@ Kalau LT juga anggota chapter, `kategori` tetap `LT` dan `tahap` = `Anggota`.
      (token nama sama, urutan boleh beda): **jangan digabung otomatis.** Beri `status_cocok` = `Perlu_Cek`;
      LT mengonfirmasi, lalu nomor baru disimpan ke baris calon.
   4. Tidak ada yang cocok: buat baris Master dan Undangan baru dengan `sumber` = `form`, `id_pengundang` dari
-     `diundang_oleh`.
+     `diundang_oleh`. Jika `diundang_oleh` = `Tidak Ada`, `id_pengundang` dikosongkan dan LT mengisi pengundang
+     bila ternyata ada (lihat di bawah).
   Pada cocok penuh atau cocok, status Undangan menjadi `Terdaftar` dan `id_event` Undangan diganti ke acara
-  yang dipilih tamu di Form. Kolom tambahan di `Responses`: `status_cocok` (`Cocok` · `Perlu_Cek` · `Baru`).
+  yang dipilih tamu di Form. **Opsi `Tidak Ada`:** dropdown `diundang_oleh` selalu memuat satu pilihan tetap
+  `Tidak Ada` di urutan terakhir, untuk tamu yang tahu acara dari sumber lain. Pada aturan 1 dan 3 opsi ini
+  dianggap tanpa pengundang (tidak pernah cocok). Aturan 2 tetap berlaku bila nomornya sudah ada di Master
+  (pengundang asli menang). Aturan 4 membuat baris baru tanpa `id_pengundang`; baris ini tampil di layar Team
+  LT sebagai "Tanpa pengundang" dan tidak masuk papan pengundang sampai LT menetapkan pengundangnya. Kolom tambahan di `Responses`: `status_cocok` (`Cocok` · `Perlu_Cek` · `Baru`).
 
 ### `Hadir`
 `id_hadir` · `id_event` · `id_orang` · `peran` · `waktu_checkin` · `dicatat_oleh`

@@ -502,7 +502,7 @@ var Inti = (function () {
         usulan: k.tab('Master').filter(function (r) { return teks(r.diajukan_oleh) === id && teks(r.kategori) === 'Calon'; }).map(function (r) {
           var x = kursiById(k, r.id_kursi);
           var u = terakhir[teks(r.id_orang)], e = u ? acara[teks(u.id_event)] : null;
-          return { id_orang: teks(r.id_orang), nama: teks(r.nama), bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), punya_wa: !!teks(r.whatsapp_norm), whatsapp: teks(r.whatsapp_norm), jumlah_undangan: hitung[teks(r.id_orang)] || 0,
+          return { id_orang: teks(r.id_orang), nama: teks(r.nama), bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), punya_wa: !!teks(r.whatsapp_norm), whatsapp: teks(r.whatsapp_norm), bisnis: teks(r.bisnis), jumlah_undangan: hitung[teks(r.id_orang)] || 0,
             status_undangan: u ? teks(u.status) : '', acara_undangan: e ? teks(e.nama_acara) : '', tanggal_undangan: e && tgl(e.tanggal) ? isoTanggal(tgl(e.tanggal)) : '' };
         }).reverse()
       };

@@ -578,7 +578,7 @@
         }
         if (r.id_undangan) {
           var e2 = pilihanAcara.filter(function (z) { return z.id_event === idEv; })[0];
-          lembarKirim(f.nama.value.trim().split(/\s+/)[0], f.whatsapp.value, e2);
+          lembarKirim(f.nama.value.trim().split(/\s+/)[0], f.whatsapp.value, e2, id ? x.bidang : '', f.bisnis.value);
         } else {
           tutupLembar();
           toast(!id ? 'Name added to the list' : x.status === 'kosong' ? 'The ' + x.bidang + ' seat now has a prospect' : 'Name added to the ' + x.bidang + ' seat', !!id && x.status === 'kosong');
@@ -596,66 +596,145 @@
     });
   }
 
-  /* ---------- templat pesan undangan ---------- */
+  /* ---------- templat pesan undangan ----------
+     Mengikuti panduan "Let's Invite Visitor": 4 pesan berurutan (pembuka, undangan, daftar, setelah daftar)
+     dan balasan untuk keraguan. Gaya bahasa mengikuti kedekatan member dengan tamunya. */
   var HARI_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   var BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   function tglID(iso) { var w = wib(iso); return HARI_ID[w.getUTCDay()] + ', ' + w.getUTCDate() + ' ' + BULAN_ID[w.getUTCMonth()]; }
-  var GAYA = [['hangat', 'Warm'], ['singkat', 'Short'], ['bisnis', 'Business first'], ['formal', 'Formal']];
-  var TEMPLAT = {
-    id: {
-      hangat: function (d) { return 'Halo ' + d.tamu + ', apa kabar? Saya ' + d.saya + '. Saya ingin mengajak Anda hadir sebagai tamu di pertemuan BNI ' + d.chapter + ', ' + d.hari + ' pukul ' + d.jam + ', ' + d.tempat + '. Di sana para pemilik bisnis saling bertukar peluang dan kenalan, dan saya yakin Anda akan merasa cocok.\n\nDaftarnya singkat, cukup isi form ini: ' + d.form + '\nDi form, mohon pilih nama saya (' + d.saya + ') pada kolom "Diundang oleh" dan isi nomor WhatsApp yang sama dengan nomor ini.\n\nSemoga bisa hadir ya.'; },
-      singkat: function (d) { return 'Halo ' + d.tamu + ', saya ' + d.saya + ' dari BNI ' + d.chapter + '. Boleh saya undang ke pertemuan kami ' + d.hari + ' pukul ' + d.jam + ', ' + d.tempat + '?\n\nDaftar di sini: ' + d.form + '\nPilih "Diundang oleh: ' + d.saya + '" dan pakai nomor WhatsApp ini.'; },
-      bisnis: function (d) { return 'Halo ' + d.tamu + ', saya ' + d.saya + ' dari BNI ' + d.chapter + '. Setiap pekan kami mempertemukan pemilik bisnis yang saling membuka peluang. Saya ingin Anda melihat langsung cara kerjanya dan bertemu calon mitra bisnis.\n\nAcara: ' + d.hari + ', ' + d.jam + ', ' + d.tempat + '.\nDaftar singkat: ' + d.form + '\nPilih "Diundang oleh: ' + d.saya + '" dan pakai nomor WhatsApp ini. Saya akan mendampingi Anda saat tiba.'; },
-      formal: function (d) { return 'Selamat pagi ' + d.tamu + '. Saya ' + d.saya + ', anggota BNI ' + d.chapter + '. Dengan hormat saya mengundang Anda sebagai tamu pada ' + d.acara + ', ' + d.hari + ' pukul ' + d.jam + ', ' + d.tempat + '.\n\nMohon kesediaan Anda mendaftar melalui tautan berikut: ' + d.form + '\nPada kolom "Diundang oleh" mohon pilih nama ' + d.saya + ', dan gunakan nomor WhatsApp ini.\n\nTerima kasih atas waktunya.'; }
-    },
-    en: {
-      hangat: function (d) { return 'Hi ' + d.tamu + ', how are you? This is ' + d.saya + '. I would love for you to join us as a guest at BNI ' + d.chapter + ' on ' + d.hari + ' at ' + d.jam + ', ' + d.tempat + '. Business owners there share opportunities and introductions, and I think you will fit right in.\n\nRegistering is quick: ' + d.form + '\nOn the form, please choose my name (' + d.saya + ') under "Invited by" and use this same WhatsApp number.\n\nHope to see you there.'; },
-      singkat: function (d) { return 'Hi ' + d.tamu + ', ' + d.saya + ' from BNI ' + d.chapter + '. May I invite you to our meeting on ' + d.hari + ' at ' + d.jam + ', ' + d.tempat + '?\n\nRegister here: ' + d.form + '\nChoose "Invited by: ' + d.saya + '" and use this WhatsApp number.'; },
-      bisnis: function (d) { return 'Hi ' + d.tamu + ', ' + d.saya + ' from BNI ' + d.chapter + '. Every week we bring business owners together to open doors for each other. I would like you to see how it works and meet potential business partners.\n\nEvent: ' + d.hari + ', ' + d.jam + ', ' + d.tempat + '.\nQuick registration: ' + d.form + '\nChoose "Invited by: ' + d.saya + '" and use this WhatsApp number. I will look after you when you arrive.'; },
-      formal: function (d) { return 'Good morning ' + d.tamu + '. I am ' + d.saya + ', a member of BNI ' + d.chapter + '. I would like to formally invite you as a guest to ' + d.acara + ' on ' + d.hari + ' at ' + d.jam + ', ' + d.tempat + '.\n\nKindly register through this link: ' + d.form + '\nUnder "Invited by", please choose ' + d.saya + ', and use this WhatsApp number.\n\nThank you for your time.'; }
-    }
+  var KEDEKATAN = [['dekat', 'Close friend'], ['teman', 'Friend'], ['kenal', 'Acquaintance']];
+  var LANGKAH = [['1', 'Opener'], ['2', 'Invite'], ['3', 'Register'], ['4', 'After sign-up']];
+  var PRONOMINA = { dekat: { aku: 'gue', kamu: 'lu' }, teman: { aku: 'aku', kamu: 'kamu' }, kenal: { aku: 'saya', kamu: 'Anda' } };
+  var PESAN_ID = {
+    dekat: [
+      function (d) { return 'Halo ' + d.tamu + ', lu bisnisnya di bidang ' + d.bidang + ' kan ya?\n\nGue mau ngajak lu ketemu teman-teman pebisnis gue, sesama owner, yang menurut gue cocok banget buat bisnis lu. Kita lagi cari pebisnis di bidang ' + d.bidang + ' kayak lu, gue rasa lu bakal nemu banyak peluang di sana. Ikut yuk, gue kenalin.'; },
+      function (d) { return d.hari + ' ada pertemuan ' + d.acara + ' ' + d.tempat + ', jam ' + d.jam + ', bareng komunitas owner bisnis Jakarta. Isinya networking dan tukar peluang bisnis antar anggota. Acaranya invitation only, tapi gue ada di sana, jadi bisa ajak lu kalau mau.'; },
+      function (d) { return 'Buat daftar jadi visitor, isi form ini ya: ' + d.form + '\nPilih nama gue (' + d.saya + ') di kolom "Diundang oleh" dan pakai nomor WA ini. Nanti gue pastiin lu dapat seat.'; },
+      function (d) { return 'Sampai ketemu ya! Nanti di sana gue kenalin ke teman-teman owner lain, semoga nambah network lu dan bantu ' + d.bisnis + ' makin luas jangkauannya!'; }
+    ],
+    teman: [
+      function (d) { return 'Halo ' + d.tamu + ', bisnismu di bidang ' + d.bidang + ' kan ya?\n\nAku mau kenalin kamu sama teman-teman pebisnisku. Mereka circle business owners yang saling support satu sama lain. Kayaknya bisa ada peluang kolaborasi sama kamu.'; },
+      function (d) { return d.hari + ' ada pertemuan ' + d.acara + ' ' + d.tempat + ', pukul ' + d.jam + ', bareng komunitas owner bisnis Jakarta. Fokusnya networking dan tukar peluang bisnis antar anggota. Acaranya invitation only, tapi aku ada di sana, jadi bisa ajak kamu kalau mau.'; },
+      function (d) { return 'Untuk daftar sebagai visitor, isi form ini ya: ' + d.form + '\nPilih namaku (' + d.saya + ') di kolom "Diundang oleh" dan pakai nomor WhatsApp ini. Nanti aku pastikan kamu dapat seat.'; },
+      function (d) { return 'Sampai ketemu ya! Nanti di sana aku kenalin ke teman-teman business owners lain, semoga nambah networkmu dan bantu ' + d.bisnis + ' makin luas jangkauannya!'; }
+    ],
+    kenal: [
+      function (d) { return 'Selamat ' + d.salam + ' ' + d.tamu + ', bisnis Anda di bidang ' + d.bidang + ', benar?\n\nSaya ingin memperkenalkan Anda dengan rekan-rekan pemilik bisnis lintas industri yang saling mendukung. Kami sedang mencari pebisnis di bidang ' + d.bidang + ', dan menurut saya Anda cocok bergabung dalam pertemuan kami.'; },
+      function (d) { return 'Pertemuan ' + d.acara + ' kami diadakan ' + d.hari + ', pukul ' + d.jam + ', ' + d.tempat + ', bersama komunitas pemilik bisnis Jakarta. Fokusnya networking dan pertukaran peluang bisnis antar anggota. Acara ini hanya dengan undangan, dan saya dengan senang hati mengajak Anda.'; },
+      function (d) { return 'Untuk mendaftar sebagai tamu, mohon isi form berikut: ' + d.form + '\nPada kolom "Diundang oleh", mohon pilih ' + d.saya + ', dan gunakan nomor WhatsApp ini. Saya akan memastikan Anda mendapat tempat.'; },
+      function (d) { return 'Terima kasih sudah mendaftar. Sampai bertemu! Di sana saya akan memperkenalkan Anda kepada pemilik bisnis lain, semoga menambah jaringan dan membantu ' + d.bisnis + ' menjangkau lebih luas.'; }
+    ]
   };
-  function buatPesan(bahasa, gaya, namaTamu, e) {
-    var id = bahasa === 'id';
-    var tempat = e.mode === 'Online' ? (id ? 'online lewat ' : 'online via ') + (e.lokasi || 'Zoom') : (id ? 'di ' : 'at ') + (e.lokasi || (id ? 'lokasi yang akan dikabari' : 'a location to be confirmed'));
-    return TEMPLAT[bahasa][gaya]({
+  var PESAN_EN = {
+    santai: [
+      function (d) { return 'Hi ' + d.tamu + ', your business is in ' + d.bidang + ', right?\n\nI would love to introduce you to my circle of business owners. We support each other, and I think there is real potential to work together.'; },
+      function (d) { return d.hari + ' we have ' + d.acara + ' ' + d.tempat + ', at ' + d.jam + ', with a community of Jakarta business owners. It is about networking and sharing business opportunities. It is invitation only, but I will be there, so I can bring you along.'; },
+      function (d) { return 'To register as a visitor, fill in this form: ' + d.form + '\nChoose my name (' + d.saya + ') under "Invited by" and use this WhatsApp number. I will make sure you get a seat.'; },
+      function (d) { return 'See you there! I will introduce you to the other business owners, and hopefully it grows your network and helps ' + d.bisnis + ' reach further.'; }
+    ],
+    formal: [
+      function (d) { return 'Good ' + (d.salamEn) + ' ' + d.tamu + ', your business is in ' + d.bidang + ', correct?\n\nI would like to introduce you to a community of business owners across industries who support one another. We are looking for ' + d.bidang + ' professionals, and I believe you would be a good fit.'; },
+      function (d) { return 'Our ' + d.acara + ' takes place ' + d.hari + ' at ' + d.jam + ', ' + d.tempat + ', with Jakarta business owners. The focus is networking and exchanging business opportunities. It is by invitation only, and I would be glad to invite you.'; },
+      function (d) { return 'To register as a guest, please fill in this form: ' + d.form + '\nUnder "Invited by", please choose ' + d.saya + ', and use this WhatsApp number. I will make sure a seat is reserved for you.'; },
+      function (d) { return 'Thank you for registering. I look forward to seeing you. I will introduce you to other business owners, and I hope it widens your network and helps ' + d.bisnis + ' grow.'; }
+    ]
+  };
+  var BALASAN = [
+    ['"What is BNI?"',
+      'Jadi ini komunitas pemilik bisnis yang isinya pengusaha saling kasih peluang bisnis.\n\n{Aku} bukan orang yang paling tepat jelasin detailnya, takut kurang lengkap. {Aku} kenalin {kamu} langsung ke Coach Dedy Dahlan ya, dia Launch Director yang handle ini dan jauh lebih ngerti. Lebih enak dengar langsung dari dia. {Aku} set waktu ngobrol ya?',
+      'Ini komunitas pemilik bisnis tempat para pengusaha saling memberi peluang bisnis.\n\nSaya bukan orang yang paling tepat untuk menjelaskan detailnya, khawatir kurang lengkap. Saya perkenalkan Anda langsung dengan Coach Dedy Dahlan, Launch Director yang menangani ini. Lebih baik mendengar langsung dari beliau. Boleh saya atur waktunya?'],
+    ['"Let me think about it"',
+      'Santai, nggak ada keharusan apa-apa kok. Ngobrol dulu aja sama dia, dengerin penjelasannya, baru {kamu} putuskan. Nggak cocok ya nggak apa-apa. {Aku} cuma nggak mau {kamu} kelewatan kalau ternyata cocok.\n\n{Aku} kenalin ya, 15 menit aja paling ngobrolnya.',
+      'Tidak ada keharusan apa pun. Silakan berbincang dulu dengan beliau, dengarkan penjelasannya, lalu Anda putuskan. Jika tidak cocok, tidak apa-apa. Saya hanya tidak ingin Anda melewatkannya jika ternyata cocok.\n\nBoleh saya perkenalkan? Sekitar 15 menit saja.'],
+    ['"I am busy"',
+      'Paham, makanya nggak usah lama. Cukup 15 menit ngobrol sama Coach Dedy Dahlan lewat Zoom, kapan {kamu} sempat. {Aku} bantu carikan slot yang paling pas. Lebih enak awal minggu atau akhir minggu?',
+      'Mengerti, karena itu tidak perlu lama. Cukup 15 menit berbincang dengan Coach Dedy Dahlan lewat Zoom, kapan pun Anda sempat. Saya bantu carikan slot yang pas. Awal minggu atau akhir minggu lebih nyaman?'],
+    ['"Is this MLM?"',
+      'Bukan, ini bukan MLM dan nggak ada jual-jualan produk.\n\nIni murni komunitas bisnis buat tukar peluang dan kolaborasi antar pengusaha. Tapi biar {kamu} dapat gambaran yang benar dan lengkap, mending dengar langsung dari Coach Dedy Dahlan ya, dia yang paling ngerti. {Aku} set waktu singkat aja.',
+      'Bukan, ini bukan MLM dan tidak ada penjualan produk.\n\nIni murni komunitas bisnis untuk bertukar peluang dan berkolaborasi antar pengusaha. Agar Anda mendapat gambaran yang benar dan lengkap, sebaiknya mendengar langsung dari Coach Dedy Dahlan. Saya atur waktu singkat saja.'],
+    ['Asks about fees, commitment, schedule',
+      'Pertanyaan bagus, dan justru itu yang paling pas dijawab langsung sama Coach Dedy Dahlan, biar {kamu} dapat info yang akurat, bukan setengah-setengah dari {aku}.\n\n{Aku} set di [waktu] bisa?',
+      'Pertanyaan yang baik, dan paling tepat dijawab langsung oleh Coach Dedy Dahlan agar informasinya akurat, bukan setengah-setengah dari saya.\n\nBisakah saya atur di [waktu]?'],
+    ['Interested and ready to continue',
+      'Sip! {Aku} kenalin {kamu} sama Coach Dedy Dahlan ya. {Aku} kasih kontak {kamu} ke dia sekarang, nanti dia yang follow up.',
+      'Baik. Saya perkenalkan Anda dengan Coach Dedy Dahlan. Saya berikan kontak Anda kepada beliau sekarang, nanti beliau yang menindaklanjuti.']
+  ];
+  function balasanTeks(b, kedekatan) {
+    if (kedekatan === 'kenal') return b[2];
+    var p = PRONOMINA[kedekatan];
+    return b[1].replace(/\{Aku\}/g, p.aku.charAt(0).toUpperCase() + p.aku.slice(1)).replace(/\{aku\}/g, p.aku).replace(/\{kamu\}/g, p.kamu);
+  }
+  function dataPesan(namaTamu, e, bidang, bisnis) {
+    var id = true;
+    var jam = Number((e.jam_mulai || '12').split(/[:.]/)[0]);
+    return {
       tamu: namaTamu, saya: S.profil.nama_depan, chapter: S.atur.nama_chapter, acara: e.nama_acara,
-      hari: id ? tglID(e.tanggal) : tglHari(e.tanggal), jam: e.jam_mulai, tempat: tempat, form: S.atur.tautan_form || '(form link)'
-    });
+      bidang: bidang || bisnis || 'bisnis', bisnisNama: bisnis || '',
+      salam: jam < 11 ? 'pagi' : jam < 15 ? 'siang' : 'sore', salamEn: jam < 12 ? 'morning' : 'afternoon',
+      form: S.atur.tautan_form || '(form link)', jam: e.jam_mulai, hariID: tglID(e.tanggal), hariEn: tglHari(e.tanggal),
+      tempatID: e.mode === 'Online' ? 'online lewat ' + (e.lokasi || 'Zoom') : 'di ' + (e.lokasi || 'lokasi yang akan dikabari'),
+      tempatEn: e.mode === 'Online' ? 'online via ' + (e.lokasi || 'Zoom') : 'at ' + (e.lokasi || 'a location to be confirmed')
+    };
+  }
+  function buatPesan(bahasa, kedekatan, langkah, namaTamu, e, bidang, bisnis) {
+    var d = dataPesan(namaTamu, e, bidang, bisnis);
+    d.bisnis = bahasa === 'en' ? (d.bisnisNama || 'your business') : (d.bisnisNama ? 'bisnis ' + d.bisnisNama : (kedekatan === 'kenal' ? 'bisnis Anda' : kedekatan === 'dekat' ? 'bisnis lu' : 'bisnismu'));
+    if (bahasa === 'id') { d.hari = d.hariID; d.tempat = d.tempatID; return PESAN_ID[kedekatan][langkah](d); }
+    d.hari = d.hariEn; d.tempat = d.tempatEn;
+    return PESAN_EN[kedekatan === 'kenal' ? 'formal' : 'santai'][langkah](d);
   }
   function salinTeks(teksnya, ta) {
-    function cadangan() { ta.focus(); ta.select(); try { document.execCommand('copy'); } catch (e) {} }
+    function cadangan() { var x = document.createElement('textarea'); x.value = teksnya; x.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(x); x.select(); try { document.execCommand('copy'); } catch (e) {} x.remove(); }
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(teksnya).catch(cadangan); else cadangan();
   }
 
-  /* Lembar undangan: satu tempat untuk pilih acara, pilih gaya pesan, lalu salin atau kirim.
-     opsi: {id, nama, wa, acara[], idEv, tercatat, segarkan} */
+  /* Lembar undangan: pilih acara, kedekatan, dan langkah pesan, lalu salin atau kirim.
+     opsi: {id, nama, wa, bidang, bisnis, acara[], idEv, tercatat, segarkan} */
   function lembarUndangan(o) {
     var depan = o.nama.split(/\s+/)[0];
-    var st = { gaya: 'hangat', bahasa: 'id', idEv: o.idEv || (o.acara[0] && o.acara[0].id_event), tercatat: !!o.tercatat, wa: o.wa || '' };
+    var st = { dekat: 'teman', bahasa: 'id', langkah: 0, balasan: false, idEv: o.idEv || (o.acara[0] && o.acara[0].id_event), tercatat: !!o.tercatat, wa: o.wa || '' };
+    var bidang = o.bidang && !/^Undecided/.test(o.bidang) ? o.bidang : '';
     function acaraDipilih() { return o.acara.filter(function (z) { return z.id_event === st.idEv; })[0]; }
     bukaLembar(
       '<h2>Invite ' + esc(depan) + '</h2>' +
-      '<p class="kecil" id="u-info" style="margin:4px 0 12px">' + (st.tercatat ? 'Invitation recorded. Pick a message style and send it.' : 'Pick the event and a message style. The invitation is recorded when the message is copied or sent.') + '</p>' +
+      '<p class="kecil" id="u-info" style="margin:4px 0 12px">' + (st.tercatat ? 'Invitation recorded. Send the messages in order, one at a time.' : 'Pick the event and how close you are. The invitation is recorded when a message is copied or sent.') + '</p>' +
       '<p class="kecil" style="margin-bottom:6px">Event</p><div class="pilihan" id="u-ev" style="margin-bottom:12px">' + o.acara.map(function (e) {
         return '<button type="button" data-ev="' + esc(e.id_event) + '" aria-pressed="' + (e.id_event === st.idEv) + '">' + esc(e.jenis === 'BOD' ? 'BOD' : 'Lunch Networking') + ' · ' + esc(tglPendek(e.tanggal)) + ' ' + esc(e.jam_mulai) + '</button>';
       }).join('') + '</div>' +
       (st.wa ? '' : '<label class="isian"><span>WhatsApp ' + esc(depan) + '</span><input id="u-wa" inputmode="tel" placeholder="08..." autocomplete="off"></label>') +
-      '<p class="kecil" style="margin-bottom:6px">Message style</p><div class="pilihan" id="u-gaya" style="margin-bottom:10px">' + GAYA.map(function (g) {
-        return '<button type="button" data-gaya="' + g[0] + '" aria-pressed="' + (g[0] === st.gaya) + '">' + g[1] + '</button>';
+      '<p class="kecil" style="margin-bottom:6px">How close are you to ' + esc(depan) + '?</p><div class="pilihan" id="u-dekat" style="margin-bottom:12px">' + KEDEKATAN.map(function (g) {
+        return '<button type="button" data-dekat="' + g[0] + '" aria-pressed="' + (g[0] === st.dekat) + '">' + g[1] + '</button>';
       }).join('') + '<button type="button" id="u-bhs" class="bahasa" aria-label="Switch message language">ID | EN</button></div>' +
-      '<textarea id="u-pesan" class="pesan-undangan" rows="9"></textarea>' +
-      '<p class="kecil redup" style="margin:6px 0 12px">You can edit the message before sending. The form link and the "Invited by" reminder help match the registration to you.</p>' +
+      '<div class="seg langkah-seg" id="u-langkah">' + LANGKAH.map(function (g, i) {
+        return '<button type="button" data-langkah="' + i + '" aria-selected="' + (i === st.langkah) + '"><b>' + g[0] + '</b><span>' + g[1] + '</span></button>';
+      }).join('') + '</div>' +
+      '<p class="kecil redup" id="u-petunjuk" style="margin:8px 2px"></p>' +
+      '<textarea id="u-pesan" class="pesan-undangan" rows="8"></textarea>' +
       '<p class="pesan-salah" id="salah" hidden></p>' +
-      '<div class="baris-tombol"><button class="tombol" id="u-wa-buka">Open WhatsApp</button><button class="tombol kedua" id="u-salin">Copy message</button></div>',
+      '<div class="baris-tombol" style="margin-top:10px"><button class="tombol" id="u-wa-buka">Open WhatsApp</button><button class="tombol kedua" id="u-salin">Copy message</button></div>' +
+      '<details class="lipat" id="u-balasan" style="margin-top:14px"><summary><span>If they hesitate or ask</span><em>replies</em></summary><div id="u-balasan-isi"></div></details>',
       function (el) {
         var ta = el.querySelector('#u-pesan');
-        function segarPesan() { var e = acaraDipilih(); if (e) ta.value = buatPesan(st.bahasa, st.gaya, depan, e); }
-        function tanda(wadah, atr, nilai) { el.querySelectorAll(wadah + ' [' + atr + ']').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute(atr) === nilai); }); }
+        var petunjuk = ['Start the conversation. Wait for a reply before sending the next one.', 'Share the details of the event.', 'Send the form link. Ask them to choose your name under "Invited by".', 'Send this after they have registered.'];
+        function segarPesan() {
+          var e = acaraDipilih();
+          if (e) ta.value = buatPesan(st.bahasa, st.dekat, st.langkah, depan, e, bidang, o.bisnis);
+          el.querySelector('#u-petunjuk').textContent = 'Message ' + (st.langkah + 1) + ' of 4. ' + petunjuk[st.langkah];
+          var wadah = el.querySelector('#u-balasan');
+          wadah.hidden = st.bahasa !== 'id';
+          el.querySelector('#u-balasan-isi').innerHTML = BALASAN.map(function (b, i) {
+            return '<div class="balasan"><b>' + esc(b[0]) + '</b><p>' + esc(balasanTeks(b, st.dekat)).replace(/\n/g, '<br>') + '</p><button type="button" class="tombol kecil kedua" data-salin-balasan="' + i + '">Copy</button></div>';
+          }).join('');
+          el.querySelectorAll('[data-salin-balasan]').forEach(function (b) {
+            b.onclick = function () { salinTeks(balasanTeks(BALASAN[Number(b.dataset.salinBalasan)], st.dekat), ta); toast('Reply copied.'); };
+          });
+        }
+        function tanda(wadah, atr, nilai) { el.querySelectorAll(wadah + ' [' + atr + ']').forEach(function (b) { var a = b.hasAttribute('aria-selected') ? 'aria-selected' : 'aria-pressed'; b.setAttribute(a, b.getAttribute(atr) === String(nilai)); }); }
         el.querySelectorAll('[data-ev]').forEach(function (b) {
           b.onclick = function () { if (st.tercatat) return; st.idEv = b.dataset.ev; tanda('#u-ev', 'data-ev', st.idEv); segarPesan(); };
         });
-        el.querySelectorAll('[data-gaya]').forEach(function (b) { b.onclick = function () { st.gaya = b.dataset.gaya; tanda('#u-gaya', 'data-gaya', st.gaya); segarPesan(); }; });
+        el.querySelectorAll('[data-dekat]').forEach(function (b) { b.onclick = function () { st.dekat = b.dataset.dekat; tanda('#u-dekat', 'data-dekat', st.dekat); segarPesan(); }; });
+        el.querySelectorAll('[data-langkah]').forEach(function (b) { b.onclick = function () { st.langkah = Number(b.dataset.langkah); tanda('#u-langkah', 'data-langkah', st.langkah); segarPesan(); }; });
         el.querySelector('#u-bhs').onclick = function () { st.bahasa = st.bahasa === 'id' ? 'en' : 'id'; this.textContent = st.bahasa === 'id' ? 'ID | EN' : 'EN | ID'; segarPesan(); };
         segarPesan();
         async function catat() {
@@ -666,7 +745,7 @@
           var r = await api('undang', { id_orang: o.id, id_event: st.idEv, whatsapp: kolom ? wa : '' });
           if (!r.ok) { s.textContent = r.pesan; s.hidden = false; return false; }
           s.hidden = true; st.tercatat = true; st.wa = wa;
-          el.querySelector('#u-info').textContent = 'Invitation recorded.';
+          el.querySelector('#u-info').textContent = 'Invitation recorded. Send the messages in order, one at a time.';
           el.querySelectorAll('[data-ev]').forEach(function (b) { b.disabled = b.dataset.ev !== st.idEv; });
           if (o.segarkan) o.segarkan();
           return true;
@@ -683,8 +762,8 @@
       });
   }
 
-  function lembarKirim(namaTamu, wa, e, idEv) {
-    lembarUndangan({ nama: namaTamu, wa: String(wa || ''), acara: [e], idEv: e.id_event, tercatat: true });
+  function lembarKirim(namaTamu, wa, e, bidang, bisnis) {
+    lembarUndangan({ nama: namaTamu, wa: String(wa || ''), acara: [e], idEv: e.id_event, tercatat: true, bidang: bidang, bisnis: bisnis });
   }
 
   /* ---------- UNDANG ---------- */
@@ -708,7 +787,7 @@
     function baris(u) {
       var bisa = !u.status_undangan && u.tahap !== 'Anggota';
       return '<li><div class="utama"><b>' + esc(u.nama) + '</b><span>' + esc(u.bidang) + (u.tanggal_undangan ? ' · ' + esc(u.acara_undangan) + ', ' + esc(tglPendek(u.tanggal_undangan)) : '') + '</span></div>' +
-        (bisa ? '<button class="tombol kecil" data-undang="' + esc(u.id_orang) + '" data-wa="' + esc(u.whatsapp || '') + '" data-nama="' + esc(u.nama) + '">Invite</button>' : chipUndangan(u)) + '</li>';
+        (bisa ? '<button class="tombol kecil" data-undang="' + esc(u.id_orang) + '" data-wa="' + esc(u.whatsapp || '') + '" data-nama="' + esc(u.nama) + '" data-bidang="' + esc(u.bidang) + '" data-bisnis="' + esc(u.bisnis || '') + '">Invite</button>' : chipUndangan(u)) + '</li>';
     }
     isi.innerHTML = '<div class="sapa"><h1>My list</h1><p class="kecil">Names I want to invite. ' + st.nama_daftar + ' of ' + st.target_nama_maks + ' (minimum ' + st.target_nama_min + ').</p></div>' +
       '<div class="baris-tombol" style="margin:0 0 14px"><button class="tombol" id="b-tambah">Add a name</button></div>' +
@@ -718,7 +797,7 @@
       '<section class="kartu">' + (sudah.length ? '<ul class="daftar">' + sudah.map(baris).join('') + '</ul><p class="catatan-main">A Visitor shows as Registered once the sign-up form is filled in. Attendance is recorded by the launch team on Wednesday.</p>' : '<p class="kosong-isi">No invitations yet.</p>') + '</section>';
     isi.querySelector('#b-tambah').onclick = function () { bukaKursi('', function () { layarUndang(isi); }); };
     isi.querySelectorAll('[data-undang]').forEach(function (t) {
-      t.onclick = function () { lembarUndang(t.dataset.undang, t.dataset.nama, t.dataset.wa, acara, function () { layarUndang(isi); }); };
+      t.onclick = function () { lembarUndang(t.dataset.undang, t.dataset.nama, t.dataset.wa, acara, function () { layarUndang(isi); }, t.dataset.bidang, t.dataset.bisnis); };
     });
   }
 
@@ -738,9 +817,9 @@
       '<section class="kartu">' + (lain.length ? '<ul class="daftar">' + lain.map(baris).join('') + '</ul><p class="catatan-main">Know their classification before Wednesday, so you can greet and connect them.</p>' : '<p class="kosong-isi">No other Visitors registered yet.</p>') + '</section>';
   }
 
-  function lembarUndang(id, nama, wa, acara, segarkan) {
+  function lembarUndang(id, nama, wa, acara, segarkan, bidang, bisnis) {
     if (!acara.length) return toast('No Wednesday events are open yet.');
-    lembarUndangan({ id: id, nama: nama, wa: wa, acara: acara, segarkan: segarkan });
+    lembarUndangan({ id: id, nama: nama, wa: wa, acara: acara, segarkan: segarkan, bidang: bidang, bisnis: bisnis });
   }
 
   /* ---------- PAPAN ---------- */

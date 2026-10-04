@@ -354,3 +354,9 @@ details.lipat > :not(summary) { margin: 0 14px 14px; }
 
 .pesan-undangan { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--garis); background: var(--kertas-2); font-size: 14px; line-height: 1.45; resize: vertical; }
 .pilihan button.bahasa { margin-left: auto; background: transparent; border-style: dashed; }
+
+.langkah-seg button b { font-size: 16px; }
+.balasan { border-top: 1px solid var(--garis); padding: 10px 0; }
+.balasan:first-child { border-top: 0; }
+.balasan b { font-size: 13px; }
+.balasan p { font-size: 13px; color: var(--tinta-2); margin: 4px 0 8px; }

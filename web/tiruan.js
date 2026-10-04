@@ -71,16 +71,16 @@ var Tiruan = (function () {
     });
 
     var calonContoh = [
-      ['Lukman Hakim', 'K05', 'Tertarik', agung, 2], ['Maya Anggraini', 'K06', 'Baru', agung, 9], ['Nanda Putra', 'K07', 'Dihubungi', agung, 4],
-      ['Oki Setiawan', 'K09', 'CS', iman, 1], ['Putri Ayu', 'K12', 'Bimbang', iman, 11], ['Rudi Hermawan', 'K13', 'Baru', iman, 3],
-      ['Sinta Dewi', 'K18', 'Tertarik', dhika, 5], ['Taufik Hidayat', 'K20', 'Baru', dhika, 8], ['Umar Said', 'K26', 'Dihubungi', sari, 2],
-      ['Vina Melati', 'K28', 'Baru', sari, 12], ['Wawan Kurnia', 'K29', 'CS', sari, 1], ['Yuni Astuti', 'K43', 'Tertarik', dedy, 0],
-      ['Zaki Mubarak', 'K50', 'Baru', iman, 6], ['Arif Rahman', 'K51', 'Dihubungi', iman, 3], ['Bella Safitri', 'K21', 'Baru', dhika, 7],
-      ['Candra Wibowo', 'K60', 'Tertarik', agung, 2], ['Dian Novita', 'K36', 'Baru', dedy, 1], ['Erwin Gunawan', 'K05', 'Baru', dhika, 10]
+      ['Lukman Hakim', 'K05', 'Invited', agung, 2], ['Maya Anggraini', 'K06', 'Listed', agung, 9], ['Nanda Putra', 'K07', 'Invited', agung, 4],
+      ['Oki Setiawan', 'K09', 'Coffee_Scheduled', iman, 1], ['Putri Ayu', 'K12', 'Coffee_Session', iman, 11], ['Rudi Hermawan', 'K13', 'Listed', iman, 3],
+      ['Sinta Dewi', 'K18', 'Applied', dhika, 5], ['Taufik Hidayat', 'K20', 'Listed', dhika, 8], ['Umar Said', 'K26', 'Attended', sari, 2],
+      ['Vina Melati', 'K28', 'Listed', sari, 12], ['Wawan Kurnia', 'K29', 'Coffee_Scheduled', sari, 1], ['Yuni Astuti', 'K43', 'Coffee_Session', dedy, 0],
+      ['Zaki Mubarak', 'K50', 'Listed', iman, 6], ['Arif Rahman', 'K51', 'Declined', iman, 3], ['Bella Safitri', 'K21', 'Listed', dhika, 7],
+      ['Candra Wibowo', 'K60', 'Joined_Other', agung, 2], ['Dian Novita', 'K36', 'Listed', dedy, 1], ['Erwin Gunawan', 'K05', 'Listed', dhika, 10]
     ];
     calonContoh.forEach(function (c) {
       var o = orang(c[0], 'Calon', c[2], c[1], { PIC: c[3].id_orang, diajukan_oleh: c[3].id_orang, tanggal_masuk: lalu(c[4] + 1), tanggal_sentuh: lalu(c[4]), bisnis: '' });
-      if (c[2] === 'CS') { var h = new Date(now.getTime() + (calonContoh.indexOf(c) % 3 + 1) * HARI); o.jadwal_cs = tanggal(h) + 'T' + (calonContoh.indexOf(c) % 2 ? '14:00' : '10:00') + ':00+07:00'; }
+      if (c[2] === 'Coffee_Scheduled') { var h = new Date(now.getTime() + (calonContoh.indexOf(c) % 3 + 1) * HARI); o.jadwal_cs = tanggal(h) + 'T' + (calonContoh.indexOf(c) % 2 ? '14:00' : '10:00') + ':00+07:00'; }
     });
 
     var akses = [
@@ -103,7 +103,7 @@ var Tiruan = (function () {
 
     var und = [], hadir = [];
     var a0 = anggota[0];
-    var calonA0 = orang('Rika Amalia', 'Calon', 'Tertarik', 'K08', { PIC: agung.id_orang, diajukan_oleh: a0.id_orang, tanggal_masuk: lalu(9) });
+    var calonA0 = orang('Rika Amalia', 'Calon', 'Attended', 'K08', { PIC: agung.id_orang, diajukan_oleh: a0.id_orang, tanggal_masuk: lalu(9) });
     und.push({ id_undangan: 'U0001', tanggal: lalu(9), id_pengundang: a0.id_orang, id_orang_calon: calonA0.id_orang, id_event: 'E0', status: 'Hadir', sumber: 'app' });
     hadir.push({ id_hadir: 'H00001', id_event: 'E0', id_orang: calonA0.id_orang, peran: 'Visitor', waktu_checkin: iso(lewat), dicatat_oleh: agung.id_orang });
     [[agung, 'P0010'], [dhika, 'P0013'], [sari, 'P0016']].forEach(function (p, i) {

@@ -9,8 +9,12 @@
 var Inti = (function () {
   'use strict';
 
-  var TAHAP_AKTIF = ['Baru', 'Dihubungi', 'Tertarik', 'CS', 'Bimbang'];
-  var TAHAP_LT = ['Dihubungi', 'Tertarik', 'CS', 'Bimbang', 'Tidak Lanjut', 'Parkir'];
+  // Alur status calon mengikuti app Ventura:
+  // Listed (nama masuk) > Invited > Coffee_Scheduled > Attended > Coffee_Session (wawancara selesai) > Applied > Anggota (Joined_Optima)
+  // Keluar: Joined_Other, Declined, Rejected
+  var TAHAP_AKTIF = ['Listed', 'Invited', 'Coffee_Scheduled', 'Attended', 'Coffee_Session', 'Applied'];
+  var TAHAP_TUTUP = ['Joined_Other', 'Declined', 'Rejected'];
+  var TAHAP_LT = TAHAP_AKTIF.concat(TAHAP_TUTUP);
   var JAM = 3600 * 1000;
   var HARI = 24 * JAM;
   var WIB = 7 * JAM;
@@ -303,7 +307,18 @@ var Inti = (function () {
       var batas = batasRonde(n).selesai;
       riwayat.push({ selesai: batas.toISOString(), jumlah: tglGabung.filter(function (d) { return !d || d <= batas; }).length });
     }
-    return { anggota: jumlah, gerbang: [a.target_founding, a.target_cgt, a.target_launch], fase: a.fase, target: target, riwayat: riwayat };
+    function hariKe(v) { var d = tgl(v); return d ? Math.max(0, Math.ceil((d.getTime() - k.now.getTime()) / HARI)) : null; }
+    var mulai = batasRonde(kini).mulai, akhir = batasRonde(kini).selesai;
+    var tamuPekan = 0, sudahTamu = {};
+    var acaraRonde = {};
+    k.tab('Events').forEach(function (e) { var t = tgl(e.tanggal); if (t && nomorRonde(t) === kini && teks(e.status) !== 'Batal') acaraRonde[teks(e.id_event)] = true; });
+    k.undanganAktif().forEach(function (u) {
+      var st = teks(u.status), kunci = teks(u.id_orang_calon) + '|' + teks(u.id_event);
+      if (acaraRonde[teks(u.id_event)] && (st === 'Terdaftar' || st === 'Hadir') && !sudahTamu[kunci]) { sudahTamu[kunci] = true; tamuPekan++; }
+    });
+    var baruPekan = tglGabung.filter(function (d) { return d && d >= mulai && d <= akhir; }).length;
+    return { anggota: jumlah, gerbang: [a.target_founding, a.target_cgt, a.target_launch], fase: a.fase, target: target, riwayat: riwayat,
+      hari_ke_esm: hariKe(a.tanggal_esm), hari_ke_launch: hariKe(a.tanggal_grand_launch), tamu_pekan: tamuPekan, anggota_baru_pekan: baruPekan };
   }
 
   function kabar(k) {
@@ -361,6 +376,7 @@ var Inti = (function () {
       sumber: 'app'
     };
     k.tambah('Undangan', u);
+    if (teks(calon.tahap) === 'Listed') k.ubah('Master', calon, { tahap: 'Invited', tanggal_sentuh: k.now.toISOString(), terakhir_diubah: k.now.toISOString() });
     k.log('undang', namaDepan(calon) + ' ke ' + acara.nama_acara + ' ' + acara.tanggal);
     return u;
   }
@@ -438,7 +454,7 @@ var Inti = (function () {
       var o = {
         id_orang: idBaru(k.tab('Master'), 'id_orang', 'P', 4),
         nama: nama, nama_depan: bagian[0], whatsapp_norm: wa, email: '', perusahaan: teks(b.perusahaan), bisnis: bisnis,
-        id_kursi: x ? x.id_kursi : '', kota: '', sumber: 'app', kategori: 'Calon', tahap: 'Baru', jenis_anggota: '',
+        id_kursi: x ? x.id_kursi : '', kota: '', sumber: 'app', kategori: 'Calon', tahap: 'Listed', jenis_anggota: '',
         tanggal_bergabung: '', id_sponsor: '', PIC: k.isLT() ? k.saya.id_orang : '', diajukan_oleh: k.saya.id_orang,
         tanggal_masuk: k.now.toISOString(), tanggal_sentuh: k.now.toISOString(), alasan_tidak_lanjut: '', catatan: '',
         terakhir_diubah: k.now.toISOString(), jadwal_cs: ''
@@ -529,9 +545,9 @@ var Inti = (function () {
       var semua = k.isLDC() && b.semua;
       var id = k.saya.id_orang;
       return {
-        calon: k.calonAktif().filter(function (r) { return semua || teks(r.PIC) === id || (!teks(r.PIC) && k.isLDC()); }).map(function (r) {
+        calon: k.tab('Master').filter(function (r) { return teks(r.kategori) === 'Calon' && TAHAP_LT.indexOf(teks(r.tahap)) >= 0; }).filter(function (r) { return semua || teks(r.PIC) === id || (!teks(r.PIC) && k.isLDC()); }).map(function (r) {
           var x = kursiById(k, r.id_kursi);
-          return { id_orang: teks(r.id_orang), nama: teks(r.nama), bisnis: teks(r.bisnis), id_kursi: x ? x.id_kursi : '', bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), whatsapp: teks(r.whatsapp_norm), hari_diam: k.hariDiam(r), pic: namaDepan(k.orang(r.PIC)) || 'None yet', jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '' };
+          return { id_orang: teks(r.id_orang), nama: teks(r.nama), bisnis: teks(r.bisnis), id_kursi: x ? x.id_kursi : '', bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), whatsapp: teks(r.whatsapp_norm), hari_diam: k.hariDiam(r), pic: namaDepan(k.orang(r.PIC)) || 'None yet', jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '', alasan: teks(r.alasan_tidak_lanjut) };
         }).sort(function (a, b) { return b.hari_diam - a.hari_diam; })
       };
     },
@@ -545,7 +561,7 @@ var Inti = (function () {
       if (!k.isLDC() && teks(o.PIC) && teks(o.PIC) !== k.saya.id_orang) gagal('This prospect is handled by ' + namaDepan(k.orang(o.PIC)) + '.');
       var ubah = { tahap: tahap, tanggal_sentuh: k.now.toISOString(), terakhir_diubah: k.now.toISOString() };
       if (!teks(o.PIC)) ubah.PIC = k.saya.id_orang;
-      if (tahap === 'CS') {
+      if (tahap === 'Coffee_Scheduled') {
         var j = tgl(b.jadwal_cs);
         if (!j) gagal('Enter the date and time of the coffee session.');
         ubah.jadwal_cs = j.toISOString();
@@ -557,7 +573,7 @@ var Inti = (function () {
         ubah.id_kursi = kx.id_kursi;
       }
       if (teks(b.catatan)) ubah.catatan = (teks(o.catatan) ? teks(o.catatan) + '\n' : '') + isoTanggal(k.now) + ' ' + k.saya.nama_depan + ': ' + teks(b.catatan);
-      if (tahap === 'Tidak Lanjut' && teks(b.catatan)) ubah.alasan_tidak_lanjut = teks(b.catatan);
+      if (TAHAP_TUTUP.indexOf(tahap) >= 0 && teks(b.catatan)) ubah.alasan_tidak_lanjut = teks(b.catatan);
       k.ubah('Master', o, ubah);
       k.log('tindakLanjut', namaDepan(o) + ' menjadi ' + tahap);
       return { tahap: tahap };
@@ -629,9 +645,11 @@ var Inti = (function () {
         var peran = (kat === 'LT' || kat === 'LDC') ? 'LT' : (teks(o.tahap) === 'Anggota' ? 'Anggota' : 'Visitor');
         k.tambah('Hadir', { id_hadir: idBaru(k.tab('Hadir'), 'id_hadir', 'H', 5), id_event: idEv, id_orang: idO, peran: peran, waktu_checkin: k.now.toISOString(), dicatat_oleh: k.saya.id_orang });
         und.forEach(function (u) { k.ubah('Undangan', u, { status: 'Hadir' }); });
+        if (peran === 'Visitor' && ['Listed', 'Invited'].indexOf(teks(o.tahap)) >= 0) k.ubah('Master', o, { tahap: 'Attended', tanggal_sentuh: k.now.toISOString(), terakhir_diubah: k.now.toISOString() });
       } else if (!b.hadir && ada) {
         k.hapus('Hadir', ada);
         und.forEach(function (u) { k.ubah('Undangan', u, { status: 'Diundang' }); });
+        if (teks(o.tahap) === 'Attended') k.ubah('Master', o, { tahap: 'Invited', terakhir_diubah: k.now.toISOString() });
       }
       k.log('checkin', namaDepan(o) + (b.hadir ? ' hadir' : ' batal hadir') + ' di ' + idEv);
       return { hadir: !!b.hadir };
@@ -695,7 +713,7 @@ var Inti = (function () {
       wajibLT(k);
       var batas = new Date(k.now.getTime() - 12 * JAM);
       return {
-        cs: k.tab('Master').filter(function (r) { var j = tgl(r.jadwal_cs); return teks(r.tahap) === 'CS' && j && j >= batas; }).map(function (r) {
+        cs: k.tab('Master').filter(function (r) { var j = tgl(r.jadwal_cs); return teks(r.tahap) === 'Coffee_Scheduled' && j && j >= batas; }).map(function (r) {
           var x = kursiById(k, r.id_kursi);
           return { id_orang: teks(r.id_orang), nama: teks(r.nama), bidang: x ? x.bidang : 'Undecided classification', pic: namaDepan(k.orang(r.PIC)) || 'None yet', jadwal_cs: tgl(r.jadwal_cs).toISOString(), whatsapp: teks(r.whatsapp_norm) };
         }).sort(function (a, b) { return a.jadwal_cs < b.jadwal_cs ? -1 : 1; })

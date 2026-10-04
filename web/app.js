@@ -21,7 +21,7 @@
   var BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var HARI = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   /* Label tampilan untuk nilai data. Nilai di sheet tidak berubah. */
-  var TAHAP_LABEL = { 'Baru': 'New', 'Dihubungi': 'Contacted', 'Tertarik': 'Interested', 'CS': 'CS', 'Bimbang': 'Undecided', 'Tidak Lanjut': 'Not continuing', 'Parkir': 'Parked', 'Anggota': 'Member' };
+  var TAHAP_LABEL = { 'Listed': 'Listed', 'Invited': 'Invited', 'Coffee_Scheduled': 'Coffee scheduled', 'Attended': 'Attended', 'Coffee_Session': 'Coffee session done', 'Applied': 'Applied', 'Anggota': 'Joined', 'Joined_Other': 'Joined other chapter', 'Declined': 'Declined', 'Rejected': 'Rejected' };
   var STATUS_UNDANGAN_LABEL = { 'Diundang': 'Invited', 'Terdaftar': 'Registered', 'Hadir': 'Attended', 'Bergabung': 'Joined', 'Batal': 'Cancelled' };
   var JENIS_ANGGOTA_LABEL = { 'Founding': 'Founding', 'Core Group': 'Core Group', 'Anggota': 'Member' };
   var PERAN_LABEL = { 'Visitor': 'Visitor', 'Anggota': 'Member', 'LT': 'LT' };
@@ -279,6 +279,12 @@
       '<div class="label">Chapter Mission</div>' +
       '<div class="angka">' + m.anggota + ' <small>/ ' + m.target + ' members</small></div>' +
       '<div class="sub">' + esc(sub) + '. Final target ' + m.gerbang[2] + '.</div>' +
+      '<div class="ubin-misi">' +
+        (m.hari_ke_esm ? '<div><b>' + m.hari_ke_esm + '</b><span>days to ESM</span></div>' : '') +
+        (m.hari_ke_launch ? '<div><b>' + m.hari_ke_launch + '</b><span>days to Grand Launch</span></div>' : '') +
+        '<div><b>' + m.tamu_pekan + '</b><span>Visitors this week</span></div>' +
+        '<div><b>' + m.anggota_baru_pekan + '</b><span>new members this week</span></div>' +
+      '</div>' +
       grafikMisi(m) +
     '</section>';
   }
@@ -296,8 +302,8 @@
   function kartuLangkah(b, pipa) {
     var st = b.saya, min = st.target_nama_min, maks = st.target_nama_maks, n = st.nama_daftar;
     var judul, isi, tombol, href;
-    var tunggu = pipa ? pipa.filter(function (c) { return ['Baru', 'Dihubungi', 'Tertarik'].indexOf(c.tahap) >= 0; }).length : 0;
-    var cs = pipa ? pipa.filter(function (c) { return c.tahap === 'CS'; }).length : 0;
+    var tunggu = pipa ? pipa.filter(function (c) { return ['Listed', 'Invited', 'Attended'].indexOf(c.tahap) >= 0; }).length : 0;
+    var cs = pipa ? pipa.filter(function (c) { return c.tahap === 'Coffee_Scheduled'; }).length : 0;
     if (n < min) {
       judul = 'Add prospect names'; href = '#kursi'; tombol = 'Choose a seat';
       isi = (min - n) + ' more names to reach the minimum of ' + min + '. Tap a seat on the board, then add a prospect from that classification.';
@@ -306,7 +312,7 @@
       isi = tunggu + ' prospect' + (tunggu > 1 ? 's' : '') + ' waiting for a coffee session date.';
     } else if (isLT() && cs) {
       judul = 'Record coffee session results'; href = '#tim'; tombol = 'Open interviews';
-      isi = cs + ' coffee session' + (cs > 1 ? 's' : '') + ' scheduled. After each one, mark the prospect as accepted or on hold.';
+      isi = cs + ' coffee session' + (cs > 1 ? 's' : '') + ' scheduled. After each one, tap Done, then Accepted when the prospect says yes.';
     } else if (!fasePra() && st.undangan_ronde < 1) {
       judul = 'Invite one Visitor'; href = '#undang'; tombol = 'Open my list';
       isi = 'Pick one name from the list and send the invitation via WhatsApp before Wednesday night.';
@@ -722,25 +728,30 @@
 
   var semuaCalon = false;
   var segCalon = 'todo';
-  var SEG = { todo: ['To schedule', ['Baru', 'Dihubungi', 'Tertarik']], cs: ['Coffee set', ['CS']], hold: ['On hold', ['Bimbang', 'Parkir', 'Tidak Lanjut']] };
+  var SEG = { todo: ['To schedule', ['Listed', 'Invited', 'Attended']], cs: ['Coffee set', ['Coffee_Scheduled']], done: ['Interviewed', ['Coffee_Session', 'Applied']], hold: ['Closed', ['Joined_Other', 'Declined', 'Rejected']] };
   async function subCalon(w) {
     var r = await api('calonSaya', { semua: semuaCalon });
     if (!r.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
-    var per = { todo: [], cs: [], hold: [] };
+    var per = { todo: [], cs: [], done: [], hold: [] };
     r.calon.forEach(function (c) { Object.keys(SEG).forEach(function (k) { if (SEG[k][1].indexOf(c.tahap) >= 0) per[k].push(c); }); });
     per.cs.sort(function (a, b) { return (a.jadwal_cs || '') < (b.jadwal_cs || '') ? -1 : 1; });
     var info = {
-      todo: 'Step 1 of 2. Pick a date and time for the coffee session.',
-      cs: 'Step 2 of 2. After the coffee session, tap Accepted to make the prospect a member.',
-      hold: 'Undecided, parked, or not continuing. Reopen anyone who is ready again.'
+      todo: 'Step 1. Pick a date and time for the coffee session.',
+      cs: 'Step 2. After the coffee session, tap Done.',
+      done: 'Step 3. Tap Accepted when the prospect says yes. This makes them a member.',
+      hold: 'Joined another chapter, declined, or rejected. Reopen anyone who is ready again.'
     };
     function aksi(c) {
       if (segCalon === 'todo') return '<button class="tombol kecil" data-aksi="jadwal" data-id="' + esc(c.id_orang) + '">Set coffee</button>';
-      if (segCalon === 'cs') return '<button class="tombol kecil" data-aksi="terima" data-id="' + esc(c.id_orang) + '">Accepted</button>';
+      if (segCalon === 'cs') return '<button class="tombol kecil" data-aksi="selesai" data-id="' + esc(c.id_orang) + '">Done</button>';
+      if (segCalon === 'done') return '<button class="tombol kecil" data-aksi="terima" data-id="' + esc(c.id_orang) + '">Accepted</button>';
       return '<button class="tombol kecil kedua" data-aksi="buka" data-id="' + esc(c.id_orang) + '">Reopen</button>';
     }
     function sub(c) {
       if (segCalon === 'cs' && c.jadwal_cs) return jamCS(c.jadwal_cs).hari + ' ' + jamCS(c.jadwal_cs).jam;
+      if (segCalon === 'done') return lblTahap(c.tahap);
+      if (segCalon === 'hold') return lblTahap(c.tahap) + (c.alasan ? ': ' + c.alasan : '');
+      if (c.tahap === 'Attended') return 'Attended, ' + (c.hari_diam ? c.hari_diam + ' days idle' : 'today');
       return (c.hari_diam ? c.hari_diam + ' days idle' : 'today') + (semuaCalon ? ' · PIC ' + c.pic : '');
     }
     var daftar = per[segCalon];
@@ -765,9 +776,11 @@
         var c = cari(t.dataset.id);
         if (t.dataset.aksi === 'jadwal') return lembarJadwal(c, function () { segCalon = 'cs'; subCalon(w); });
         if (t.dataset.aksi === 'terima') return lembarAnggota(c, function () { subCalon(w); });
-        var h = await api('tindakLanjut', { id_orang: c.id_orang, tahap: 'Dihubungi' });
+        var tujuan = t.dataset.aksi === 'selesai' ? 'Coffee_Session' : 'Invited';
+        var h = await api('tindakLanjut', { id_orang: c.id_orang, tahap: tujuan });
         if (!h.ok) return toast(h.pesan);
-        segCalon = 'todo'; toast(c.nama.split(/\s+/)[0] + ' is back in To schedule'); subCalon(w);
+        segCalon = tujuan === 'Coffee_Session' ? 'done' : 'todo';
+        toast(c.nama.split(/\s+/)[0] + (tujuan === 'Coffee_Session' ? ' moved to Interviewed' : ' is back in To schedule')); subCalon(w);
       };
     });
   }
@@ -783,7 +796,7 @@
         el.querySelector('#f-jd').onsubmit = async function (e) {
           e.preventDefault();
           var f = e.target;
-          var r = await api('tindakLanjut', { id_orang: c.id_orang, tahap: 'CS', jadwal_cs: new Date(f.jadwal_cs.value).toISOString(), id_kursi: f.id_kursi ? f.id_kursi.value : '' });
+          var r = await api('tindakLanjut', { id_orang: c.id_orang, tahap: 'Coffee_Scheduled', jadwal_cs: new Date(f.jadwal_cs.value).toISOString(), id_kursi: f.id_kursi ? f.id_kursi.value : '' });
           if (!r.ok) { var s = el.querySelector('#salah'); s.textContent = r.pesan; s.hidden = false; return; }
           tutupLembar(); toast('Coffee session set for ' + c.nama.split(/\s+/)[0]); S.cache.kursi = null; segarkan();
         };
@@ -791,18 +804,18 @@
   }
 
   async function lembarCalon(c, segarkan) {
-    var tahap = ['Dihubungi', 'Tertarik', 'CS', 'Bimbang', 'Tidak Lanjut', 'Parkir'];
+    var tahap = ['Invited', 'Coffee_Scheduled', 'Attended', 'Coffee_Session', 'Applied', 'Joined_Other', 'Declined', 'Rejected'];
     if (!c.id_kursi && !S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
     bukaLembar(
       '<div class="tajuk"><span class="lambang" style="width:52px;height:52px;font-size:20px">' + inisial(c.nama) + '</span><div><p class="kecil">' + esc(c.bidang) + '</p><h2>' + esc(c.nama) + '</h2>' + (c.bisnis ? '<p class="kecil">' + esc(c.bisnis) + '</p>' : '') + '</div></div>' +
       (c.whatsapp ? '<a class="tombol kedua" target="_blank" rel="noopener" href="' + esc(waLink(c.whatsapp)) + '" style="margin-bottom:14px">Chat on WhatsApp</a>' : '') +
-      '<form id="f-tl"><p class="kecil" style="margin-bottom:8px">Current stage: <b>' + esc(lblTahap(c.tahap)) + '</b>. Change to:</p>' +
+      '<form id="f-tl"><p class="kecil" style="margin-bottom:4px">Current stage: <b>' + esc(lblTahap(c.tahap)) + '</b>. Change to:</p><p class="kecil redup" style="margin-bottom:8px">Flow: Invited, Attended, Coffee session, Applied, Joined. Exit: Declined, Rejected.</p>' +
       '<div class="pilihan" style="margin-bottom:14px">' + tahap.map(function (t) {
         return '<button type="button" data-tahap="' + t + '" aria-pressed="' + (t === c.tahap) + '">' + esc(lblTahap(t)) + '</button>';
       }).join('') + '</div>' +
-      '<label class="isian" id="isi-cs"' + (c.tahap === 'CS' ? '' : ' hidden') + '><span>Coffee session schedule</span><input type="datetime-local" name="jadwal_cs" value="' + esc(nilaiLokal(c.jadwal_cs)) + '"></label>' +
+      '<label class="isian" id="isi-cs"' + (c.tahap === 'Coffee_Scheduled' ? '' : ' hidden') + '><span>Coffee session schedule</span><input type="datetime-local" name="jadwal_cs" value="' + esc(nilaiLokal(c.jadwal_cs)) + '"></label>' +
       (c.id_kursi ? '' : pilihKursiKosong('id_kursi', false)) +
-      '<label class="isian"><span>Short note (optional)</span><textarea name="catatan" placeholder="Example: asked to be contacted after the 15th"></textarea></label>' +
+      '<label class="isian"><span>Short note or reason (optional)</span><textarea name="catatan" placeholder="Example: asked to be contacted after the 15th"></textarea></label>' +
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<button class="tombol" type="submit">Save follow-up</button></form>' +
       '<div class="baris-tombol"><button class="tombol kedua" id="b-anggota">Make a member</button></div>',
@@ -812,7 +825,7 @@
           b.onclick = function () {
             pilih = b.dataset.tahap;
             el.querySelectorAll('[data-tahap]').forEach(function (z) { z.setAttribute('aria-pressed', z === b); });
-            el.querySelector('#isi-cs').hidden = pilih !== 'CS';
+            el.querySelector('#isi-cs').hidden = pilih !== 'Coffee_Scheduled';
           };
         });
         el.querySelector('#f-tl').onsubmit = async function (e) {
@@ -826,7 +839,7 @@
         el.querySelector('#b-anggota').onclick = function () { lembarAnggota(c, segarkan); };
       });
   }
-  var TAHAP_VALID = ['Dihubungi', 'Tertarik', 'CS', 'Bimbang', 'Tidak Lanjut', 'Parkir'];
+  var TAHAP_VALID = ['Listed', 'Invited', 'Coffee_Scheduled', 'Attended', 'Coffee_Session', 'Applied', 'Joined_Other', 'Declined', 'Rejected'];
 
   async function lembarAnggota(c, segarkan) {
     bukaLembar('<div class="muat"></div>');

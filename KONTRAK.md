@@ -105,7 +105,7 @@ Satu baris per orang, dari calon sampai anggota.
 | Kolom | Nilai |
 |---|---|
 | `kategori` | `Calon` · `Guest` · `Observer` · `LT` · `LDC` |
-| `tahap` | `Baru` · `Dihubungi` · `Tertarik` · `CS` · `Bimbang` · `Anggota` · `Tidak Lanjut` · `Parkir` |
+| `tahap` | `Listed` · `Invited` · `Coffee_Scheduled` · `Attended` · `Coffee_Session` · `Applied` · `Anggota` · `Joined_Other` · `Declined` · `Rejected` (alur mengikuti Ventura; `Anggota` = Joined_Optima; `jadwal_cs` wajib saat `Coffee_Scheduled`; alasan keluar disimpan di `alasan_tidak_lanjut`) |
 | `jenis_anggota` | kosong · `Founding` · `Core Group` |
 | `id_sponsor` | `id_orang` sponsor, atau `BNI` |
 | `PIC` | `id_orang` LT atau LDC yang menindaklanjuti |
@@ -196,7 +196,7 @@ di dalam app.
 
 **Papan 64 Kursi.** Setiap kursi punya satu keadaan:
 - `terisi` · ada anggota dengan `id_kursi` ini
-- `ada_calon` · ada calon aktif (tahap selain `Anggota`, `Tidak Lanjut`, `Parkir`; kategori `Calon`)
+- `ada_calon` · ada calon aktif (tahap `Listed` sampai `Applied`; kategori `Calon`)
 - `kosong`
 
 Satu baris berisi 8 kursi terisi = **baris lengkap**, dirayakan di Kabar.
@@ -231,7 +231,7 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | action | Masukan | Balasan |
 |---|---|---|
 | `masuk` | | `profil {id_orang, nama, nama_depan, peran}`, `pengaturan {...}` |
-| `beranda` | | `misi {anggota, gerbang[], fase, target, riwayat [{selesai, jumlah}]}`, `ronde {mulai, selesai, acara_berikut}`, `saya {undangan_ronde, undangan_total, tamu_hadir, sponsor, rabu_beruntun, nama_daftar, target_nama_min, target_nama_maks}`, `lencana [{kode, nama, didapat, tanggal}]`, `kabar [{jenis, teks, waktu}]` |
+| `beranda` | | `misi {anggota, gerbang[], fase, target, riwayat [{selesai, jumlah}], hari_ke_esm, hari_ke_launch, tamu_pekan, anggota_baru_pekan}`, `ronde {mulai, selesai, acara_berikut}`, `saya {undangan_ronde, undangan_total, tamu_hadir, sponsor, rabu_beruntun, nama_daftar, target_nama_min, target_nama_maks}`, `lencana [{kode, nama, didapat, tanggal}]`, `kabar [{jenis, teks, waktu}]` |
 | `kursi` | | `baris [{nomor, sphere, terisi, kursi [{id_kursi, bidang, singkat, status, pemilik, jumlah_calon, jumlah_butuh, saya_butuh, saya_calon}]}]` |
 | `kursiDetail` | `id_kursi` | `kursi {...}`, `calon [...]` (LT dan LDC saja), `calon_saya [{id_orang, nama, tahap}]` nama milik sendiri |
 | `tambahCalon` | `id_kursi?` (kosong = bidang belum pasti), `nama, bisnis, whatsapp?, id_event?` | `{id_orang, id_undangan?}` atau `ok:false` dengan `duplikat {nama_depan, tahap?, pic?}` |

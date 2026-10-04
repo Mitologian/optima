@@ -337,11 +337,16 @@ details.lipat > :not(summary) { margin: 0 14px 14px; }
 .kepala .fase.ganti { cursor: pointer; border-color: var(--merah); color: var(--merah); }
 
 /* ---------- segmen pipeline ---------- */
-.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .seg button { background: var(--kertas-2); border-radius: 12px; padding: 10px 6px; text-align: center; border: 1.5px solid transparent; }
 .seg button b { display: block; font-family: var(--huruf-judul); font-size: 20px; line-height: 1.1; }
-.seg button span { font-size: 11.5px; color: var(--tinta-2); font-weight: 600; }
+.seg button span { font-size: 10.5px; display: block; line-height: 1.15; color: var(--tinta-2); font-weight: 600; }
 .seg button[aria-selected="true"] { background: var(--merah-muda); border-color: var(--merah); }
 .seg button[aria-selected="true"] b, .seg button[aria-selected="true"] span { color: var(--merah); }
 .daftar li .tombol.kecil { flex: none; }
 .nav a span { white-space: nowrap; }
+
+.ubin-misi { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; }
+.ubin-misi div { background: rgba(255, 255, 255, .14); border-radius: 10px; padding: 8px 10px; }
+.ubin-misi b { display: block; font-family: var(--huruf-judul); font-size: 22px; line-height: 1.1; }
+.ubin-misi span { font-size: 11.5px; opacity: .85; }

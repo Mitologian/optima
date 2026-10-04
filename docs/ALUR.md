@@ -9,7 +9,10 @@ Satu halaman untuk Coach Dedy, Lapis, dan siapa pun yang menyentuh app. Teks app
 | 1. Daftarkan nama calon | Seats, ketuk kursi, isi nama (atau Interviews, Add a prospect) | baris baru di `Master`, tahap Baru |
 | 2. Atur jadwal coffee session | Interviews, kolom To schedule, tombol Set coffee | tahap CS, `jadwal_cs` |
 | 3. Catat diterima | Interviews, kolom Coffee set, tombol Accepted (pilih sponsor) | tahap Anggota, jenis Founding |
-| Tunda atau berhenti | ketuk nama, ubah tahap | tahap Bimbang, Parkir, Tidak Lanjut |
+| Selesai wawancara | Interviews, kolom Coffee set, tombol Done | tahap Coffee_Session |
+| Keluar | ketuk nama, pilih Joined other chapter, Declined, atau Rejected, isi alasan | tahap Joined_Other, Declined, Rejected |
+
+Urutan status (sama dengan Ventura): Listed, Invited, Coffee_Scheduled, Attended, Coffee_Session, Applied, Anggota. Keluar: Joined_Other, Declined, Rejected.
 
 ## Post-ESM · anggota dan LT
 

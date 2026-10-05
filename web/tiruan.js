@@ -2,7 +2,7 @@
    Aktif saat CONFIG.API_URL kosong. Kode contoh: LDC001, LT0001, AGT001.
    Tambahkan ?fase=BOD di alamat untuk melihat layar setelah ESM. Tambahkan ?reset=1 untuk mengulang data. */
 var Tiruan = (function () {
-  var KUNCI = 'optima_tiruan_v5';
+  var KUNCI = 'optima_tiruan_v6';
   var HARI = 864e5;
   var data = null;
 
@@ -102,7 +102,7 @@ var Tiruan = (function () {
     ];
 
     var ev = [];
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < 8; i++) {
       var r = rabuBerikut(now, i);
       ev.push({ id_event: 'E' + (i * 2 + 1), tanggal: tanggal(r), jam_mulai: '07:00', jam_selesai: '09:00', nama_acara: 'Wednesday BOD', jenis: 'BOD', mode: i % 3 === 2 ? 'Onsite' : 'Online', lokasi: i % 3 === 2 ? 'South Jakarta' : 'Zoom', kapasitas: 60, status: 'Terbuka', tampil_di_form: 'TRUE' });
       ev.push({ id_event: 'E' + (i * 2 + 2), tanggal: tanggal(r), jam_mulai: '12:00', jam_selesai: '13:30', nama_acara: 'Lunch Networking', jenis: 'Lunch Networking', mode: 'Onsite', lokasi: 'South Jakarta', kapasitas: 20, status: 'Terbuka', tampil_di_form: 'TRUE' });

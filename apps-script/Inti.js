@@ -287,7 +287,7 @@ var Inti = (function () {
       return t && isoTanggal(t) >= hariIni && st !== 'Batal' && st !== 'Selesai';
     }).map(function (e) {
       return {
-        id_event: teks(e.id_event), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: teks(e.jam_mulai),
+        id_event: teks(e.id_event), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: teks(e.jam_mulai), jam_selesai: teks(e.jam_selesai),
         nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi)
       };
     }).sort(function (a, b) { return (a.tanggal + a.jam_mulai) < (b.tanggal + b.jam_mulai) ? -1 : 1; });

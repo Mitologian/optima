@@ -372,3 +372,25 @@ details.lipat > :not(summary) { margin: 0 14px 14px; }
 .hari-slot { font-size: 13px; font-weight: 700; margin: 14px 2px 6px; }
 b.redup { color: var(--tinta-2); }
 .slot-pilih button { font-size: 13px; padding: 7px 10px; }
+/* kalender pilih */
+.kal { border: 1.5px solid var(--garis); border-radius: 14px; padding: 10px 10px 12px; background: var(--kartu); }
+.kal-kepala { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.kal-kepala b { font-family: var(--huruf-judul); font-size: 15px; }
+.kal-kepala button { width: 36px; height: 36px; border-radius: 10px; font-size: 22px; line-height: 1; color: var(--merah); }
+.kal-kepala button:disabled { color: var(--garis); }
+.kal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.kal-grid abbr { font-size: 11px; font-weight: 700; color: var(--tinta-2); text-decoration: none; padding: 2px 0 4px; }
+.kal-grid button { position: relative; height: 38px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--tinta); }
+.kal-grid button:disabled { color: #BDB5B5; font-weight: 400; }
+.kal-grid button.ada { background: var(--merah-muda); color: var(--merah); font-weight: 800; }
+.kal-grid button.hari-ini { box-shadow: inset 0 0 0 1.5px var(--garis); }
+.kal-grid button.pilih { background: var(--merah); color: #fff; }
+.kal-grid button i { position: absolute; left: 0; right: 0; bottom: 4px; display: flex; justify-content: center; gap: 2px; }
+.kal-grid button i em { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.kal-tgl { font-size: 13px; font-weight: 700; margin: 12px 2px 8px; }
+.kal-opsi { display: grid; gap: 8px; }
+.kal-opsi button, .kal-tetap { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--garis); background: var(--kartu); }
+.kal-opsi button b, .kal-tetap b { display: block; font-size: 14px; }
+.kal-opsi button small, .kal-tetap small { display: block; font-size: 12px; color: var(--tinta-2); margin-top: 2px; }
+.kal-opsi button[aria-pressed="true"] { border-color: var(--merah); background: var(--merah-muda); }
+.kal-opsi button[aria-pressed="true"] b { color: var(--merah); }

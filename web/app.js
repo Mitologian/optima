@@ -489,7 +489,7 @@
       '<input class="cari" id="cari" placeholder="Search name or classification" type="search">' +
       Object.keys(per).map(function (s) {
         return '<div class="judul-bagian"><h2>' + esc(s) + '</h2><span class="kecil">' + per[s].length + '</span></div><section class="kartu"><ul class="daftar">' + per[s].map(function (a) {
-          return '<li data-cari="' + esc((a.nama + ' ' + a.bidang).toLowerCase()) + '"><span class="lambang">' + inisial(a.nama) + '</span><div class="utama"><b>' + esc(a.nama) + '</b><span>' + esc(a.bidang) + (a.sponsor ? ' · sponsor ' + esc(a.sponsor) : '') + '</span></div><span class="chip' + (a.jenis_anggota === 'Founding' ? ' merah' : '') + '">' + esc(JENIS_ANGGOTA_LABEL[a.jenis_anggota] || a.jenis_anggota || 'Member') + '</span>' +
+          return '<li data-cari="' + esc((a.nama + ' ' + a.bidang).toLowerCase()) + '"><span class="lambang">' + inisial(a.nama) + '</span><div class="utama"><b>' + esc(a.nama) + '</b><span>' + esc(a.bidang) + (a.sponsor ? ' · sponsor ' + esc(a.sponsor) : '') + '</span></div>' +
             (a.total_bod !== undefined && a.total_bod > 0 ? '<span class="chip' + (a.hadir_bod < a.total_bod ? ' merah' : ' hijau') + '" title="BODs attended">' + a.hadir_bod + '/' + a.total_bod + ' BOD</span>' : '') + '</li>';
         }).join('') + '</ul></section>';
       }).join('');
@@ -536,7 +536,7 @@
     }
 
     if (!id && !S.cache.kursi) { var kr0 = await api('kursi'); if (kr0.ok) S.cache.kursi = kr0.baris; }
-    var pilihanAcara = (ac && ac.ok ? ac.acara : []).filter(function (e) { return e.jenis === 'BOD' || e.jenis === 'Lunch Networking'; }).slice(0, 4);
+    var pilihanAcara = (ac && ac.ok ? ac.acara : []).filter(function (e) { return e.jenis === 'BOD' || e.jenis === 'Lunch Networking'; });
     html += '<form id="f-calon">' +
       '<h3 style="margin:4px 0 10px">' + (id ? 'Add a prospect for ' + esc(x.bidang) : 'Add a name') + '</h3>' +
       '<label class="isian"><span>Full name</span><input name="nama" required autocomplete="off"></label>' +
@@ -544,9 +544,7 @@
       (id ? '' : pilihKursiKosong('id_kursi', false)) +
       '<label class="isian"><span>WhatsApp' + (isLT() ? '' : ' (can be added later)') + '</span><input name="whatsapp" inputmode="tel" autocomplete="off" placeholder="08..."' + (isLT() ? ' required' : '') + '></label>' +
       (pilihanAcara.length ? '<label class="saklar"><input type="checkbox" name="undang"><span>Also invite to a Wednesday event<br><span class="kecil">WhatsApp number is required when inviting.</span></span></label>' +
-        '<div class="pilihan" id="pil-acara" hidden style="margin:-4px 0 14px">' + pilihanAcara.map(function (e, i) {
-          return '<button type="button" data-ev="' + esc(e.id_event) + '" aria-pressed="' + (i === 0) + '">' + esc(e.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' · ' + esc(tglPendek(e.tanggal)) + ' ' + esc(e.jam_mulai) + '</button>';
-        }).join('') + '</div>' : '') +
+        '<div id="pil-acara" hidden style="margin:-4px 0 14px"></div>' : '') +
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<button class="tombol" type="submit">Add name</button>' +
     '</form>';
@@ -559,14 +557,13 @@
       var cek = f.querySelector('[name=undang]');
       var pil = el.querySelector('#pil-acara');
       if (cek) cek.onchange = function () { pil.hidden = !cek.checked; f.whatsapp.required = cek.checked || isLT(); };
-      if (pil) pil.querySelectorAll('button').forEach(function (b) {
-        b.onclick = function () { pil.querySelectorAll('button').forEach(function (z) { z.setAttribute('aria-pressed', z === b); }); };
-      });
+      var evForm = pilihanAcara.length ? pilihanAcara[0].id_event : '';
+      if (pil) kalender(pil, pilihanAcara.map(itemAcara), { pilih: evForm, onPick: function (k) { evForm = k; } });
       f.onsubmit = async function (e) {
         e.preventDefault();
         var tombol = f.querySelector('[type=submit]');
         tombol.disabled = true;
-        var idEv = cek && cek.checked ? (pil.querySelector('[aria-pressed=true]') || {}).dataset.ev : '';
+        var idEv = cek && cek.checked ? evForm : '';
         var data = { id_kursi: x.id_kursi || (f.id_kursi ? f.id_kursi.value : ''), nama: f.nama.value, bisnis: f.bisnis.value, whatsapp: f.whatsapp.value, id_event: idEv || '' };
         var r = await api('tambahCalon', data);
         tombol.disabled = false;
@@ -594,6 +591,51 @@
         if (segarkan) segarkan();
       };
     });
+  }
+
+  /* ---------- kalender pilih (acara Rabu dan jam coffee session) ----------
+     items: [{key, tanggal 'YYYY-MM-DD', judul, sub}]. opsi: {pilih, onPick(key), gaya 'kartu'|'chip'} */
+  var BULAN_PANJANG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function kalender(wadah, items, opsi) {
+    var perTgl = {};
+    items.forEach(function (i) { (perTgl[i.tanggal] = perTgl[i.tanggal] || []).push(i); });
+    var daftarTgl = Object.keys(perTgl).sort();
+    var hariIni = new Date(Date.now() + 7 * 36e5).toISOString().slice(0, 10);
+    var pilihKey = opsi.pilih || '';
+    var awal = items.filter(function (i) { return i.key === pilihKey; })[0];
+    var pilihTgl = awal ? awal.tanggal : (daftarTgl[0] || '');
+    var bulan = (pilihTgl || hariIni).slice(0, 7);
+    var bulanAkhir = (daftarTgl[daftarTgl.length - 1] || hariIni).slice(0, 7);
+    function geserBulan(b, n) { var y = Number(b.slice(0, 4)), m = Number(b.slice(5, 7)) - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y + '-' + String(m + 1).padStart(2, '0'); }
+    function gambar() {
+      var y = Number(bulan.slice(0, 4)), m = Number(bulan.slice(5, 7)) - 1;
+      var mulai = (new Date(Date.UTC(y, m, 1)).getUTCDay() + 6) % 7;
+      var jumlah = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+      var sel = '';
+      for (var i = 0; i < mulai; i++) sel += '<span></span>';
+      for (var d = 1; d <= jumlah; d++) {
+        var t = bulan + '-' + String(d).padStart(2, '0'), ada = perTgl[t];
+        var kelas = (ada ? 'ada' : '') + (t === pilihTgl ? ' pilih' : '') + (t === hariIni ? ' hari-ini' : '') + (perTgl[t] && perTgl[t].some(function (x) { return x.key === pilihKey; }) ? ' terpilih' : '');
+        sel += '<button type="button" class="' + kelas + '" data-tgl="' + t + '"' + (ada ? '' : ' disabled') + ' aria-label="' + esc(tglHari(t)) + (ada ? ', ' + ada.length + ' option' + (ada.length > 1 ? 's' : '') : '') + '">' + d + (ada ? '<i>' + ada.slice(0, 3).map(function () { return '<em></em>'; }).join('') + '</i>' : '') + '</button>';
+      }
+      var opsiHari = perTgl[pilihTgl] || [];
+      wadah.innerHTML = '<div class="kal">' +
+        '<div class="kal-kepala"><button type="button" data-geser="-1" aria-label="Previous month"' + (bulan <= hariIni.slice(0, 7) ? ' disabled' : '') + '>&#8249;</button><b>' + BULAN_PANJANG[m] + ' ' + y + '</b><button type="button" data-geser="1" aria-label="Next month"' + (bulan >= bulanAkhir ? ' disabled' : '') + '>&#8250;</button></div>' +
+        '<div class="kal-grid">' + ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(function (h) { return '<abbr>' + h.charAt(0) + '</abbr>'; }).join('') + sel + '</div>' +
+        (pilihTgl && pilihTgl.slice(0, 7) === bulan ? '<p class="kal-tgl">' + esc(tglHari(pilihTgl)) + '</p><div class="' + (opsi.gaya === 'chip' ? 'pilihan slot-pilih' : 'kal-opsi') + '">' + opsiHari.map(function (i) {
+          return '<button type="button" data-key="' + esc(i.key) + '" aria-pressed="' + (i.key === pilihKey) + '"><b>' + esc(i.judul) + '</b><small>' + esc(i.sub || '') + '</small></button>';
+        }).join('') + '</div>' : '<p class="kal-tgl redup">Tap a marked date.</p>') +
+        '</div>';
+      wadah.querySelectorAll('[data-geser]').forEach(function (b) { b.onclick = function () { bulan = geserBulan(bulan, Number(b.dataset.geser)); var adaDi = daftarTgl.filter(function (t) { return t.slice(0, 7) === bulan; })[0]; if (adaDi && pilihTgl.slice(0, 7) !== bulan) pilihTgl = adaDi; gambar(); }; });
+      wadah.querySelectorAll('[data-tgl]').forEach(function (b) { b.onclick = function () { pilihTgl = b.dataset.tgl; if (perTgl[pilihTgl].length === 1) { pilihKey = perTgl[pilihTgl][0].key; if (opsi.onPick) opsi.onPick(pilihKey); } gambar(); }; });
+      wadah.querySelectorAll('[data-key]').forEach(function (b) { b.onclick = function () { pilihKey = b.dataset.key; if (opsi.onPick) opsi.onPick(pilihKey); gambar(); }; });
+    }
+    gambar();
+    return { set: function (k) { pilihKey = k; gambar(); } };
+  }
+  function itemAcara(e) {
+    return { key: e.id_event, tanggal: e.tanggal, judul: e.jenis === 'BOD' ? 'BOD ' + e.jam_mulai : 'Lunch Networking ' + e.jam_mulai,
+      sub: (e.jam_selesai ? e.jam_mulai + ' to ' + e.jam_selesai + ' · ' : '') + (e.mode === 'Online' ? 'Online, ' + (e.lokasi || 'Zoom') : (e.lokasi || 'Onsite')) };
   }
 
   /* ---------- templat pesan undangan ----------
@@ -698,9 +740,7 @@
     bukaLembar(
       '<h2>Invite ' + esc(depan) + '</h2>' +
       '<p class="kecil" id="u-info" style="margin:4px 0 12px">' + (st.tercatat ? 'Invitation recorded. Send the messages in order, one at a time.' : 'Pick the event and how close you are. The invitation is recorded when a message is copied or sent.') + '</p>' +
-      '<p class="kecil" style="margin-bottom:6px">Event</p><div class="pilihan" id="u-ev" style="margin-bottom:12px">' + o.acara.map(function (e) {
-        return '<button type="button" data-ev="' + esc(e.id_event) + '" aria-pressed="' + (e.id_event === st.idEv) + '">' + esc(e.jenis === 'BOD' ? 'BOD' : 'Lunch Networking') + ' · ' + esc(tglPendek(e.tanggal)) + ' ' + esc(e.jam_mulai) + '</button>';
-      }).join('') + '</div>' +
+      '<p class="kecil" style="margin-bottom:6px">Which Wednesday?</p><div id="u-ev" style="margin-bottom:12px"></div>' +
       (st.wa ? '' : '<label class="isian"><span>WhatsApp ' + esc(depan) + '</span><input id="u-wa" inputmode="tel" placeholder="08..." autocomplete="off"></label>') +
       '<p class="kecil" style="margin-bottom:6px">How close are you to ' + esc(depan) + '?</p><div class="pilihan" id="u-dekat" style="margin-bottom:12px">' + KEDEKATAN.map(function (g) {
         return '<button type="button" data-dekat="' + g[0] + '" aria-pressed="' + (g[0] === st.dekat) + '">' + g[1] + '</button>';
@@ -730,9 +770,12 @@
           });
         }
         function tanda(wadah, atr, nilai) { el.querySelectorAll(wadah + ' [' + atr + ']').forEach(function (b) { var a = b.hasAttribute('aria-selected') ? 'aria-selected' : 'aria-pressed'; b.setAttribute(a, b.getAttribute(atr) === String(nilai)); }); }
-        el.querySelectorAll('[data-ev]').forEach(function (b) {
-          b.onclick = function () { if (st.tercatat) return; st.idEv = b.dataset.ev; tanda('#u-ev', 'data-ev', st.idEv); segarPesan(); };
-        });
+        function gambarAcara() {
+          var w = el.querySelector('#u-ev');
+          if (st.tercatat) { var e = acaraDipilih(), it = e ? itemAcara(e) : null; w.innerHTML = it ? '<div class="kal-tetap"><b>' + esc(tglHari(e.tanggal)) + ' · ' + esc(it.judul) + '</b><small>' + esc(it.sub) + '</small></div>' : ''; return; }
+          kalender(w, o.acara.map(itemAcara), { pilih: st.idEv, onPick: function (k) { st.idEv = k; segarPesan(); } });
+        }
+        gambarAcara();
         el.querySelectorAll('[data-dekat]').forEach(function (b) { b.onclick = function () { st.dekat = b.dataset.dekat; tanda('#u-dekat', 'data-dekat', st.dekat); segarPesan(); }; });
         el.querySelectorAll('[data-langkah]').forEach(function (b) { b.onclick = function () { st.langkah = Number(b.dataset.langkah); tanda('#u-langkah', 'data-langkah', st.langkah); segarPesan(); }; });
         el.querySelector('#u-bhs').onclick = function () { st.bahasa = st.bahasa === 'id' ? 'en' : 'id'; this.textContent = st.bahasa === 'id' ? 'ID | EN' : 'EN | ID'; segarPesan(); };
@@ -746,7 +789,7 @@
           if (!r.ok) { s.textContent = r.pesan; s.hidden = false; return false; }
           s.hidden = true; st.tercatat = true; st.wa = wa;
           el.querySelector('#u-info').textContent = 'Invitation recorded. Send the messages in order, one at a time.';
-          el.querySelectorAll('[data-ev]').forEach(function (b) { b.disabled = b.dataset.ev !== st.idEv; });
+          gambarAcara();
           if (o.segarkan) o.segarkan();
           return true;
         }
@@ -851,7 +894,7 @@
     var bidang = o.bidang && !/^Undecided/.test(o.bidang) ? o.bidang : (o.bisnis || '');
     var sekarang = Date.now();
     var dipesan = r.slot.filter(function (s) { return s.id_orang === o.id_orang && s.status === 'Terisi' && new Date(s.waktu).getTime() > sekarang; })[0] || null;
-    var kosong = r.slot.filter(function (s) { return s.status === 'Kosong' && new Date(s.waktu).getTime() > sekarang; }).slice(0, 8);
+    var kosong = r.slot.filter(function (s) { return s.status === 'Kosong' && new Date(s.waktu).getTime() > sekarang; });
     var st = { dekat: 'teman', bahasa: 'id', langkah: dipesan ? 2 : 0, pilih: o.idSlot || (dipesan ? '' : ''), lain: '', wa: o.whatsapp || '' };
     if (!st.pilih && !dipesan && kosong.length) st.pilih = kosong[0].id_slot;
     function waktuDipilih() {
@@ -859,7 +902,6 @@
       var s = kosong.filter(function (z) { return z.id_slot === st.pilih; })[0];
       return s || dipesan;
     }
-    function chipSlot(s) { var j = jamCS(s.waktu); return '<button type="button" data-slot="' + esc(s.id_slot) + '" aria-pressed="' + (s.id_slot === st.pilih) + '">' + esc(j.hari) + ' · ' + esc(j.jam) + '<small> ' + esc(timSlot(s)) + '</small>' + '</button>'; }
     var jd = dipesan ? jamCS(dipesan.waktu) : null;
     bukaLembar(
       '<h2>Coffee session with ' + esc(depan) + '</h2>' +
@@ -867,8 +909,8 @@
         ? 'Booked: <b>' + esc(jd.hari + ' ' + jd.jam) + '</b> · ' + esc(dipesan.tempat) + ' · with ' + esc(timSlot(dipesan)) + '. Send message 3 to confirm.'
         : 'A 30 minute chat with Coach Dedy, supported by the launch team. No Wednesday visit needed first. Book the time once ' + esc(depan) + ' says yes.') + '</p>' +
       (dipesan ? '<details class="lipat" style="margin-bottom:12px"><summary><span>Change time</span><em>' + kosong.length + ' open</em></summary>' : '<p class="kecil" style="margin-bottom:6px">Open times</p>') +
-      '<div class="pilihan slot-pilih" id="k-slot" style="margin-bottom:12px">' + kosong.map(chipSlot).join('') +
-        (isLT() ? '<button type="button" data-slot="lain" aria-pressed="' + (st.pilih === 'lain') + '">Other time</button>' : '') + '</div>' +
+      '<div id="k-slot" style="margin-bottom:10px"></div>' +
+      (isLT() ? '<div class="pilihan" style="margin-bottom:12px"><button type="button" id="k-lain-tombol" aria-pressed="' + (st.pilih === 'lain') + '">Other time (outside the open slots)</button></div>' : '') +
       (kosong.length ? '' : '<p class="kecil redup" style="margin:-6px 0 12px">' + (isLT() ? 'No open times. Open some in Team, Schedule, or use Other time.' : 'No open times yet. Ask Coach Dedy or the launch team to open some.') + '</p>') +
       '<label class="isian" id="k-lain" hidden><span>Date and time (WIB)</span><input type="datetime-local" id="k-lain-in"></label>' +
       (dipesan ? '<button class="tombol" id="k-pesan-slot">Move booking to this time</button><button class="tombol kedua" id="k-batal" style="margin-top:8px">Cancel booking</button></details>' : '') +
@@ -900,7 +942,10 @@
           el.querySelectorAll('[data-balas]').forEach(function (b) { b.onclick = function () { salinTeks(balasanTeks(BALASAN[Number(b.dataset.balas)], st.dekat), ta); toast('Reply copied.'); }; });
         }
         function tanda(sel, atr, nilai) { el.querySelectorAll(sel + ' [' + atr + ']').forEach(function (b) { var a = b.hasAttribute('aria-selected') ? 'aria-selected' : 'aria-pressed'; b.setAttribute(a, b.getAttribute(atr) === String(nilai)); }); }
-        el.querySelectorAll('[data-slot]').forEach(function (b) { b.onclick = function () { st.pilih = st.pilih === b.dataset.slot && dipesan ? '' : b.dataset.slot; tanda('#k-slot', 'data-slot', st.pilih); segar(); }; });
+        var kal = kosong.length ? kalender(el.querySelector('#k-slot'), kosong.map(function (z) { return { key: z.id_slot, tanggal: z.tanggal, judul: jamCS(z.waktu).jam, sub: timSlot(z) + (z.tempat !== 'Zoom' ? ', ' + z.tempat : '') }; }), {
+          pilih: st.pilih, gaya: 'chip', onPick: function (k) { st.pilih = k; var lt = el.querySelector('#k-lain-tombol'); if (lt) lt.setAttribute('aria-pressed', 'false'); segar(); } }) : null;
+        var tl = el.querySelector('#k-lain-tombol');
+        if (tl) tl.onclick = function () { st.pilih = 'lain'; tl.setAttribute('aria-pressed', 'true'); if (kal) kal.set(''); segar(); };
         el.querySelector('#k-lain-in').oninput = function () { st.lain = this.value; segar(); };
         el.querySelectorAll('[data-dekat]').forEach(function (b) { b.onclick = function () { st.dekat = b.dataset.dekat; tanda('#k-dekat', 'data-dekat', st.dekat); segar(); }; });
         el.querySelectorAll('[data-langkah]').forEach(function (b) { b.onclick = function () { st.langkah = Number(b.dataset.langkah); tanda('#k-langkah', 'data-langkah', st.langkah); segar(); }; });
@@ -1069,7 +1114,7 @@
     var h = await Promise.all([api('beranda'), api('usulanSaya'), api('acara')]);
     var b = h[0], us = h[1], ac = h[2];
     if (!b.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(b.pesan) + '</p>'; return; }
-    var acara = (ac.acara || []).filter(function (e) { return e.jenis === 'BOD' || e.jenis === 'Lunch Networking'; }).slice(0, 4);
+    var acara = (ac.acara || []).filter(function (e) { return e.jenis === 'BOD' || e.jenis === 'Lunch Networking'; });
     var st = b.saya;
     var baru = us.usulan.filter(function (u) { return !u.status_undangan && u.tahap === 'Listed'; });
     var sudah = us.usulan.filter(function (u) { return u.status_undangan || u.tahap !== 'Listed'; });

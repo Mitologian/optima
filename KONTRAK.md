@@ -63,7 +63,9 @@ Akun `dedydahlan@gmail.com`, privat. Editor hanya Coach Dedy dan Lapis. LT dan m
 Baris pertama setiap tab adalah nama kolom persis seperti di bawah.
 
 Format sel **Plain text** wajib untuk kolom yang berisi kode atau nomor, supaya angka nol di depan tidak hilang:
-`Akses.kode_akses`, `Master.whatsapp_norm`, semua kolom `id_...`.
+`Akses.kode_akses`, `Master.whatsapp_norm`, semua kolom `id_...`, kolom berisi `id_orang` (`PIC`,
+`diajukan_oleh`, `dipesan_oleh`, `pendamping`, `dicatat_oleh`), `Events.jam_mulai`, `Events.jam_selesai`,
+`Jadwal_CS.tanggal`, `Jadwal_CS.jam`.
 
 Identitas orang: `id_orang` berbentuk `P0001`, `P0002`, dan seterusnya. Kunci penggabung adalah
 `whatsapp_norm`: hanya angka, diawali `62` (contoh `0812-3456` dan `+62 812 3456` menjadi `628123456`).

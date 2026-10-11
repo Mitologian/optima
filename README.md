@@ -23,7 +23,7 @@ Mulai dari `KONTRAK.md` (sheet, API, fase, aturan permainan) dan `CLAUDE.md` (ke
 
 ```
 python3 -m http.server 8000
-# buka http://localhost:8000/web/
+# buka http://localhost:8000/web/?tiruan=1
 ```
 
 Kode contoh: `LDC001` (Coach Dedy), `LT0001` (launch team), `AGT001` (anggota).

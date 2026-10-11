@@ -56,5 +56,5 @@ masuk More.
 ## Menguji
 
 Mode tiruan: buka `web/index.html` lewat server statis (`python3 -m http.server` dari akar repo), lalu
-`/web/`. Kode contoh: `LDC001` (Coach Dedy), `LT0001` (LT), `AGT001` (anggota). Tambahkan `?fase=BOD`
+`/web/?tiruan=1` (`web/config.js` kini berisi alamat API asli, jadi tanpa `?tiruan=1` app memanggil sheet sungguhan). Kode contoh: `LDC001` (Coach Dedy), `LT0001` (LT), `AGT001` (anggota). Tambahkan `?fase=BOD`
 untuk melihat target Misi dan label anggota seperti setelah ESM.

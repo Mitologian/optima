@@ -15,6 +15,8 @@ function doPost(e) {
   } catch (err) {
     return api_json_({ ok: false, pesan: 'Request could not be read.' });
   }
+  // Pintu alat Lapis (Optima.js) memakai kunci `aksi`, API app memakai `action`. Satu pintu doPost saja.
+  if (badan && badan.aksi && typeof alatLapis_ === 'function') return alatLapis_(badan);
   var kunci = LockService.getScriptLock();
   var tulis = !Inti._tanpaLog[badan.action];
   try {

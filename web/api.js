@@ -1,11 +1,12 @@
 /* Klien API. Satu pintu: Api.panggil(action, data). Kode akses ditambahkan otomatis. */
 var Api = (function () {
   var kode = '';
+  var tiruan = !CONFIG.API_URL || /[?&]tiruan=1(&|$)/.test(location.search);
   function setKode(k) { kode = k || ''; }
 
   async function panggil(action, data) {
     var badan = Object.assign({ action: action, kode: kode }, data || {});
-    if (!CONFIG.API_URL) return Tiruan.panggil(badan);
+    if (tiruan) return Tiruan.panggil(badan);
     var res;
     try {
       res = await fetch(CONFIG.API_URL, {
@@ -21,5 +22,5 @@ var Api = (function () {
     catch (e) { return { ok: false, pesan: 'Unexpected server response. Try again shortly.' }; }
   }
 
-  return { panggil: panggil, setKode: setKode, tiruan: !CONFIG.API_URL };
+  return { panggil: panggil, setKode: setKode, tiruan: tiruan };
 })();

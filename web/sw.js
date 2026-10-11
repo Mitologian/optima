@@ -1,5 +1,5 @@
 /* Service worker: cangkang app disimpan untuk dibuka cepat, data selalu dari jaringan. */
-var CACHE = 'optima-web-v7';
+var CACHE = 'optima-web-v8';
 var CANGKANG = ['./', 'index.html', 'gaya.css', 'app.js', 'api.js', 'config.js', 'tiruan.js', '../apps-script/Inti.js', 'manifest.json', 'ikon/icon-192.png'];
 
 self.addEventListener('install', function (e) {

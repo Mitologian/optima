@@ -142,7 +142,7 @@ Kalau LT juga anggota chapter, `kategori` tetap `LT` dan `tahap` = `Anggota`.
   `Tidak Ada` di urutan terakhir, untuk tamu yang tahu acara dari sumber lain. Pada aturan 1 dan 3 opsi ini
   dianggap tanpa pengundang (tidak pernah cocok). Aturan 2 tetap berlaku bila nomornya sudah ada di Master
   (pengundang asli menang). Aturan 4 membuat baris baru tanpa `id_pengundang`; baris ini tampil di layar Team
-  LT sebagai "Tanpa pengundang" dan tidak masuk papan pengundang sampai LT menetapkan pengundangnya. Kolom tambahan di `Responses`: `status_cocok` (`Cocok` · `Perlu_Cek` · `Baru`).
+  LT sebagai "Tanpa pengundang" dan tidak masuk papan pengundang sampai LT menetapkan pengundangnya. Pada `Undangan.id_pengundang`, nilai `Walk-in` berarti LT memastikan tamu datang tanpa pengundang; baris itu juga tidak masuk papan. Kolom tambahan di `Responses`: `status_cocok` (`Cocok` · `Perlu_Cek` · `Baru`).
 
 ### `Hadir`
 `id_hadir` · `id_event` · `id_orang` · `peran` · `waktu_checkin` · `dicatat_oleh`
@@ -191,9 +191,17 @@ Member menandai bidang yang mereka butuhkan di chapter.
 - `poster`: tautan https saja. App menolak tautan lain. Tab ini dibuat otomatis oleh `Api.js` kalau belum ada.
 
 ### `Responses`
-Mentah dari Google Form, tidak diubah tangan:
+Mentah dari Google Form, tidak diubah tangan (kolom hasil Form):
 `timestamp` · `nama` · `whatsapp` · `email` · `perusahaan` · `bisnis` · `kota` · `id_event` · `slot_cs` ·
-`diundang_oleh` · `catatan` · `status_cocok`
+`diundang_oleh` · `catatan`
+
+Kolom tambahan di kanan, diisi Lapis saat normalisasi: `status_cocok` · `id_response` · `id_pengundang` · `id_kandidat`.
+Diisi app saat LT memutuskan baris `Perlu_Cek`: `status_cocok` (menjadi `Cocok` atau `Baru`) dan `id_orang_hasil`.
+
+- `id_response`: `R0001`, `R0002`, dan seterusnya, unik, Plain text. Tanpa kolom ini baris tidak muncul di layar LT.
+- `id_pengundang`: `id_orang` hasil pemetaan `diundang_oleh`; kosong bila `Tidak Ada`.
+- `id_kandidat`: hanya untuk `Perlu_Cek`, `id_orang` calon yang dicurigai orang yang sama.
+- `id_orang_hasil`: `id_orang` orang yang akhirnya dikaitkan dengan baris ini.
 
 ### `Akses`
 `id_orang` · `kode_akses` · `peran` · `aktif` · `terakhir_masuk`
@@ -303,6 +311,9 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `tulisPengumuman` | `judul` (maks 80), `isi` (maks 1000), `poster?` (https), `tanggal_berakhir?` (YYYY-MM-DD), `id_pengumuman?` (mengubah) | `{id_pengumuman}` |
 | `hapusPengumuman` | `id_pengumuman` | `{}` |
 | `ubahAcara` | `id_event, pembicara?` (maks 120), `poster?` (https) | `{pembicara, poster}` |
+| `perluCek` | | `perlu_cek [{id_response, nama, whatsapp, bisnis, perusahaan, acara {id_event, nama_acara, jenis, tanggal, jam_mulai}, pengundang, waktu, kandidat {id_orang, nama, bidang, tahap, punya_wa}}]`, `tanpa_pengundang [{id_undangan, id_orang, nama, bidang, acara, waktu}]`, `jumlah` |
+| `selesaikanCek` | `id_response, keputusan` (`sama` atau `beda`) | `{id_orang, status_cocok}`. `sama`: nomor tersimpan di baris kandidat, undangannya menjadi `Terdaftar` di acara pilihan Form. `beda`: baris `Master` dan `Undangan` baru (`sumber` `form`). Ditolak bila nomor sudah milik orang lain |
+| `tetapkanPengundang` | `id_undangan, id_pengundang` (`id_orang` anggota, LT, atau LDC; atau `Walk-in`) | `{id_pengundang}` |
 | `jadikanAnggota` | `id_orang, id_kursi` (wajib bila calon belum punya kursi), `id_sponsor` | `{jenis_anggota, kursi}` |
 
 ### 6.3 Khusus LDC
@@ -332,3 +343,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-05 | Jadwal coffee session: kolom `tempat`, `dipesan_oleh` di `Jadwal_CS`, aksi `slotCS`, `tambahSlot`, `hapusSlot`, `pesanSlot`, `batalSlot`, pengaturan `tautan_zoom_cs`. Anggota boleh mengundang langsung ke coffee session. Opsi `Tidak Ada` di Form | menunggu Coach Dedy |
 | 2026-10-05 | Coach Dedy pewawancara utama, LT pendamping (kolom `pendamping`, aksi `dampingiSlot`), LT boleh membuka jam hanya untuk wawancara berdua | menunggu Coach Dedy |
 | 2026-10-11 | Jalur Gold sebagai angka nyata (`Pengaturan.target_gold`, `saya.target_gold`). Tab `Pengumuman`, kolom `pembicara` dan `poster` di `Events`, aksi `pengumuman`, `tulisPengumuman`, `hapusPengumuman`, `ubahAcara`, `tamuPekanIni.acara_ronde`. `Api.js` membuat tab dan kolom baru otomatis | Coach Dedy, 11 Oktober 2026 |
+| 2026-10-11 | Layar LT untuk pendaftar Form: kolom `id_response`, `id_pengundang`, `id_kandidat`, `id_orang_hasil` di `Responses`, nilai `Walk-in` di `Undangan.id_pengundang`, aksi `perluCek`, `selesaikanCek`, `tetapkanPengundang` | Coach Dedy, 11 Oktober 2026 |

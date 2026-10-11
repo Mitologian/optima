@@ -64,6 +64,7 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Buka jam dan lihat jadwal coffee session | Team, Schedule |
 | Catat siapa hadir tiap BOD (anggota dan tamu) | Team, Check-in |
 | Lihat siapa sering absen | Seats, Member list, lencana `hadir/total BOD` |
+| Putuskan pendaftar Form yang nomornya belum cocok atau tanpa pengundang | Team, Interviews, kartu Form sign-ups |
 | Tulis pengumuman, isi pembicara dan poster acara | Team, Announce |
 | Pantau nama per LT dan kursi kosong | Team, Regroup |
 | Ringkasan chapter | Team, Summary (hanya LDC) |

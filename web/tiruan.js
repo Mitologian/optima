@@ -2,7 +2,7 @@
    Aktif saat CONFIG.API_URL kosong. Kode contoh: LDC001, LT0001, AGT001.
    Tambahkan ?fase=BOD di alamat untuk target Misi dan label anggota seperti setelah ESM. Tambahkan ?reset=1 untuk mengulang data. */
 var Tiruan = (function () {
-  var KUNCI = 'optima_tiruan_v7';
+  var KUNCI = 'optima_tiruan_v8';
   var HARI = 864e5;
   var POSTER_CONTOH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#C8102E"/><text x="32" y="92" font-family="Arial" font-size="22" fill="#fff" opacity=".8">BNI OPTIMA · BUSINESS OPPORTUNITY DAY</text><text x="32" y="190" font-family="Arial" font-weight="700" font-size="44" fill="#fff">One seat per</text><text x="32" y="244" font-family="Arial" font-weight="700" font-size="44" fill="#fff">classification</text><text x="32" y="316" font-family="Arial" font-size="20" fill="#fff">Wednesday 07:00 to 09:00</text></svg>');
   var data = null;
@@ -121,6 +121,16 @@ var Tiruan = (function () {
       und.push({ id_undangan: 'U000' + (i + 2), tanggal: lalu(i), id_pengundang: p[0].id_orang, id_orang_calon: M[14 + i * 3].id_orang, id_event: 'E1', status: i < 2 ? 'Terdaftar' : 'Diundang', sumber: i < 2 ? 'form' : 'app' });
     });
 
+    // pendaftar Form contoh: dua perlu dicek (nomor baru, nama mirip) dan satu tanpa pengundang
+    var maya = M.filter(function (m) { return m.nama === 'Maya Anggraini'; })[0];
+    var taufik = M.filter(function (m) { return m.nama === 'Taufik Hidayat'; })[0];
+    var hesti = orang('Hesti Rahayu', 'Calon', 'Invited', 'K22', { sumber: 'form', bisnis: 'Interior design', diajukan_oleh: '', PIC: '' });
+    und.push({ id_undangan: 'U0010', tanggal: lalu(1), id_pengundang: '', id_orang_calon: hesti.id_orang, id_event: 'E1', status: 'Terdaftar', sumber: 'form' });
+    var responses = [
+      { id_response: 'R0001', timestamp: lalu(1), nama: 'Maya Anggrayni', whatsapp: '0812-5550-1234', email: 'maya@example.com', perusahaan: 'Maya Material', bisnis: 'Building materials', kota: 'Jakarta', id_event: 'E1', slot_cs: '', diundang_oleh: 'Agung Pratama', catatan: '', status_cocok: 'Perlu_Cek', id_pengundang: agung.id_orang, id_kandidat: maya.id_orang, id_orang_hasil: '' },
+      { id_response: 'R0002', timestamp: lalu(0.3), nama: 'Taufik H.', whatsapp: '+62 813 7777 8888', email: '', perusahaan: '', bisnis: 'Printing', kota: 'Bekasi', id_event: 'E2', slot_cs: '', diundang_oleh: 'Dhika Ramadhan', catatan: '', status_cocok: 'Perlu_Cek', id_pengundang: dhika.id_orang, id_kandidat: taufik.id_orang, id_orang_hasil: '' }
+    ];
+
     return {
       Pengaturan: [
         ['nama_chapter', 'Optima'], ['fase', 'Pembentukan'], ['target_founding', 20], ['target_cgt', 37], ['target_launch', 52],
@@ -135,7 +145,7 @@ var Tiruan = (function () {
       Hadir: hadir,
       Butuh: [{ id_kursi: 'K15', id_orang: anggota[1].id_orang, tanggal: lalu(2) }, { id_kursi: 'K15', id_orang: anggota[3].id_orang, tanggal: lalu(1) }, { id_kursi: 'K12', id_orang: anggota[2].id_orang, tanggal: lalu(1) }],
       Wawancara: [{ id_wawancara: 'W1', tanggal: lalu(1), id_orang: 'P0015', kanal: 'Online', PIC: dedy.id_orang, hasil: 'Tertarik' }],
-      Jadwal_CS: slot, Responses: [], Lencana: [], Log: [],
+      Jadwal_CS: slot, Responses: responses, Lencana: [], Log: [],
       Pengumuman: [
         { id_pengumuman: 'A0001', tanggal_tayang: lalu(1), tanggal_berakhir: '', judul: 'Bring one guest this Wednesday', isi: 'Every member invites one business owner before Wednesday night. Check "This week" for who is already registered, and use the ready messages in My list.', poster: '', dibuat_oleh: dedy.id_orang, status: 'Aktif' },
         { id_pengumuman: 'A0002', tanggal_tayang: lalu(3), tanggal_berakhir: '', judul: 'Lunch Networking starts at 12:00', isi: 'Guests who cannot make the morning BOD are welcome at lunch. Pay your own lunch.', poster: '', dibuat_oleh: agung.id_orang, status: 'Aktif' }

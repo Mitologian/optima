@@ -309,12 +309,15 @@
   }
 
 
-  function kartuLangkah(b, pipa) {
+  function kartuLangkah(b, pipa, cek) {
     var st = b.saya, min = st.target_nama_min, maks = st.target_nama_maks, n = st.nama_daftar;
     var judul, isi, tombol, href;
     var tunggu = pipa ? pipa.filter(function (c) { return ['Listed', 'Invited', 'Attended'].indexOf(c.tahap) >= 0; }).length : 0;
     var cs = pipa ? pipa.filter(function (c) { return c.tahap === 'Coffee_Scheduled'; }).length : 0;
-    if (n < min) {
+    if (isLT() && cek) {
+      judul = 'Check Form sign-ups'; href = '#tim'; tombol = 'Open interviews';
+      isi = cek + ' sign-up' + (cek > 1 ? 's' : '') + ' from the Form need a decision, so guests are matched to the right inviter.';
+    } else if (n < min) {
       judul = 'Add prospect names'; href = '#kursi'; tombol = 'Choose a seat';
       isi = (min - n) + ' more names to reach the minimum of ' + min + '. Tap a seat on the board, then add a prospect from that classification.';
     } else if (isLT() && tunggu) {
@@ -385,9 +388,9 @@
   }
 
   async function layarMisi(isi) {
-    var tugas = [api('beranda'), isLT() ? api('calonSaya', {}) : Promise.resolve(null), api('pengumuman'), api('undanganSaya'), api('tamuPekanIni')];
+    var tugas = [api('beranda'), isLT() ? api('calonSaya', {}) : Promise.resolve(null), api('pengumuman'), api('undanganSaya'), api('tamuPekanIni'), isLT() ? api('perluCek') : Promise.resolve(null)];
     var h = await Promise.all(tugas);
-    var b = h[0], pipa = h[1] && h[1].ok ? h[1].calon : null, pg = h[2], ud = h[3], tm = h[4];
+    var b = h[0], pipa = h[1] && h[1].ok ? h[1].calon : null, pg = h[2], ud = h[3], tm = h[4], pcek = h[5] && h[5].ok ? h[5].jumlah : 0;
     if (!b.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(b.pesan) + '</p>'; return; }
     var html = '<div class="sapa"><h1>Hello, ' + esc(S.profil.nama_depan) + '</h1>' +
       '</div>';
@@ -400,7 +403,7 @@
     }
 
     html += kartuPengumuman(pg && pg.ok ? pg.pengumuman : []);
-    html += kartuLangkah(b, pipa);
+    html += kartuLangkah(b, pipa, pcek);
     html += kartuMisi(b.misi);
     html += kartuGold(b.saya);
 
@@ -1213,11 +1216,84 @@
     ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, info: subInfo, regroup: subRegroup, ringkas: subRingkas })[aktif](wadah);
   }
 
+  /* ---------- pendaftar Form yang perlu diputuskan ---------- */
+  function kartuCek(pc) {
+    if (!pc || !pc.ok || !pc.jumlah) return '';
+    var bagian = [];
+    if (pc.perlu_cek.length) bagian.push(pc.perlu_cek.length + ' to match');
+    if (pc.tanpa_pengundang.length) bagian.push(pc.tanpa_pengundang.length + ' without inviter');
+    return '<section class="kartu sorotan"><div class="langkah-atas"><span class="chip merah">Form sign-ups</span></div>' +
+      '<h3>' + pc.jumlah + ' sign-up' + (pc.jumlah > 1 ? 's' : '') + ' need a decision</h3><p class="kecil">' + esc(bagian.join(', ')) + '. Until decided, they stay out of the inviter board and the guest list may be incomplete.</p>' +
+      '<div class="baris-tombol"><button class="tombol" id="b-cek">Review</button></div></section>';
+  }
+  function labelAcaraCek(a) {
+    return a ? (a.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + tglPendek(a.tanggal) + ' ' + a.jam_mulai : 'event not found';
+  }
+  async function lembarCek(segarkan) {
+    bukaLembar('<div class="muat"></div>');
+    var h = await Promise.all([api('perluCek'), api('anggota')]);
+    var pc = h[0], ang = h[1];
+    if (!pc.ok) { bukaLembar('<p class="kosong-isi">' + esc(pc.pesan) + '</p>'); return; }
+    var opsi = (ang.anggota || []).map(function (a) { return '<option value="' + esc(a.id_orang) + '">' + esc(a.nama) + '</option>'; }).join('');
+    var html = '<h2>Form sign-ups</h2><p class="kecil" style="margin:6px 0 12px">Decide each one so the guest list and the inviter board stay accurate.</p>';
+    if (!pc.jumlah) html += '<p class="kosong-isi">All sign-ups are handled.</p>';
+    if (pc.perlu_cek.length) {
+      html += '<div class="judul-bagian"><h2>Is it the same person?</h2><span class="kecil">' + pc.perlu_cek.length + '</span></div>' + pc.perlu_cek.map(function (c) {
+        var k = c.kandidat;
+        return '<section class="kartu" data-resp="' + esc(c.id_response) + '" style="box-shadow:none"><h3>' + esc(c.nama) + '</h3>' +
+          '<p class="kecil">Signed up for ' + esc(labelAcaraCek(c.acara)) + (c.pengundang ? ' · invited by ' + esc(c.pengundang) : ' · no inviter chosen') + '</p>' +
+          '<p class="kecil redup">Form: ' + esc(c.whatsapp || 'no number') + (c.bisnis ? ' · ' + esc(c.bisnis) : '') + '</p>' +
+          (k ? '<p class="kecil" style="margin-top:8px"><b>Possible match</b> on the list: ' + esc(k.nama) + (k.bidang ? ' · ' + esc(k.bidang) : '') + ' · ' + esc(lblTahap(k.tahap)) + '</p>'
+             : '<p class="kecil" style="margin-top:8px">No suggested match.</p>') +
+          '<p class="pesan-salah" hidden></p>' +
+          '<div class="baris-tombol">' + (k ? '<button class="tombol kecil" data-k="sama">Same person</button>' : '') + '<button class="tombol kecil kedua" data-k="beda">Different person</button></div>' +
+          '<p class="kecil redup" style="margin-top:6px">' + (k ? 'Same person saves the new number on ' + esc(k.nama.split(/\s+/)[0]) + ' and registers them. ' : '') + 'Different person adds ' + esc(c.nama.split(/\s+/)[0]) + ' as a new prospect.</p></section>';
+      }).join('');
+    }
+    if (pc.tanpa_pengundang.length) {
+      html += '<div class="judul-bagian"><h2>No inviter</h2><span class="kecil">' + pc.tanpa_pengundang.length + '</span></div>' + pc.tanpa_pengundang.map(function (t) {
+        return '<section class="kartu" data-und="' + esc(t.id_undangan) + '" style="box-shadow:none"><h3>' + esc(t.nama) + '</h3>' +
+          '<p class="kecil">' + (t.bidang ? esc(t.bidang) + ' · ' : '') + esc(labelAcaraCek(t.acara)) + ' · signed up with "No one" as inviter</p>' +
+          '<label class="isian"><span>Who invited them?</span><select name="peng"><option value="">Choose a person</option>' + opsi + '</select></label>' +
+          '<p class="pesan-salah" hidden></p>' +
+          '<div class="baris-tombol"><button class="tombol kecil" data-p="set">Set inviter</button><button class="tombol kecil kedua" data-p="walkin">Walk-in, no inviter</button></div></section>';
+      }).join('');
+    }
+    bukaLembar(html, function (el) {
+      async function selesai(r, kartu, pesan) {
+        if (!r.ok) { var sl = kartu.querySelector('.pesan-salah'); sl.textContent = r.pesan; sl.hidden = false; return; }
+        toast(pesan); segarkan(); lembarCek(segarkan);
+      }
+      el.querySelectorAll('[data-resp] [data-k]').forEach(function (b) {
+        b.onclick = async function () {
+          var kartu = b.closest('[data-resp]');
+          b.disabled = true;
+          var r = await api('selesaikanCek', { id_response: kartu.dataset.resp, keputusan: b.dataset.k });
+          b.disabled = false;
+          selesai(r, kartu, b.dataset.k === 'sama' ? 'Matched and registered.' : 'Added as a new prospect.');
+        };
+      });
+      el.querySelectorAll('[data-und] [data-p]').forEach(function (b) {
+        b.onclick = async function () {
+          var kartu = b.closest('[data-und]');
+          var sl = kartu.querySelector('.pesan-salah');
+          var id = b.dataset.p === 'walkin' ? 'Walk-in' : kartu.querySelector('[name=peng]').value;
+          if (!id) { sl.textContent = 'Choose who invited them.'; sl.hidden = false; return; }
+          b.disabled = true;
+          var r = await api('tetapkanPengundang', { id_undangan: kartu.dataset.und, id_pengundang: id });
+          b.disabled = false;
+          selesai(r, kartu, id === 'Walk-in' ? 'Marked as walk-in.' : 'Inviter set.');
+        };
+      });
+    });
+  }
+
   var semuaCalon = false;
   var segCalon = 'todo';
   var SEG = { todo: ['To schedule', ['Listed', 'Invited', 'Attended']], cs: ['Coffee set', ['Coffee_Scheduled']], done: ['Interviewed', ['Coffee_Session', 'Applied']], hold: ['Closed', ['Joined_Other', 'Declined', 'Rejected']] };
   async function subCalon(w) {
-    var r = await api('calonSaya', { semua: semuaCalon });
+    var hh = await Promise.all([api('calonSaya', { semua: semuaCalon }), api('perluCek')]);
+    var r = hh[0], pc = hh[1];
     if (!r.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
     var per = { todo: [], cs: [], done: [], hold: [] };
     r.calon.forEach(function (c) { Object.keys(SEG).forEach(function (k) { if (SEG[k][1].indexOf(c.tahap) >= 0) per[k].push(c); }); });
@@ -1243,7 +1319,7 @@
       return (c.hari_diam ? c.hari_diam + ' days idle' : 'today') + (semuaCalon ? ' · PIC ' + c.pic : '');
     }
     var daftar = per[segCalon];
-    w.innerHTML = '<div class="seg" role="tablist">' + Object.keys(SEG).map(function (k, i) {
+    w.innerHTML = kartuCek(pc) + '<div class="seg" role="tablist">' + Object.keys(SEG).map(function (k, i) {
         return '<button role="tab" data-seg="' + k + '" aria-selected="' + (k === segCalon) + '"><b>' + per[k].length + '</b><span>' + SEG[k][0] + '</span></button>';
       }).join('') + '</div>' +
       '<p class="kecil" style="margin:10px 2px">' + info[segCalon] + '</p>' +
@@ -1252,6 +1328,8 @@
         return '<li><button class="ketuk" data-calon="' + esc(c.id_orang) + '" style="flex:1;min-width:0"><span class="lambang">' + inisial(c.nama) + '</span><div class="utama"><b>' + esc(c.nama) + '</b><span>' + esc(c.bidang) + ' · ' + esc(sub(c)) + '</span></div></button>' + aksi(c) + '</li>';
       }).join('') + '</ul>' : '<p class="kosong-isi">Nothing here.</p>') + '</section>';
     w.querySelectorAll('[data-seg]').forEach(function (t) { t.onclick = function () { segCalon = t.dataset.seg; subCalon(w); }; });
+    var bc = w.querySelector('#b-cek');
+    if (bc) bc.onclick = function () { lembarCek(function () { subCalon(w); }); };
     var bs = w.querySelector('#b-semua');
     if (bs) bs.onclick = function () { semuaCalon = !semuaCalon; subCalon(w); };
     w.querySelector('#b-tambah').onclick = function () { bukaKursi('', function () { subCalon(w); }); };

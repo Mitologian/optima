@@ -1,8 +1,8 @@
 # Instruksi untuk Lapis · BNI Optima
 
-Dari Claude, atas permintaan Coach Dedy Dahlan, 5 Oktober 2026. Acuan tetap `KONTRAK.md`; dokumen ini
-urutan kerjanya. Kode app ada di branch `claude/optima-fondasi` (PR #1). Bagian A sampai C bisa mulai
-sekarang. Bagian D (`clasp push`) menunggu Coach Dedy menyetujui PR #1, atau dari branch itu untuk uji.
+Dari Claude, atas permintaan Coach Dedy Dahlan, 5 Oktober 2026, diperbarui 11 Oktober 2026. Acuan tetap
+`KONTRAK.md`; dokumen ini urutan kerjanya. Kode app ada di branch `main`. Bagian A sampai C bisa mulai
+sekarang, bagian D (`clasp push`) setelah A sampai C selesai.
 
 Laporkan ke Coach Dedy setelah setiap bagian selesai, termasuk yang tidak bisa dikerjakan.
 
@@ -89,11 +89,16 @@ Aturan lengkap ada di `KONTRAK.md`, bagian `Undangan`. Ringkasnya, untuk setiap 
    - Pada keduanya: `Undangan.status` → `Terdaftar`, `Undangan.id_event` → acara yang dipilih di Form.
      Kalau calon belum punya baris `Undangan`, buat satu (`sumber` `form`).
 3. Nomor tidak ketemu, tetapi pengundang cocok dan nama mirip dengan calon milik pengundang itu (token nama
-   sama, urutan boleh beda) → **jangan digabung**. `status_cocok` = `Perlu_Cek`, beri tahu Coach Dedy.
+   sama, urutan boleh beda) → **jangan digabung dan jangan membuat baris Master atau Undangan.**
+   `status_cocok` = `Perlu_Cek`, isi `id_kandidat` dengan `id_orang` calon yang dicurigai. LT memutuskan
+   sendiri di app (Team, Interviews, kartu Form sign-ups). Tidak perlu memberi tahu Coach Dedy.
 4. Tidak ada yang cocok → baris baru di `Master` (`kategori` `Calon`, `tahap` `Invited`, `sumber` `form`,
    `diajukan_oleh` = pengundang atau kosong) dan di `Undangan` (`status` `Terdaftar`, `sumber` `form`).
    `status_cocok` = `Baru`. Kalau pengundangnya `Tidak Ada`, `id_pengundang` kosong.
-5. Jangan mengubah kolom lain di `Responses`.
+5. Setiap baris baru juga diberi `id_response` (`R0001` dan seterusnya) dan `id_pengundang` (hasil pemetaan
+   `diundang_oleh`, kosong bila `Tidak Ada`). Pada `Cocok` dan `Baru`, isi juga `id_orang_hasil`.
+6. Jangan mengubah kolom hasil Form di `Responses`. Kolom `status_cocok`, `id_response`, `id_pengundang`,
+   `id_kandidat` diisi Lapis. `id_orang_hasil` dan perubahan `Perlu_Cek` menjadi `Cocok` atau `Baru` dilakukan app.
 
 ## D. Apps Script dan deploy
 
@@ -114,7 +119,7 @@ Aturan lengkap ada di `KONTRAK.md`, bagian `Undangan`. Ringkasnya, untuk setiap 
 
 ## E. Yang belum dikerjakan di sisi app (untuk diketahui)
 
-- Layar LT untuk meninjau baris `Perlu_Cek` dan baris tanpa pengundang belum ada. Sementara, Lapis memberi
-  tahu Coach Dedy dan Coach Dedy merapikannya di sheet.
+- Layar LT untuk baris `Perlu_Cek` dan baris tanpa pengundang sudah ada (Team, Interviews, kartu Form sign-ups).
+  Lapis tidak perlu merapikannya di sheet.
 - Peralihan cangkang PWA lama (`index.html`, `manifest.json`, `sw.js` di akar) ke `web/` dilakukan setelah
   uji akhir lolos, atas izin Coach Dedy.

@@ -945,8 +945,13 @@ function getMemberSponsors() {
 /* =========================
    VERIFY PIN
 ========================= */
+// PIN tidak lagi ditulis di kode karena repo ini publik.
+// Isi Script Properties dengan kunci ADMIN_PIN (Project Settings > Script Properties).
+// Selama ADMIN_PIN kosong, halaman admin terkunci untuk semua orang.
 function verifyAdminPin(pin) {
-  return pin === '3006';
+  const tersimpan = PropertiesService.getScriptProperties().getProperty('ADMIN_PIN');
+  if (!tersimpan) return false;
+  return String(pin || '') === tersimpan;
 }
 
 /* =========================

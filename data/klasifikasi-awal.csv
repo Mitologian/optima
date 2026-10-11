@@ -1,0 +1,65 @@
+id_kursi,baris,sphere,bidang,singkat
+K01,1,Property & Construction,Real estate agent,Real Estate
+K02,1,Property & Construction,General contractor,Builder
+K03,1,Property & Construction,Architect,Architect
+K04,1,Property & Construction,Interior designer,Interior
+K05,1,Property & Construction,MEP engineering,MEP
+K06,1,Property & Construction,Building materials,Materials
+K07,1,Property & Construction,Custom furniture,Joinery
+K08,1,Property & Construction,Painting & waterproofing,Painting
+K09,2,Finance & Legal,Tax consultant,Tax
+K10,2,Finance & Legal,Accountant,Accounts
+K11,2,Finance & Legal,Notary & land deed official,Notary
+K12,2,Finance & Legal,Corporate lawyer,Lawyer
+K13,2,Finance & Legal,Life & health insurance,Life Insurance
+K14,2,Finance & Legal,General insurance,Gen. Insurance
+K15,2,Finance & Legal,Financial planner,Fin. Planner
+K16,2,Finance & Legal,Business licensing,Permits
+K17,3,Marketing & Creative,Digital marketing,Digital Mktg
+K18,3,Marketing & Creative,Graphic design & branding,Branding
+K19,3,Marketing & Creative,Photo & video,Photo & Video
+K20,3,Marketing & Creative,Printing,Printing
+K21,3,Marketing & Creative,Merchandise & souvenirs,Merch
+K22,3,Marketing & Creative,Website & app development,Web & App
+K23,3,Marketing & Creative,Public relations,PR
+K24,3,Marketing & Creative,Signage & advertising,Signage
+K25,4,Events & Hospitality,Event organizer,Event Org.
+K26,4,Events & Hospitality,Wedding organizer,Wedding Org.
+K27,4,Events & Hospitality,Catering,Catering
+K28,4,Events & Hospitality,Venue & hotel,Venue
+K29,4,Events & Hospitality,Decor & florist,Florist
+K30,4,Events & Hospitality,Sound system & lighting,Sound & Light
+K31,4,Events & Hospitality,Travel agent,Travel
+K32,4,Events & Hospitality,MC & entertainment,MC
+K33,5,HR & Development,Training & coaching,Training
+K34,5,HR & Development,Recruitment,Recruiter
+K35,5,HR & Development,Manpower outsourcing,Staffing
+K36,5,HR & Development,Management consultant,Advisor
+K37,5,HR & Development,Psychological assessment,Psych
+K38,5,HR & Development,Language course,Language
+K39,5,HR & Development,Corporate uniforms,Uniforms
+K40,5,HR & Development,HR & payroll software,HR Software
+K41,6,Health & Beauty,General clinic,Clinic
+K42,6,Health & Beauty,Dentist,Dentist
+K43,6,Health & Beauty,Aesthetic clinic,Aesthetics
+K44,6,Health & Beauty,Physiotherapy,Physio
+K45,6,Health & Beauty,Medical equipment,Med Gear
+K46,6,Health & Beauty,Fitness & personal trainer,Fitness
+K47,6,Health & Beauty,Spa,Spa
+K48,6,Health & Beauty,Optician,Optician
+K49,7,Technology & Office Ops,IT support & networking,IT Support
+K50,7,Technology & Office Ops,CCTV & security,CCTV
+K51,7,Technology & Office Ops,Business software & ERP,ERP
+K52,7,Technology & Office Ops,Office supplies,Office Supplies
+K53,7,Technology & Office Ops,Copier & printer,Copiers
+K54,7,Technology & Office Ops,Internet provider,Internet
+K55,7,Technology & Office Ops,Telecommunications,Telecom
+K56,7,Technology & Office Ops,Cleaning services,Cleaning
+K57,8,"Automotive, Logistics & Trade",Car dealer,Car Dealer
+K58,8,"Automotive, Logistics & Trade",Auto repair & detailing,Auto Repair
+K59,8,"Automotive, Logistics & Trade",Vehicle rental,Rental
+K60,8,"Automotive, Logistics & Trade",Courier & delivery,Courier
+K61,8,"Automotive, Logistics & Trade",Freight forwarding,Freight
+K62,8,"Automotive, Logistics & Trade",Importer & distributor,Importer
+K63,8,"Automotive, Logistics & Trade",F&B supplier,F&B Supply
+K64,8,"Automotive, Logistics & Trade",Packaging,Packing

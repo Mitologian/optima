@@ -1524,10 +1524,24 @@
     return '<section class="kartu"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Drivers</h3><b style="font-family:var(--huruf-judul);font-size:22px">' + d.jumlah + '<span class="redup" style="font-size:14px"> / ' + d.target + '</span></b></div>' +
       '<div class="bilah' + (cukup ? ' emas' : '') + '" style="margin:10px 0 8px"><i style="width:' + Math.min(100, d.jumlah / d.target * 100) + '%"></i></div>' +
       '<p class="kecil">People with a network, influence, activity and commitment.' + (cukup ? '' : ' At least ' + d.target + ' are needed.') + '</p>' +
+      kartuRekomendasi(d) +
       (d.daftar.length ? '<ul class="daftar" style="margin-top:8px">' + d.daftar.map(function (x) {
         return '<li><div class="utama"><b>' + esc(x.nama) + '</b><span>' + esc(x.bidang) + ' · ' + esc(lblTahap(x.tahap)) + '</span></div><button class="tombol kecil kedua" data-lepas-driver="' + esc(x.id_orang) + '">Remove</button></li>';
       }).join('') + '</ul>' : '') +
       '<div class="baris-tombol"><button class="tombol kecil" id="b-driver">Add a driver</button></div></section>';
+  }
+  function kartuRekomendasi(d) {
+    function satu(x, tombol) {
+      return '<details class="rekom"><summary><span><b>' + esc(x.nama) + '</b><em>' + esc(x.bidang) + ' · ' + x.minggu + ' weeks</em></span><span class="chip ' + (tombol ? 'emas' : '') + '">' + x.memenuhi + ' of ' + x.dari + '</span></summary>' +
+        '<ul class="syarat">' + x.kriteria.map(function (c) {
+          return '<li class="' + (c.ok === true ? 'ya' : c.ok === false ? 'tidak' : 'belum') + '"><i>' + (c.ok === true ? '&#10003;' : c.ok === false ? '&#10005;' : '&ndash;') + '</i><div><b>' + esc(c.label) + '</b><span>' + esc(c.teks) + (c.ok === null ? ' (not enough data yet)' : '') + '</span></div></li>';
+        }).join('') + '</ul>' + (tombol ? '<div class="baris-tombol"><button class="tombol kecil" data-tandai-rek="' + esc(x.id_orang) + '">Mark as driver</button></div>' : '') + '</details>';
+    }
+    if (!d.rekomendasi.length && !d.hampir.length) return '<p class="kecil redup" style="margin-top:8px">Suggestions appear automatically once members have a few weeks of activity.</p>';
+    return '<div class="rekom-blok"><p class="kecil"><b>Suggested</b> · meets at least ' + d.syarat_min + ' of 6 checks</p>' +
+      (d.rekomendasi.length ? d.rekomendasi.map(function (x) { return satu(x, true); }).join('') : '<p class="kecil redup">No one yet.</p>') +
+      (d.hampir.length ? '<details class="lipat-kecil"><summary>Almost there (' + d.hampir.length + ')</summary>' + d.hampir.map(function (x) { return satu(x, false); }).join('') + '</details>' : '') +
+      '<p class="kecil redup" style="margin-top:6px">A starting point for the regroup, not a verdict. Lunch Networking is voluntary and never counts as mandatory attendance.</p></div>';
   }
   async function lembarDriver(segarkan) {
     bukaLembar('<div class="muat"></div>');
@@ -1573,6 +1587,13 @@
         return '<li><div class="utama"><b>' + esc(c.nama) + '</b><span>PIC ' + esc(c.pic) + '</span></div><span class="chip merah">' + c.hari + ' days</span></li>';
       }).join('') + '</ul>' : '<p class="kosong-isi">All prospects were touched in the last week.</p>') + '</section>';
     var segar = function () { subRegroup(w); };
+    w.querySelectorAll('[data-tandai-rek]').forEach(function (b) {
+      b.onclick = async function () {
+        var h = await api('tandaiDriver', { id_orang: b.dataset.tandaiRek, driver: true });
+        if (!h.ok) return toast(h.pesan);
+        toast('Marked as a driver.'); segar();
+      };
+    });
     var bd = w.querySelector('#b-driver');
     if (bd) bd.onclick = function () { lembarDriver(segar); };
     w.querySelectorAll('[data-lepas-driver]').forEach(function (b) {

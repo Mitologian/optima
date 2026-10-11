@@ -112,7 +112,7 @@ var Inti = (function () {
     if (this._atur) return this._atur;
     var a = {};
     this.tab('Pengaturan').forEach(function (r) { if (teks(r.kunci)) a[teks(r.kunci)] = r.nilai; });
-    ['target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver'].forEach(function (k) { a[k] = Number(a[k]) || 0; });
+    ['target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver', 'driver_syarat_min', 'driver_ronde_min', 'driver_hadir_bod', 'driver_undang', 'driver_tamu_hadir', 'driver_konversi', 'driver_lunch', 'driver_aktif_ronde'].forEach(function (k) { a[k] = Number(a[k]) || 0; });
     a.target_founding = a.target_founding || 20;
     a.target_cgt = a.target_cgt || 37;
     a.target_launch = a.target_launch || 52;
@@ -120,6 +120,15 @@ var Inti = (function () {
     a.target_nama_maks = a.target_nama_maks || 40;
     a.target_gold = a.target_gold || 6;
     a.target_driver = a.target_driver || 5;
+    // ambang rekomendasi driver (persen), dapat diubah di Pengaturan
+    a.driver_syarat_min = a.driver_syarat_min || 5;
+    a.driver_ronde_min = a.driver_ronde_min || 4;
+    a.driver_hadir_bod = a.driver_hadir_bod || 90;
+    a.driver_undang = a.driver_undang || 80;
+    a.driver_tamu_hadir = a.driver_tamu_hadir || 80;
+    a.driver_konversi = a.driver_konversi || 30;
+    a.driver_lunch = a.driver_lunch || 50;
+    a.driver_aktif_ronde = a.driver_aktif_ronde || 3;
     a.fase = teks(a.fase) || 'Pembentukan';
     a.nama_chapter = teks(a.nama_chapter) || 'Optima';
     a.hari_bod = teks(a.hari_bod) || 'Rabu';
@@ -302,6 +311,95 @@ var Inti = (function () {
       var t = teks(r.tahap);
       return benar(r.driver) && (t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0);
     });
+  }
+
+  /* Rekomendasi driver otomatis. Hanya bahan diskusi untuk LT dan LDC, tidak pernah tampil ke anggota.
+     Enam syarat, semuanya dari data yang sudah tercatat. Kehadiran BOD adalah kewajiban, Lunch Networking
+     bersifat sukarela dan dihitung terpisah, tidak pernah ikut kehadiran wajib. */
+  function rekomendasiDriver(k) {
+    var a = k.pengaturan();
+    var kini = k.ronde();
+    var hariIni = isoTanggal(k.now);
+    var acara = {};
+    k.tab('Events').forEach(function (e) { acara[teks(e.id_event)] = e; });
+    // hadir anggota per acara; acara tanpa catatan hadir sama sekali dianggap belum diabsen dan tidak dihitung
+    var hadirAnggota = {}, diabsen = {};
+    var hadirVisitor = {};
+    k.tab('Hadir').forEach(function (h) {
+      var idE = teks(h.id_event), peran = teks(h.peran);
+      if (peran === 'Visitor') { hadirVisitor[teks(h.id_orang)] = true; return; }
+      diabsen[idE] = true;
+      hadirAnggota[teks(h.id_orang) + '|' + idE] = true;
+    });
+    var undanganPer = {};
+    k.undanganAktif().forEach(function (u) { var id = teks(u.id_pengundang); if (id) (undanganPer[id] = undanganPer[id] || []).push(u); });
+    var sponsorPer = {};
+    k.anggota().forEach(function (r) { var sp = teks(r.id_sponsor); if (sp && sp !== 'BNI') sponsorPer[sp] = (sponsorPer[sp] || 0) + 1; });
+    var aktifRonde = {};
+    k.tab('Log').forEach(function (l) {
+      var t = tgl(l.waktu), id = teks(l.id_orang);
+      if (t && id) (aktifRonde[id] = aktifRonde[id] || {})[nomorRonde(t)] = true;
+    });
+    function persen(x, y) { return y ? Math.round(100 * x / y) : 0; }
+
+    var hasil = [];
+    k.anggota().forEach(function (m) {
+      var id = teks(m.id_orang);
+      if (teks(m.kategori) === 'LDC' || benar(m.driver)) return;
+      var gabung = tgl(m.tanggal_bergabung);
+      if (!gabung) return;
+      var awal = nomorRonde(gabung);
+      var ronde = kini - awal;               // ronde penuh sejak bergabung, ronde berjalan tidak dihitung
+      if (ronde < a.driver_ronde_min) return;
+
+      // 1 dan 6: kehadiran BOD (wajib) dan Lunch Networking (sukarela), dihitung terpisah
+      var bod = { total: 0, hadir: 0 }, lunch = { total: 0, hadir: 0 };
+      Object.keys(acara).forEach(function (idE) {
+        var e = acara[idE], t = tgl(e.tanggal), j = teks(e.jenis);
+        if (!t || teks(e.status) === 'Batal' || isoTanggal(t) >= hariIni || t < gabung || !diabsen[idE]) return;
+        var tujuan = j === 'BOD' ? bod : j === 'Lunch Networking' ? lunch : null;
+        if (!tujuan) return;
+        tujuan.total++;
+        if (hadirAnggota[id + '|' + idE]) tujuan.hadir++;
+      });
+      // 2: mengundang di setidaknya satu orang tiap ronde
+      var punya = undanganPer[id] || [];
+      var rondeUndang = {};
+      punya.forEach(function (u) { var t = tgl(u.tanggal); if (t) { var n = nomorRonde(t); if (n >= awal && n < kini) rondeUndang[n] = true; } });
+      var jmlRondeUndang = Object.keys(rondeUndang).length;
+      // 3 dan 4: tamu terdaftar, hadir, dan yang bergabung
+      var terdaftar = {}, hadir = {};
+      punya.forEach(function (u) {
+        var st = teks(u.status), c = teks(u.id_orang_calon);
+        if (st === 'Terdaftar' || st === 'Hadir') terdaftar[c] = true;
+        if (st === 'Hadir' || hadirVisitor[c]) { terdaftar[c] = true; hadir[c] = true; }
+      });
+      var nTerdaftar = Object.keys(terdaftar).length, nHadir = Object.keys(hadir).length;
+      var bergabung = sponsorPer[id] || 0;
+      // 5: aktif memakai app, ada aksi tulis di sedikitnya N dari 4 ronde terakhir
+      var rondeAktif = 0;
+      for (var n = kini - 1; n >= kini - 4 && n >= awal; n--) if ((aktifRonde[id] || {})[n]) rondeAktif++;
+      var perluAktif = Math.min(a.driver_aktif_ronde, Math.min(4, ronde));
+
+      var pBod = persen(bod.hadir, bod.total), pUndang = persen(jmlRondeUndang, ronde);
+      var pTamu = persen(nHadir, nTerdaftar), pKonv = persen(bergabung, nHadir), pLunch = persen(lunch.hadir, lunch.total);
+      var kriteria = [
+        { kode: 'bod', label: 'BOD attendance', ok: bod.total >= 3 ? pBod >= a.driver_hadir_bod : null, teks: bod.hadir + ' of ' + bod.total + ' BOD (' + pBod + '%), needs ' + a.driver_hadir_bod + '%' },
+        { kode: 'undang', label: 'Invites each week', ok: pUndang >= a.driver_undang, teks: 'Invited in ' + jmlRondeUndang + ' of ' + ronde + ' weeks (' + pUndang + '%), needs ' + a.driver_undang + '%' },
+        { kode: 'tamu', label: 'Guests show up', ok: nTerdaftar >= 3 ? pTamu >= a.driver_tamu_hadir : null, teks: nHadir + ' of ' + nTerdaftar + ' registered guests attended (' + pTamu + '%), needs ' + a.driver_tamu_hadir + '%' },
+        { kode: 'konversi', label: 'Guests who join', ok: bergabung >= 1 && nHadir >= 1 && pKonv >= a.driver_konversi, teks: bergabung + ' joined from ' + nHadir + ' guests who attended (' + pKonv + '%), needs ' + a.driver_konversi + '% and at least 1' },
+        { kode: 'app', label: 'Active in the app', ok: rondeAktif >= perluAktif, teks: 'Active in ' + rondeAktif + ' of the last ' + Math.min(4, ronde) + ' weeks, needs ' + perluAktif },
+        { kode: 'lunch', label: 'Lunch Networking (voluntary)', ok: lunch.total >= 3 ? pLunch >= a.driver_lunch : null, teks: lunch.hadir + ' of ' + lunch.total + ' lunches (' + pLunch + '%), needs ' + a.driver_lunch + '%' }
+      ];
+      var x = kursiById(k, m.id_kursi);
+      hasil.push({
+        id_orang: id, nama: teks(m.nama), bidang: x ? x.bidang : (teks(m.bisnis) || ''), minggu: ronde,
+        memenuhi: kriteria.filter(function (c) { return c.ok === true; }).length, dari: kriteria.length,
+        kurang_data: kriteria.filter(function (c) { return c.ok === null; }).length,
+        tamu_bergabung: bergabung, tamu_hadir: nHadir, kriteria: kriteria
+      });
+    });
+    return hasil.sort(function (p, q) { return q.memenuhi - p.memenuhi || q.tamu_bergabung - p.tamu_bergabung || q.tamu_hadir - p.tamu_hadir || (p.nama < q.nama ? -1 : 1); });
   }
 
   function pendaftarPerluCek(k) {
@@ -691,13 +789,14 @@ var Inti = (function () {
       var kosong = 0;
       petaKursi(k).forEach(function (b) { b.kursi.forEach(function (x) { if (x.status === 'kosong') kosong++; }); });
       var founding = k.anggota().filter(function (r) { return teks(r.jenis_anggota) === 'Founding'; }).length;
+      var rek = rekomendasiDriver(k);
       var drv = driverAktif(k).map(function (r) {
         var x = kursiById(k, r.id_kursi);
         return { id_orang: teks(r.id_orang), nama: teks(r.nama), tahap: teks(r.tahap), bidang: x ? x.bidang : (teks(r.bisnis) || '') };
       }).sort(function (x, y) { return x.nama < y.nama ? -1 : 1; });
       return {
         founding: { jumlah: founding, target: a.target_founding },
-        driver: { jumlah: drv.length, target: a.target_driver, daftar: drv },
+        driver: { jumlah: drv.length, target: a.target_driver, daftar: drv, rekomendasi: rek.filter(function (x) { return x.memenuhi >= a.driver_syarat_min; }), hampir: rek.filter(function (x) { return x.memenuhi === a.driver_syarat_min - 1; }), syarat_min: a.driver_syarat_min },
         lt: lt,
         kursi_tanpa_calon: kosong,
         calon_diam: k.calonAktif().map(function (r) { return { nama: teks(r.nama), pic: namaDepan(k.orang(r.PIC)) || 'None yet', hari: k.hariDiam(r) }; })

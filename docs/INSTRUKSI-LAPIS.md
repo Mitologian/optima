@@ -64,6 +64,7 @@ Akun `dedydahlan@gmail.com`, privat, editor hanya Coach Dedy dan Lapis.
   oleh `Api.js` saat pertama kali dipakai. Tidak perlu dibuat tangan. Kalau mau membuatnya sendiri, ikuti urutan kolom di kontrak.
 - `Pengaturan.target_gold` = 6 dan `Pengaturan.target_driver` = 5 (opsional, bawaan sama).
 - Kolom `driver` di `Master` dibuat otomatis oleh `Api.js`. Tidak perlu diisi tangan.
+- Rekomendasi driver membaca `Hadir` (check-in BOD dan Lunch oleh LT), `Undangan`, dan `Log`. Pastikan `Log` terisi dan `Hadir` rutin diabsen. Ambang bisa diubah di `Pengaturan` (kunci `driver_*`, lihat `KONTRAK.md`).
 
 ## B. Google Form pendaftaran visitor
 

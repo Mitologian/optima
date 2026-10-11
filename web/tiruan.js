@@ -2,7 +2,7 @@
    Aktif saat CONFIG.API_URL kosong. Kode contoh: LDC001, LT0001, AGT001.
    Tambahkan ?fase=BOD di alamat untuk target Misi dan label anggota seperti setelah ESM. Tambahkan ?reset=1 untuk mengulang data. */
 var Tiruan = (function () {
-  var KUNCI = 'optima_tiruan_v9';
+  var KUNCI = 'optima_tiruan_v10';
   var HARI = 864e5;
   var POSTER_CONTOH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#C8102E"/><text x="32" y="92" font-family="Arial" font-size="22" fill="#fff" opacity=".8">BNI OPTIMA · BUSINESS OPPORTUNITY DAY</text><text x="32" y="190" font-family="Arial" font-weight="700" font-size="44" fill="#fff">One seat per</text><text x="32" y="244" font-family="Arial" font-weight="700" font-size="44" fill="#fff">classification</text><text x="32" y="316" font-family="Arial" font-size="20" fill="#fff">Wednesday 07:00 to 09:00</text></svg>');
   var data = null;
@@ -123,6 +123,34 @@ var Tiruan = (function () {
     });
 
     ['Citra Lestari', 'Fajar Nugroho', 'Lukman Hakim'].forEach(function (n) { M.forEach(function (m) { if (m.nama === n) m.driver = 'TRUE'; }); });
+    // riwayat enam pekan: BOD, Lunch, kehadiran anggota, undangan, dan aktivitas, untuk rekomendasi driver
+    var budi = anggota[0], citra = anggota[1], eko = anggota[2];
+    budi.tanggal_bergabung = lalu(42); citra.tanggal_bergabung = lalu(38); eko.tanggal_bergabung = lalu(36);
+    M.forEach(function (m) { if (m.nama === 'Joko Susilo' || m.nama === 'Kartika Sari') m.id_sponsor = budi.id_orang; });
+    var log = [];
+    function hari(w) { return new Date(lewat.getTime() - (w - 1) * 7 * HARI); }
+    function hadirAnggota(idEv, o, w) { hadir.push({ id_hadir: 'HX' + idEv + o.id_orang, id_event: idEv, id_orang: o.id_orang, peran: 'Anggota', waktu_checkin: iso(hari(w)), dicatat_oleh: agung.id_orang }); }
+    for (var w = 1; w <= 6; w++) {
+      var idB = w === 1 ? 'E0' : 'EB0' + w, idL = 'EL0' + w;
+      if (w > 1) ev.push({ id_event: idB, tanggal: tanggal(hari(w)), jam_mulai: '07:00', jam_selesai: '09:00', nama_acara: 'Wednesday BOD', jenis: 'BOD', mode: 'Online', lokasi: 'Zoom', kapasitas: 60, status: 'Selesai', tampil_di_form: 'FALSE', pembicara: '', poster: '' });
+      ev.push({ id_event: idL, tanggal: tanggal(hari(w)), jam_mulai: '12:00', jam_selesai: '13:30', nama_acara: 'Lunch Networking', jenis: 'Lunch Networking', mode: 'Onsite', lokasi: 'South Jakarta', kapasitas: 20, status: 'Selesai', tampil_di_form: 'FALSE', pembicara: '', poster: '' });
+      hadirAnggota(idB, budi, w);                       // Budi: BOD 6 dari 6
+      if (w <= 4) hadirAnggota(idL, budi, w);           // Lunch 4 dari 6, sukarela
+      if (w <= 5) hadirAnggota(idB, citra, w);          // Citra: BOD 5 dari 6
+      if (w === 1) hadirAnggota(idL, citra, w);
+      if (w <= 4) hadirAnggota(idB, eko, w);
+      hadirAnggota(idB, agung, w);
+      if (w % 2) hadirAnggota(idL, agung, w);
+      if (w > 1) {                                      // tamu Budi tiap pekan, satu tidak datang
+        var tamu = orang('Tamu Budi ' + w, 'Calon', 'Invited', '', { diajukan_oleh: budi.id_orang, tanggal_masuk: iso(hari(w)) });
+        var datang = w !== 3;
+        und.push({ id_undangan: 'UB0' + w, tanggal: iso(new Date(hari(w).getTime() - 2 * HARI)), id_pengundang: budi.id_orang, id_orang_calon: tamu.id_orang, id_event: idB, status: datang ? 'Hadir' : 'Terdaftar', sumber: 'app' });
+        if (datang) hadir.push({ id_hadir: 'HV0' + w, id_event: idB, id_orang: tamu.id_orang, peran: 'Visitor', waktu_checkin: iso(hari(w)), dicatat_oleh: agung.id_orang });
+      }
+      if (w <= 5) log.push({ waktu: iso(new Date(hari(w).getTime() - HARI)), id_orang: budi.id_orang, aksi: 'tambahCalon', ringkasan: 'contoh' });
+      if (w <= 2) log.push({ waktu: iso(new Date(hari(w).getTime() - HARI)), id_orang: citra.id_orang, aksi: 'tambahCalon', ringkasan: 'contoh' });
+      if (w <= 4) log.push({ waktu: iso(new Date(hari(w).getTime() - HARI)), id_orang: agung.id_orang, aksi: 'undang', ringkasan: 'contoh' });
+    }
     // pendaftar Form contoh: dua perlu dicek (nomor baru, nama mirip) dan satu tanpa pengundang
     var maya = M.filter(function (m) { return m.nama === 'Maya Anggraini'; })[0];
     var taufik = M.filter(function (m) { return m.nama === 'Taufik Hidayat'; })[0];
@@ -147,7 +175,7 @@ var Tiruan = (function () {
       Hadir: hadir,
       Butuh: [{ id_kursi: 'K15', id_orang: anggota[1].id_orang, tanggal: lalu(2) }, { id_kursi: 'K15', id_orang: anggota[3].id_orang, tanggal: lalu(1) }, { id_kursi: 'K12', id_orang: anggota[2].id_orang, tanggal: lalu(1) }],
       Wawancara: [{ id_wawancara: 'W1', tanggal: lalu(1), id_orang: 'P0015', kanal: 'Online', PIC: dedy.id_orang, hasil: 'Tertarik' }],
-      Jadwal_CS: slot, Responses: responses, Lencana: [], Log: [],
+      Jadwal_CS: slot, Responses: responses, Lencana: [], Log: log,
       Pengumuman: [
         { id_pengumuman: 'A0001', tanggal_tayang: lalu(1), tanggal_berakhir: '', judul: 'Bring one guest this Wednesday', isi: 'Every member invites one business owner before Wednesday night. Check "This week" for who is already registered, and use the ready messages in My list.', poster: '', dibuat_oleh: dedy.id_orang, status: 'Aktif' },
         { id_pengumuman: 'A0002', tanggal_tayang: lalu(3), tanggal_berakhir: '', judul: 'Lunch Networking starts at 12:00', isi: 'Guests who cannot make the morning BOD are welcome at lunch. Pay your own lunch.', poster: '', dibuat_oleh: agung.id_orang, status: 'Aktif' }

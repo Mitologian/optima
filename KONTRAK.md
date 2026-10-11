@@ -261,6 +261,7 @@ Satu baris berisi 8 kursi terisi = **baris lengkap**, dirayakan di Kabar.
 - Pengundang ronde ini (direset setiap Kamis)
 - Dinding sponsor (tidak direset)
 - Impact Board: undangan, hadir, bergabung per orang sejak awal (tidak direset), bisa diurutkan menurut tiap kolom
+- Riwayat per ronde (Board, History): angka tiap ronde yang sudah lewat tetap bisa dilihat. Papan ronde berjalan direset tiap Kamis, datanya tidak pernah dihapus.
 
 Kehadiran tidak dilombakan. Kehadiran adalah syarat, bukan prestasi.
 
@@ -289,6 +290,7 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `undanganSaya` | | `undangan [{id_undangan, nama_depan, bidang, acara, tanggal, status}]`. `status` = `Bergabung` bila tamunya sudah anggota |
 | `pengumuman` | | `pengumuman [{id_pengumuman, judul, isi, poster, tanggal_tayang, tanggal_berakhir, oleh}]` yang sedang tayang, terbaru di atas |
 | `papan` | | `pengundang [{nama_depan, jumlah, saya}]`, `sponsor [{nama_depan, jumlah, saya}]`, `dampak [{nama_depan, undangan, hadir, bergabung, saya}]` (Impact Board, sejak awal: tamu unik yang diundang, tamu unik yang hadir sebagai Visitor, anggota yang disponsori; hanya yang punya angka). Khusus LT dan LDC: `belum_ronde [nama_depan]` anggota yang belum mengundang di ronde ini |
+| `riwayatRonde` | | `ronde [{nomor, mulai, selesai, berjalan, undangan, tamu_bod, tamu_lunch, hadir_bod, hadir_lunch, bergabung, pengundang [{nama_depan, jumlah, saya}]}]`, ronde berjalan paling atas, paling banyak 26 ronde. `undangan` dihitung menurut tanggal undangan (tamu unik). `tamu_*` (Terdaftar atau Hadir) dan `hadir_*` (Visitor di `Hadir`) menurut tanggal acara, dipisah BOD dan Lunch Networking. `bergabung` menurut `tanggal_bergabung`. Hanya membaca |
 | `tamuPekanIni` | | `acara_ronde [{id_event, tanggal, jam_mulai, jam_selesai, nama_acara, jenis, mode, lokasi, pembicara, poster}]` acara ronde ini, `tamu [{nama, bidang, sphere, pengundang, acara, jenis, tanggal, jam_mulai, status, bergabung}]` tamu berstatus `Terdaftar` atau `Hadir` di acara ronde ini. Tanpa nomor telepon |
 | `daftarAnggota` | | `anggota [{nama, bidang, sphere, jenis_anggota, sponsor, tanggal_bergabung}]` tanpa kontak |
 | `slotCS` | | `slot [{id_slot, waktu, tanggal, jam, tempat, pic, pic_id, pic_ldc, status, id_orang?, nama?, tahap?}]` 4 pekan ke depan. Anggota: jam `Kosong` dan pesanan calonnya sendiri. LT: semua, ditambah `bidang, whatsapp, bisnis, pengundang, saya_dampingi, boleh_hapus`; semua slot memuat `pendamping []` nama depan, `pewawancara [...]`, `perlu_hasil [{id_orang, nama, waktu, pic}]` |
@@ -346,3 +348,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-11 | Jalur Gold sebagai angka nyata (`Pengaturan.target_gold`, `saya.target_gold`). Tab `Pengumuman`, kolom `pembicara` dan `poster` di `Events`, aksi `pengumuman`, `tulisPengumuman`, `hapusPengumuman`, `ubahAcara`, `tamuPekanIni.acara_ronde`. `Api.js` membuat tab dan kolom baru otomatis | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Layar LT untuk pendaftar Form: kolom `id_response`, `id_pengundang`, `id_kandidat`, `id_orang_hasil` di `Responses`, nilai `Walk-in` di `Undangan.id_pengundang`, aksi `perluCek`, `selesaikanCek`, `tetapkanPengundang` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Impact Board: `papan` memuat `dampak`, dan `belum_ronde` untuk LT | Coach Dedy, 11 Oktober 2026 |
+| 2026-10-11 | Riwayat per ronde: aksi `riwayatRonde` | Coach Dedy, 11 Oktober 2026 |

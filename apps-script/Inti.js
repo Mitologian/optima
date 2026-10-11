@@ -855,6 +855,49 @@ var Inti = (function () {
       return { id_pengundang: id };
     },
 
+    /* ---------- riwayat per ronde (hanya membaca, tidak ada yang dihapus) ---------- */
+    riwayatRonde: function (k) {
+      var acara = {};
+      k.tab('Events').forEach(function (e) { acara[teks(e.id_event)] = e; });
+      var per = {};
+      function ronde(n) {
+        return per[n] || (per[n] = { undangan: {}, pengundang: {}, tamu: { BOD: {}, Lunch: {} }, hadir: { BOD: {}, Lunch: {} }, bergabung: 0 });
+      }
+      function jenis(e) { var j = teks(e.jenis); return j === 'BOD' ? 'BOD' : j === 'Lunch Networking' ? 'Lunch' : null; }
+      k.undanganAktif().forEach(function (u) {
+        var t = tgl(u.tanggal), calon = teks(u.id_orang_calon), id = teks(u.id_pengundang);
+        if (t) {
+          var r = ronde(nomorRonde(t));
+          r.undangan[calon] = true;
+          if (k.orang(id)) { var p = r.pengundang[id] || (r.pengundang[id] = {}); p[calon] = true; }
+        }
+        var e = acara[teks(u.id_event)], st = teks(u.status);
+        if (e && (st === 'Terdaftar' || st === 'Hadir') && tgl(e.tanggal) && jenis(e)) ronde(nomorRonde(tgl(e.tanggal))).tamu[jenis(e)][calon + '|' + teks(e.id_event)] = true;
+      });
+      k.tab('Hadir').forEach(function (h) {
+        var e = acara[teks(h.id_event)];
+        if (teks(h.peran) !== 'Visitor' || !e || !tgl(e.tanggal) || !jenis(e)) return;
+        ronde(nomorRonde(tgl(e.tanggal))).hadir[jenis(e)][teks(h.id_orang) + '|' + teks(h.id_event)] = true;
+      });
+      k.anggota().forEach(function (r) { var t = tgl(r.tanggal_bergabung); if (t) ronde(nomorRonde(t)).bergabung++; });
+      var kini = k.ronde();
+      var nomor = Object.keys(per).map(Number);
+      var awal = nomor.length ? Math.min.apply(null, nomor) : kini;
+      var hasil = [];
+      for (var n = kini; n >= awal && hasil.length < 26; n--) {
+        var r = per[n] || ronde(n);
+        var b = batasRonde(n);
+        function jml(o) { return Object.keys(o).length; }
+        hasil.push({
+          nomor: n, mulai: b.mulai.toISOString(), selesai: b.selesai.toISOString(), berjalan: n === kini,
+          undangan: jml(r.undangan), tamu_bod: jml(r.tamu.BOD), tamu_lunch: jml(r.tamu.Lunch), hadir_bod: jml(r.hadir.BOD), hadir_lunch: jml(r.hadir.Lunch), bergabung: r.bergabung,
+          pengundang: Object.keys(r.pengundang).map(function (id) { return { nama_depan: namaDepan(k.orang(id)), jumlah: jml(r.pengundang[id]), saya: id === k.saya.id_orang }; })
+            .sort(function (a, c) { return c.jumlah - a.jumlah || (a.nama_depan < c.nama_depan ? -1 : 1); })
+        });
+      }
+      return { ronde: hasil };
+    },
+
     /* ---------- pengumuman dan info acara ---------- */
     pengumuman: function (k) {
       return {
@@ -1149,7 +1192,7 @@ var Inti = (function () {
     }
   };
 
-  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1 };
+  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1 };
 
   /* Titik masuk tunggal. db = adaptor; badan = objek dari JSON. */
   function jalankan(db, badan, sekarang) {

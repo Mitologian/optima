@@ -418,3 +418,10 @@ li.program .utama span { display: block; }
 .dampak-kepala { font: inherit; font-size: 12px; font-weight: 700; color: var(--abu); text-align: center; padding: 6px 0; border-radius: 8px; }
 .dampak-kepala.aktif { color: var(--merah); background: var(--merah-muda); }
 .dampak-nama { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* Riwayat per ronde */
+.statistik.riwayat { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.statistik.riwayat .stat small { display: block; font-size: 11px; color: var(--abu); margin-top: 2px; line-height: 1.25; }
+.ronde-riwayat .langkah-atas h3 { margin: 0; }
+details.lipat-kecil { margin-top: 10px; border-top: 1px solid var(--garis); padding-top: 8px; }
+details.lipat-kecil summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--tinta-2); }

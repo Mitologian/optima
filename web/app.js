@@ -1204,9 +1204,31 @@
       '<section class="kartu">' + (nama.length ? '<p>' + nama.map(esc).join(', ') + '</p><p class="catatan-main">Visible to the launch team only, for a friendly reminder before Wednesday.</p>' : '<p class="kosong-isi">Every member has invited someone this round.</p>') + '</section>';
   }
 
+  /* ---------- Riwayat per ronde ---------- */
+  function daftarRiwayat(rw) {
+    if (!rw || !rw.ok) return '<p class="kosong-isi">' + esc(rw ? rw.pesan : 'Could not load the history.') + '</p>';
+    if (!rw.ronde.length) return '<section class="kartu"><p class="kosong-isi">No history yet.</p></section>';
+    function sel(angka, label, rinci) {
+      return '<div class="stat"><b>' + angka + '</b><span>' + label + '</span>' + (rinci ? '<small>' + rinci + '</small>' : '') + '</div>';
+    }
+    return rw.ronde.map(function (r) {
+      var daftar = r.pengundang.length ? '<ul class="daftar">' + r.pengundang.map(function (x) {
+        return '<li><div class="utama"><b>' + esc(x.nama_depan) + (x.saya ? ' <span class="chip merah">me</span>' : '') + '</b></div><span class="nilai">' + x.jumlah + '</span><span class="kecil">invited</span></li>';
+      }).join('') + '</ul>' : '<p class="kosong-isi">No invitations in this round.</p>';
+      return '<section class="kartu ronde-riwayat"><div class="langkah-atas"><h3>' + esc(tglPendek(r.mulai)) + ' to ' + esc(tglPendek(r.selesai)) + '</h3>' + (r.berjalan ? '<span class="chip merah">Now</span>' : '') + '</div>' +
+        '<div class="statistik riwayat">' +
+          sel(r.undangan, 'invited') +
+          sel(r.tamu_bod + r.tamu_lunch, 'registered', 'BOD ' + r.tamu_bod + '<br>Lunch ' + r.tamu_lunch) +
+          sel(r.hadir_bod + r.hadir_lunch, 'attended', 'BOD ' + r.hadir_bod + '<br>Lunch ' + r.hadir_lunch) +
+          sel(r.bergabung, 'joined') +
+        '</div>' +
+        '<details class="lipat-kecil"><summary>Who invited</summary>' + daftar + '</details></section>';
+    }).join('') + '<p class="catatan-main">Rounds run Thursday to Wednesday. Invited is counted by invitation date. Registered and attended are counted by event date. Everything is kept, nothing is erased when a round ends.</p>';
+  }
+
   async function layarPapan(isi) {
-    var h = await Promise.all([api('papan'), api('beranda')]);
-    var p = h[0], b = h[1];
+    var h = await Promise.all([api('papan'), api('beranda'), tabPapan === 'riwayat' ? api('riwayatRonde') : Promise.resolve(null)]);
+    var p = h[0], b = h[1], rw = h[2];
     if (!p.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(p.pesan) + '</p>'; return; }
     function daftar(rows, satuan, kosong) {
       if (!rows.length) return '<p class="kosong-isi">' + kosong + '</p>';
@@ -1215,10 +1237,11 @@
       }).join('') + '</ul>';
     }
     isi.innerHTML = '<div class="sapa"><h1>Board</h1><p class="kecil">A game, not a ranking. Attendance is not a contest because it is a requirement.</p></div>' +
-      '<div class="tab" role="tablist"><button role="tab" data-tab="pengundang" aria-selected="' + (tabPapan === 'pengundang') + '">This round</button><button role="tab" data-tab="dampak" aria-selected="' + (tabPapan === 'dampak') + '">Impact</button><button role="tab" data-tab="sponsor" aria-selected="' + (tabPapan === 'sponsor') + '">Sponsors</button></div>' +
+      '<div class="tab" role="tablist"><button role="tab" data-tab="pengundang" aria-selected="' + (tabPapan === 'pengundang') + '">Round</button><button role="tab" data-tab="dampak" aria-selected="' + (tabPapan === 'dampak') + '">Impact</button><button role="tab" data-tab="sponsor" aria-selected="' + (tabPapan === 'sponsor') + '">Sponsors</button><button role="tab" data-tab="riwayat" aria-selected="' + (tabPapan === 'riwayat') + '">History</button></div>' +
       (tabPapan === 'pengundang'
         ? '<section class="kartu">' + daftar(p.pengundang, 'invitations', 'No invitations this round yet. Be the first.') + '</section><p class="catatan-main">Round ends ' + esc(tglHari(b.ronde.selesai)) + ' at 23:59. The board resets every Thursday.</p>' + kartuBelum(p.belum_ronde)
         : tabPapan === 'dampak' ? tabelDampak(p.dampak)
+        : tabPapan === 'riwayat' ? daftarRiwayat(rw)
         : '<section class="kartu">' + daftar(p.sponsor, 'members', 'No sponsors yet. Members who bring in new members are listed here permanently.') + '</section><p class="catatan-main">The sponsor wall is never reset.</p>');
     isi.querySelectorAll('[data-tab]').forEach(function (t) { t.onclick = function () { tabPapan = t.dataset.tab; layarPapan(isi); }; });
     isi.querySelectorAll('[data-urut]').forEach(function (t) { t.onclick = function () { urutDampak = t.dataset.urut; layarPapan(isi); }; });

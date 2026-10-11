@@ -50,6 +50,7 @@ Anggota hanya melihat jam kosong dan pesanan calonnya sendiri. LT bisa memakai "
 | Lihat klasifikasi terisi | Seats, Papan Kursi |
 | Lihat roster anggota | Seats, Member list |
 | Lihat siapa mengundang berapa, siapa yang hadir dan bergabung | Board, Impact |
+| Bandingkan pekan ke pekan (undangan, tamu BOD dan Lunch, hadir, bergabung) | Board, History |
 | Lihat leaderboard | Board |
 | Lihat pengumuman, pembicara, dan poster BOD | Home (Announcements), This week (Wednesday program) |
 | Lihat jalur menuju Gold (6 member baru) | Home, Gold path |

@@ -82,7 +82,7 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Launch Team, Follow-Up | Team, Interviews (3 langkah) |
 | Launch Team, Update Status | Ketuk nama di Interviews |
 | Launch Team, Check-in | Team, Check-in |
-| Launch Team, Wanted | Seats, filter Wanted, tombol "I need this" |
+| Launch Team, Wanted | Seats, titik emas di kursi yang dicari, tombol "I need this" |
 | Leaderboard (poin) | Board: jumlah undangan ronde ini dan dinding sponsor |
 | Classification (locked, wanted, post) | Seats (Papan 64 Kursi dan Member list) |
 | PIN admin bersama | Kode akses per orang |

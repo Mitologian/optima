@@ -397,16 +397,11 @@
     if (!r.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
     S.cache.kursi = r.baris;
     var n = { terisi: 0, ada_calon: 0, kosong: 0 };
-    var milik = 0;
-    r.baris.forEach(function (b) { b.kursi.forEach(function (x) { n[x.status]++; milik += x.saya_calon; }); });
+    r.baris.forEach(function (b) { b.kursi.forEach(function (x) { n[x.status]++; }); });
     var lengkap = r.baris.filter(function (b) { return b.lengkap; }).length;
-    var saring = [['semua', 'All'], ['saya', 'My list' + (milik ? ' (' + milik + ')' : '')], ['kosong', 'Empty'], ['dicari', 'Wanted']];
-    function lolos(x) {
-      if (saringKursi === 'semua') return true;
-      if (saringKursi === 'saya') return x.saya_calon > 0;
-      if (saringKursi === 'dicari') return x.jumlah_butuh > 0 && x.status !== 'terisi';
-      return saringKursi === x.status;
-    }
+    var saring = [['semua', 'All'], ['kosong', 'Empty']];
+    if (saringKursi !== 'kosong') saringKursi = 'semua';
+    function lolos(x) { return saringKursi === 'semua' || x.status === 'kosong'; }
     isi.innerHTML = tabs +
       '<div class="sapa" style="margin-top:4px"><h1>64 Seat Board</h1><p class="kecil">Tap a seat, then add a prospect from that classification.</p></div>' +
       '<div class="ringkas-kursi">' +

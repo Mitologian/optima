@@ -112,13 +112,14 @@ var Inti = (function () {
     if (this._atur) return this._atur;
     var a = {};
     this.tab('Pengaturan').forEach(function (r) { if (teks(r.kunci)) a[teks(r.kunci)] = r.nilai; });
-    ['target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold'].forEach(function (k) { a[k] = Number(a[k]) || 0; });
+    ['target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver'].forEach(function (k) { a[k] = Number(a[k]) || 0; });
     a.target_founding = a.target_founding || 20;
     a.target_cgt = a.target_cgt || 37;
     a.target_launch = a.target_launch || 52;
     a.target_nama_min = a.target_nama_min || 20;
     a.target_nama_maks = a.target_nama_maks || 40;
     a.target_gold = a.target_gold || 6;
+    a.target_driver = a.target_driver || 5;
     a.fase = teks(a.fase) || 'Pembentukan';
     a.nama_chapter = teks(a.nama_chapter) || 'Optima';
     a.hari_bod = teks(a.hari_bod) || 'Rabu';
@@ -293,6 +294,14 @@ var Inti = (function () {
         pembicara: teks(e.pembicara), poster: teks(e.poster)
       };
     }).sort(function (a, b) { return (a.tanggal + a.jam_mulai) < (b.tanggal + b.jam_mulai) ? -1 : 1; });
+  }
+
+  /* Driver: orang yang punya jaringan, pengaruh, aktif, dan berkomitmen. Hanya terlihat oleh LT dan LDC. */
+  function driverAktif(k) {
+    return k.tab('Master').filter(function (r) {
+      var t = teks(r.tahap);
+      return benar(r.driver) && (t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0);
+    });
   }
 
   function pendaftarPerluCek(k) {
@@ -682,8 +691,13 @@ var Inti = (function () {
       var kosong = 0;
       petaKursi(k).forEach(function (b) { b.kursi.forEach(function (x) { if (x.status === 'kosong') kosong++; }); });
       var founding = k.anggota().filter(function (r) { return teks(r.jenis_anggota) === 'Founding'; }).length;
+      var drv = driverAktif(k).map(function (r) {
+        var x = kursiById(k, r.id_kursi);
+        return { id_orang: teks(r.id_orang), nama: teks(r.nama), tahap: teks(r.tahap), bidang: x ? x.bidang : (teks(r.bisnis) || '') };
+      }).sort(function (x, y) { return x.nama < y.nama ? -1 : 1; });
       return {
         founding: { jumlah: founding, target: a.target_founding },
+        driver: { jumlah: drv.length, target: a.target_driver, daftar: drv },
         lt: lt,
         kursi_tanpa_calon: kosong,
         calon_diam: k.calonAktif().map(function (r) { return { nama: teks(r.nama), pic: namaDepan(k.orang(r.PIC)) || 'None yet', hari: k.hariDiam(r) }; })
@@ -896,6 +910,32 @@ var Inti = (function () {
         });
       }
       return { ronde: hasil };
+    },
+
+    /* ---------- driver (hanya LT dan LDC) ---------- */
+    kandidatDriver: function (k) {
+      wajibLT(k);
+      var hasil = k.tab('Master').filter(function (r) {
+        var t = teks(r.tahap);
+        return (t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0) && teks(r.nama);
+      }).map(function (r) {
+        var x = kursiById(k, r.id_kursi);
+        return { id_orang: teks(r.id_orang), nama: teks(r.nama), tahap: teks(r.tahap), bidang: x ? x.bidang : (teks(r.bisnis) || ''), driver: benar(r.driver) };
+      }).sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+      return { orang: hasil };
+    },
+
+    tandaiDriver: function (k, b) {
+      wajibLT(k);
+      var o = k.orang(teks(b.id_orang));
+      if (!o) gagal('Person not found.');
+      var t = teks(o.tahap);
+      var aktif = t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0;
+      var jadi = b.driver === true || b.driver === 'true';
+      if (jadi && !aktif) gagal(namaDepan(o) + ' is no longer active, so cannot be marked as a driver.');
+      k.ubah('Master', o, { driver: jadi ? 'TRUE' : '', terakhir_diubah: k.now.toISOString() });
+      k.log('tandaiDriver', namaDepan(o) + (jadi ? ' jadi driver' : ' bukan driver'));
+      return { driver: jadi };
     },
 
     /* ---------- pengumuman dan info acara ---------- */
@@ -1186,13 +1226,14 @@ var Inti = (function () {
           { teks: 'Members who invited this week: ' + persenMengundang + '%, threshold 50%', menyala: setelahEsm && persenMengundang < 50 },
           { teks: 'New members in the last two weeks: ' + (baru[0] + baru[1]), menyala: setelahEsm && baru[0] + baru[1] === 0 },
           { teks: 'Most prospects from ' + (dominan || '-') + ', ' + porsi + '% of active prospects', menyala: calon.length >= 10 && porsi > 40 },
+          { teks: 'Drivers on the list: ' + reg.driver.jumlah + ', threshold ' + reg.driver.target, menyala: reg.driver.jumlah < reg.driver.target },
           { teks: 'Prospects untouched for over 7 days: ' + reg.calon_diam.length, menyala: reg.calon_diam.length > 0 }
         ]
       };
     }
   };
 
-  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1 };
+  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1 };
 
   /* Titik masuk tunggal. db = adaptor; badan = objek dari JSON. */
   function jalankan(db, badan, sekarang) {

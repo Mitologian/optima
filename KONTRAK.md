@@ -83,6 +83,7 @@ Dua kolom: `kunci` · `nilai`.
 | `target_nama_min` | 20 (nama minimal per orang, berlaku untuk LDC, LT, dan anggota) |
 | `target_nama_maks` | 40 (sasaran nama per orang) |
 | `target_gold` | 6 (jumlah member baru untuk jalur Gold, dihitung dari `id_sponsor`) |
+| `target_driver` | 5 (jumlah driver minimal, peringatan menyala bila kurang) |
 | `hari_bod` | Rabu |
 | `tanggal_esm` | 2027-05-24 |
 | `tanggal_grand_launch` | 2027-08-02 |
@@ -104,7 +105,7 @@ Satu baris per orang, dari calon sampai anggota.
 
 `id_orang` · `nama` · `nama_depan` · `whatsapp_norm` · `email` · `perusahaan` · `bisnis` · `id_kursi` ·
 `kota` · `sumber` · `kategori` · `tahap` · `jenis_anggota` · `tanggal_bergabung` · `id_sponsor` · `PIC` ·
-`diajukan_oleh` · `tanggal_masuk` · `tanggal_sentuh` · `alasan_tidak_lanjut` · `catatan` · `terakhir_diubah` · `jadwal_cs`
+`diajukan_oleh` · `tanggal_masuk` · `tanggal_sentuh` · `alasan_tidak_lanjut` · `catatan` · `terakhir_diubah` · `jadwal_cs` · `driver`
 
 | Kolom | Nilai |
 |---|---|
@@ -116,6 +117,7 @@ Satu baris per orang, dari calon sampai anggota.
 | `diajukan_oleh` | `id_orang` yang memasukkan nama ini |
 | `tanggal_sentuh` | terakhir kali tahap atau catatan diubah |
 | `id_kursi` | boleh kosong untuk calon yang bidangnya belum pasti; LT memasangkan kursinya kemudian |
+| `driver` | `TRUE` bila ditandai LT atau LDC sebagai driver (punya jaringan, pengaruh, aktif, berkomitmen). Boleh calon aktif atau anggota. Tidak terlihat oleh anggota. Kolom dibuat otomatis oleh `Api.js` |
 | `jadwal_cs` | tanggal dan jam coffee session, diisi saat tahap diubah ke `CS` |
 
 LT dan LDC juga punya baris di `Master` (kategori `LT` atau `LDC`) supaya punya `id_orang`.
@@ -307,7 +309,7 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `tambahSlot` | `tanggal, jam[]` (HH:MM), `pendamping[]?`, `tempat?`. PIC selalu yang membuka | `{dibuat}` |
 | `hapusSlot` | `id_slot` (hanya yang `Kosong`, oleh PIC atau LDC) | `{ok}` |
 | `dampingiSlot` | `id_slot, ikut` | `{ikut}` LT ikut atau batal mendampingi |
-| `regroup` | | `founding {jumlah, target}`, `lt [{nama_depan, total, ronde, target}]`, `kursi_tanpa_calon`, `calon_diam [{nama, pic, hari}]` |
+| `regroup` | | `founding {jumlah, target}`, `driver {jumlah, target, daftar [{id_orang, nama, tahap, bidang}]}`, `lt [{nama_depan, total, ronde, target}]`, `kursi_tanpa_calon`, `calon_diam [{nama, pic, hari}]` |
 | `daftarHadir` | `id_event` | `orang [{id_orang, nama, peran, hadir}]` |
 | `checkin` | `id_event, id_orang, hadir` | `{hadir}` |
 | `anggota` | | `anggota [{id_orang, nama}]` untuk pemilih sponsor |
@@ -317,6 +319,8 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `perluCek` | | `perlu_cek [{id_response, nama, whatsapp, bisnis, perusahaan, acara {id_event, nama_acara, jenis, tanggal, jam_mulai}, pengundang, waktu, kandidat {id_orang, nama, bidang, tahap, punya_wa}}]`, `tanpa_pengundang [{id_undangan, id_orang, nama, bidang, acara, waktu}]`, `jumlah` |
 | `selesaikanCek` | `id_response, keputusan` (`sama` atau `beda`) | `{id_orang, status_cocok}`. `sama`: nomor tersimpan di baris kandidat, undangannya menjadi `Terdaftar` di acara pilihan Form. `beda`: baris `Master` dan `Undangan` baru (`sumber` `form`). Ditolak bila nomor sudah milik orang lain |
 | `tetapkanPengundang` | `id_undangan, id_pengundang` (`id_orang` anggota, LT, atau LDC; atau `Walk-in`) | `{id_pengundang}` |
+| `kandidatDriver` | | `orang [{id_orang, nama, tahap, bidang, driver}]` anggota dan calon aktif, tanpa kontak |
+| `tandaiDriver` | `id_orang, driver` (true atau false) | `{driver}`. Tidak bisa menandai orang yang sudah keluar (Declined, Rejected, Joined_Other) |
 | `jadikanAnggota` | `id_orang, id_kursi` (wajib bila calon belum punya kursi), `id_sponsor` | `{jenis_anggota, kursi}` |
 
 ### 6.3 Khusus LDC
@@ -349,3 +353,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-11 | Layar LT untuk pendaftar Form: kolom `id_response`, `id_pengundang`, `id_kandidat`, `id_orang_hasil` di `Responses`, nilai `Walk-in` di `Undangan.id_pengundang`, aksi `perluCek`, `selesaikanCek`, `tetapkanPengundang` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Impact Board: `papan` memuat `dampak`, dan `belum_ronde` untuk LT | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Riwayat per ronde: aksi `riwayatRonde` | Coach Dedy, 11 Oktober 2026 |
+| 2026-10-11 | Penanda driver: kolom `Master.driver`, `Pengaturan.target_driver`, aksi `kandidatDriver`, `tandaiDriver`, `regroup.driver`, lampu peringatan driver di `ringkas` | Coach Dedy, 11 Oktober 2026 |

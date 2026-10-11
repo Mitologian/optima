@@ -1518,12 +1518,51 @@
     w.innerHTML = daftarRiwayat(await api('riwayatRonde'));
   }
 
+  /* ---------- driver: hanya terlihat LT dan LDC ---------- */
+  function kartuDriver(d) {
+    var cukup = d.jumlah >= d.target;
+    return '<section class="kartu"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Drivers</h3><b style="font-family:var(--huruf-judul);font-size:22px">' + d.jumlah + '<span class="redup" style="font-size:14px"> / ' + d.target + '</span></b></div>' +
+      '<div class="bilah' + (cukup ? ' emas' : '') + '" style="margin:10px 0 8px"><i style="width:' + Math.min(100, d.jumlah / d.target * 100) + '%"></i></div>' +
+      '<p class="kecil">People with a network, influence, activity and commitment.' + (cukup ? '' : ' At least ' + d.target + ' are needed.') + '</p>' +
+      (d.daftar.length ? '<ul class="daftar" style="margin-top:8px">' + d.daftar.map(function (x) {
+        return '<li><div class="utama"><b>' + esc(x.nama) + '</b><span>' + esc(x.bidang) + ' · ' + esc(lblTahap(x.tahap)) + '</span></div><button class="tombol kecil kedua" data-lepas-driver="' + esc(x.id_orang) + '">Remove</button></li>';
+      }).join('') + '</ul>' : '') +
+      '<div class="baris-tombol"><button class="tombol kecil" id="b-driver">Add a driver</button></div></section>';
+  }
+  async function lembarDriver(segarkan) {
+    bukaLembar('<div class="muat"></div>');
+    var r = await api('kandidatDriver');
+    if (!r.ok) { bukaLembar('<p class="kosong-isi">' + esc(r.pesan) + '</p>'); return; }
+    function baris(o) {
+      return '<li data-nama="' + esc(o.nama.toLowerCase()) + '"><div class="utama"><b>' + esc(o.nama) + '</b><span>' + esc(o.bidang) + ' · ' + esc(lblTahap(o.tahap)) + '</span></div>' +
+        (o.driver ? '<span class="chip emas">Driver</span>' : '<button class="tombol kecil" data-pilih="' + esc(o.id_orang) + '">Add</button>') + '</li>';
+    }
+    bukaLembar('<h2>Add a driver</h2><p class="kecil" style="margin:6px 0 10px">Members and active prospects. Only the launch team sees this.</p>' +
+      '<label class="isian"><span>Search by name</span><input id="cari-driver" autocomplete="off"></label>' +
+      '<section class="kartu" style="box-shadow:none"><ul class="daftar" id="daftar-driver">' + r.orang.map(baris).join('') + '</ul></section><p class="pesan-salah" id="salah" hidden></p>',
+      function (el) {
+        var cari = el.querySelector('#cari-driver');
+        cari.oninput = function () {
+          var q = cari.value.trim().toLowerCase();
+          el.querySelectorAll('#daftar-driver li').forEach(function (li) { li.hidden = q && li.dataset.nama.indexOf(q) < 0; });
+        };
+        el.querySelectorAll('[data-pilih]').forEach(function (b) {
+          b.onclick = async function () {
+            var h = await api('tandaiDriver', { id_orang: b.dataset.pilih, driver: true });
+            if (!h.ok) { var sl = el.querySelector('#salah'); sl.textContent = h.pesan; sl.hidden = false; return; }
+            tutupLembar(); toast('Marked as a driver.'); segarkan();
+          };
+        });
+      });
+  }
+
   async function subRegroup(w) {
     var r = await api('regroup');
     if (!r.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
     w.innerHTML =
       '<section class="kartu"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Founding member</h3><b style="font-family:var(--huruf-judul);font-size:22px">' + r.founding.jumlah + '<span class="redup" style="font-size:14px"> / ' + r.founding.target + '</span></b></div>' +
       '<div class="bilah' + (r.founding.jumlah >= r.founding.target ? ' emas' : '') + '" style="margin-top:10px"><i style="width:' + Math.min(100, r.founding.jumlah / r.founding.target * 100) + '%"></i></div></section>' +
+      kartuDriver(r.driver) +
       '<div class="judul-bagian"><h2>Names per launch team member</h2><span class="kecil">target ' + (r.lt[0] ? r.lt[0].target : 20) + '</span></div>' +
       '<section class="kartu">' + r.lt.map(function (x) {
         return '<div class="baris-bilah' + (x.nama_depan === S.profil.nama_depan ? ' saya' : '') + '"><span>' + esc(x.nama_depan) + '</span><div class="bilah' + (x.total >= x.target ? ' emas' : '') + '"><i style="width:' + Math.min(100, x.total / x.target * 100) + '%"></i></div><b>' + x.total + '<span class="redup" style="font-weight:400;font-size:12px"> +' + x.ronde + '</span></b></div>';
@@ -1533,6 +1572,16 @@
       '<section class="kartu">' + (r.calon_diam.length ? '<ul class="daftar">' + r.calon_diam.map(function (c) {
         return '<li><div class="utama"><b>' + esc(c.nama) + '</b><span>PIC ' + esc(c.pic) + '</span></div><span class="chip merah">' + c.hari + ' days</span></li>';
       }).join('') + '</ul>' : '<p class="kosong-isi">All prospects were touched in the last week.</p>') + '</section>';
+    var segar = function () { subRegroup(w); };
+    var bd = w.querySelector('#b-driver');
+    if (bd) bd.onclick = function () { lembarDriver(segar); };
+    w.querySelectorAll('[data-lepas-driver]').forEach(function (b) {
+      b.onclick = async function () {
+        var h = await api('tandaiDriver', { id_orang: b.dataset.lepasDriver, driver: false });
+        if (!h.ok) return toast(h.pesan);
+        toast('Removed from drivers.'); segar();
+      };
+    });
   }
 
   async function subRingkas(w) {

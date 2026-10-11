@@ -69,6 +69,7 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Putuskan pendaftar Form yang nomornya belum cocok atau tanpa pengundang | Team, Interviews, kartu Form sign-ups |
 | Tulis pengumuman, isi pembicara dan poster acara | Team, More, Announcements |
 | Lihat anggota yang belum mengundang ronde ini (untuk pengingat) | Board, This round (bagian bawah) |
+| Tandai dan pantau driver (minimal 5) | Team, More, Regroup, kartu Drivers |
 | Pantau nama per LT dan kursi kosong | Team, More, Regroup |
 | Ringkasan chapter | Team, More, Summary (hanya LDC) |
 

@@ -2,7 +2,7 @@
    Aktif saat CONFIG.API_URL kosong. Kode contoh: LDC001, LT0001, AGT001.
    Tambahkan ?fase=BOD di alamat untuk target Misi dan label anggota seperti setelah ESM. Tambahkan ?reset=1 untuk mengulang data. */
 var Tiruan = (function () {
-  var KUNCI = 'optima_tiruan_v8';
+  var KUNCI = 'optima_tiruan_v9';
   var HARI = 864e5;
   var POSTER_CONTOH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#C8102E"/><text x="32" y="92" font-family="Arial" font-size="22" fill="#fff" opacity=".8">BNI OPTIMA · BUSINESS OPPORTUNITY DAY</text><text x="32" y="190" font-family="Arial" font-weight="700" font-size="44" fill="#fff">One seat per</text><text x="32" y="244" font-family="Arial" font-weight="700" font-size="44" fill="#fff">classification</text><text x="32" y="316" font-family="Arial" font-size="20" fill="#fff">Wednesday 07:00 to 09:00</text></svg>');
   var data = null;
@@ -61,6 +61,7 @@ var Tiruan = (function () {
     var iman = orang('Iman Santoso', 'LT', 'Anggota', 'K49', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(25), id_sponsor: dedy.id_orang, bisnis: 'IT Support' });
     var sari = orang('Sari Wulandari', 'LT', 'Anggota', 'K27', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(25), id_sponsor: agung.id_orang, bisnis: 'Home Catering' });
     var lt = [dedy, agung, dhika, iman, sari];
+    // driver contoh dipasang di bawah, setelah semua orang dibuat
 
     var anggotaContoh = [
       ['Budi Hartono', 'K01', agung, 18], ['Citra Lestari', 'K04', agung, 15], ['Eko Saputra', 'K02', dhika, 14],
@@ -121,6 +122,7 @@ var Tiruan = (function () {
       und.push({ id_undangan: 'U000' + (i + 2), tanggal: lalu(i), id_pengundang: p[0].id_orang, id_orang_calon: M[14 + i * 3].id_orang, id_event: 'E1', status: i < 2 ? 'Terdaftar' : 'Diundang', sumber: i < 2 ? 'form' : 'app' });
     });
 
+    ['Citra Lestari', 'Fajar Nugroho', 'Lukman Hakim'].forEach(function (n) { M.forEach(function (m) { if (m.nama === n) m.driver = 'TRUE'; }); });
     // pendaftar Form contoh: dua perlu dicek (nomor baru, nama mirip) dan satu tanpa pengundang
     var maya = M.filter(function (m) { return m.nama === 'Maya Anggraini'; })[0];
     var taufik = M.filter(function (m) { return m.nama === 'Taufik Hidayat'; })[0];

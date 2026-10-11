@@ -322,7 +322,7 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `tambahSlot` | `tanggal, jam[]` (HH:MM), `pendamping[]?`, `tempat?`. PIC selalu yang membuka | `{dibuat}` |
 | `hapusSlot` | `id_slot` (hanya yang `Kosong`, oleh PIC atau LDC) | `{ok}` |
 | `dampingiSlot` | `id_slot, ikut` | `{ikut}` LT ikut atau batal mendampingi |
-| `regroup` | | `founding {jumlah, target}`, `driver {jumlah, target, daftar [{id_orang, nama, tahap, bidang}], rekomendasi [...], hampir [...], syarat_min}`, `lt [{nama_depan, total, ronde, target}]`, `kursi_tanpa_calon`, `calon_diam [{nama, pic, hari}]` |
+| `regroup` | | `founding {jumlah, target}`, `driver {jumlah, target, daftar [{id_orang, nama, tahap, bidang}], rekomendasi [...], hampir [...]}`, `lt [{nama_depan, total, ronde, target}]`, `kursi_tanpa_calon`, `calon_diam [{nama, pic, hari}]` |
 | `daftarHadir` | `id_event` | `orang [{id_orang, nama, peran, hadir}]` |
 | `checkin` | `id_event, id_orang, hadir` | `{hadir}` |
 | `anggota` | | `anggota [{id_orang, nama}]` untuk pemilih sponsor |

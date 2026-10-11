@@ -244,22 +244,26 @@
     });
   }
 
-  function kartuMisi(m) {
+  function kartuMisi(m, st) {
     var sisa = Math.max(0, m.target - m.anggota);
     var sub = sisa ? sisa + ' more members to reach ' + (m.target === m.gerbang[0] ? 'ESM' : m.target === m.gerbang[1] ? 'Core Group Training' : 'Grand Launch')
                    : 'Target for this phase reached. On to the next gate.';
+    var hari = m.hari_ke_esm ? [m.hari_ke_esm, 'days to ESM'] : m.hari_ke_launch ? [m.hari_ke_launch, 'days to Grand Launch'] : null;
+    var gold = st ? goldBaris(st) : '';
     return '<section class="kartu misi">' +
       '<div class="label">Chapter Mission</div>' +
       '<div class="angka">' + m.anggota + ' <small>/ ' + m.target + ' members</small></div>' +
-      '<div class="sub">' + esc(sub) + '. Final target ' + m.gerbang[2] + '.</div>' +
+      '<div class="sub">' + esc(sub) + '.</div>' +
       '<div class="ubin-misi">' +
-        (m.hari_ke_esm ? '<div><b>' + m.hari_ke_esm + '</b><span>days to ESM</span></div>' : '') +
-        (m.hari_ke_launch ? '<div><b>' + m.hari_ke_launch + '</b><span>days to Grand Launch</span></div>' : '') +
-        '<div><b>' + m.tamu_pekan + '</b><span>Visitors this week</span></div>' +
+        (hari ? '<div><b>' + hari[0] + '</b><span>' + hari[1] + '</span></div>' : '') +
         '<div><b>' + m.anggota_baru_pekan + '</b><span>new members this week</span></div>' +
       '</div>' +
-      grafikMisi(m) +
+      grafikMisi(m) + gold +
     '</section>';
+  }
+  function goldBaris(st) {
+    var n = st.sponsor, maks = st.target_gold || 6;
+    return '<div class="gold-baris"><span>Gold path</span><div class="bilah' + (n >= maks ? ' emas' : '') + '"><i style="width:' + Math.min(100, n / maks * 100) + '%"></i></div><b>' + n + ' / ' + maks + '</b></div>';
   }
 
   /* ---------- pengumuman, poster, gold ---------- */
@@ -281,33 +285,15 @@
 
   function kartuPengumuman(daftar) {
     if (!daftar.length) return '';
-    var item = daftar.map(function (a, i) {
-      return '<details class="pengumuman"' + (i === 0 ? ' open' : '') + '><summary><b>' + esc(a.judul) + '</b><em>' + esc(lalu(a.tanggal_tayang)) + '</em></summary>' +
+    function satu(a, buka) {
+      return '<details class="pengumuman"' + (buka ? ' open' : '') + '><summary><b>' + esc(a.judul) + '</b><em>' + esc(lalu(a.tanggal_tayang)) + '</em></summary>' +
         '<p>' + esc(a.isi).replace(/\n/g, '<br>') + '</p>' + kartuPoster(a.poster) +
         '<p class="kecil redup">By ' + esc(a.oleh) + (a.tanggal_berakhir ? ' · until ' + esc(tglPendek(a.tanggal_berakhir)) : '') + '</p></details>';
-    }).join('');
-    return '<section class="kartu sorotan-info"><div class="langkah-atas"><span class="chip merah">Announcements</span><span class="kecil redup">' + daftar.length + ' active</span></div>' + item + '</section>';
+    }
+    var lama = daftar.slice(1, 4);
+    return '<section class="kartu sorotan-info"><div class="langkah-atas"><span class="chip merah">Announcement</span></div>' + satu(daftar[0], true) +
+      (lama.length ? '<details class="lipat-kecil"><summary>' + lama.length + ' earlier</summary>' + lama.map(function (a) { return satu(a, false); }).join('') + '</details>' : '') + '</section>';
   }
-
-  function kartuGold(st) {
-    var n = st.sponsor, maks = st.target_gold || 6, sisa = Math.max(0, maks - n);
-    var tercapai = n >= maks;
-    return '<section class="kartu"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Gold path</h3>' +
-      '<b style="font-family:var(--huruf-judul);font-size:22px">' + n + '<span class="redup" style="font-size:14px"> / ' + maks + '</span></b></div>' +
-      '<div class="bilah' + (tercapai ? ' emas' : '') + '" style="margin:10px 0 8px"><i style="width:' + Math.min(100, n / maks * 100) + '%"></i></div>' +
-      '<p class="kecil">' + (tercapai ? 'Gold path reached: ' + n + ' new members brought in. Thank you.' : n + ' of ' + maks + ' new members brought in. ' + sisa + ' more to go.') +
-      ' Every member who joins through an invitation counts. Real numbers, no points.</p></section>';
-  }
-
-  function kartuDaftar(st) {
-    var min = st.target_nama_min, maks = st.target_nama_maks, n = st.nama_daftar;
-    var pesan = n >= maks ? 'Goal of ' + maks + ' names reached.' : n >= min ? 'Minimum of ' + min + ' reached. Keep going toward ' + maks + '.' : (min - n) + ' more names to reach the minimum of ' + min + '.';
-    return '<section class="kartu"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>My name list</h3><b style="font-family:var(--huruf-judul);font-size:22px">' + n + '<span class="redup" style="font-size:14px"> / ' + maks + '</span></b></div>' +
-      '<div class="bilah-ganda"><div class="bilah' + (n >= min ? ' emas' : '') + '"><i style="width:' + Math.min(100, n / maks * 100) + '%"></i></div><span class="tanda-min" style="left:' + (min / maks * 100) + '%"></span></div>' +
-      '<p class="kecil">' + esc(pesan) + ' Each name is tied to one seat on the Seat Board.</p>' +
-      '<div class="baris-tombol"><a class="tombol kecil" href="#kursi">Add name</a>' + (isLT() ? '<a class="tombol kecil kedua" href="#tim">My prospects</a>' : '<a class="tombol kecil kedua" href="#undang">View list</a>') + '</div></section>';
-  }
-
 
   function kartuLangkah(b, pipa, cek) {
     var st = b.saya, min = st.target_nama_min, maks = st.target_nama_maks, n = st.nama_daftar;
@@ -363,34 +349,10 @@
     simpan('optima_dilihat', JSON.stringify(dilihat));
   }
 
-  function kartuTamu(tm) {
-    var isi = tm.tamu.length ? '<ul class="daftar">' + tm.tamu.map(function (g) {
-      var chip = g.bergabung ? '<span class="chip emas">Joined</span>' : g.status === 'Hadir' ? '<span class="chip hijau">Attended</span>' : '<span class="chip">' + esc(g.jenis === 'BOD' ? 'BOD' : 'Lunch') + '</span>';
-      return '<li><span class="lambang">' + inisial(g.nama) + '</span><div class="utama"><b>' + esc(g.nama) + '</b><span>' + esc(g.bidang) + ' · invited by ' + esc(g.pengundang || 'chapter') + '</span></div>' + chip + '</li>';
-    }).join('') + '</ul>' : '<p class="kosong-isi">No Visitors registered for this Wednesday yet.</p>';
-    return '<div class="judul-bagian"><h2>Visitors this Wednesday</h2><span class="kecil">' + tm.tamu.length + ' registered</span></div>' +
-      '<section class="kartu">' + isi + '<p class="catatan-main">Know their classification before Wednesday, to greet them and make connections.</p></section>';
-  }
-
-  function kartuRonde(b) {
-    var st = b.saya;
-    var selesai = st.undangan_ronde > 0;
-    var akhir = b.ronde.selesai;
-    var ac = b.ronde.acara_berikut;
-    return '<section class="kartu ronde' + (selesai ? ' selesai' : '') + '">' +
-      '<div class="tanda">' + (selesai ? '&#10003;' : '1') + '</div>' +
-      '<div class="teks"><h3>Wednesday Round ' + esc(tglPendek(akhir)) + '</h3>' +
-        '<p class="kecil">' + (selesai ? 'Round mission done: ' + st.undangan_ronde + ' invitations.' : 'Mission: one invitation before Wednesday night.') + '</p>' +
-        (ac ? '<p class="kecil redup">Next: ' + esc(ac.nama_acara) + ', ' + esc(tglHari(ac.tanggal)) + ' ' + esc(ac.jam_mulai) + (ac.pembicara ? ' · ' + esc(ac.pembicara) : '') + '</p>' : '') +
-      '</div>' +
-      '<div class="api"><b>' + st.rabu_beruntun + '</b><span>Wednesday streak</span></div>' +
-    '</section>';
-  }
-
   async function layarMisi(isi) {
-    var tugas = [api('beranda'), isLT() ? api('calonSaya', {}) : Promise.resolve(null), api('pengumuman'), api('undanganSaya'), api('tamuPekanIni'), isLT() ? api('perluCek') : Promise.resolve(null)];
+    var tugas = [api('beranda'), isLT() ? api('calonSaya', {}) : Promise.resolve(null), api('pengumuman'), api('undanganSaya'), isLT() ? api('perluCek') : Promise.resolve(null)];
     var h = await Promise.all(tugas);
-    var b = h[0], pipa = h[1] && h[1].ok ? h[1].calon : null, pg = h[2], ud = h[3], tm = h[4], pcek = h[5] && h[5].ok ? h[5].jumlah : 0;
+    var b = h[0], pipa = h[1] && h[1].ok ? h[1].calon : null, pg = h[2], ud = h[3], pcek = h[4] && h[4].ok ? h[4].jumlah : 0;
     if (!b.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(b.pesan) + '</p>'; return; }
     var html = '<div class="sapa"><h1>Hello, ' + esc(S.profil.nama_depan) + '</h1>' +
       '</div>';
@@ -404,20 +366,8 @@
 
     html += kartuPengumuman(pg && pg.ok ? pg.pengumuman : []);
     html += kartuLangkah(b, pipa, pcek);
-    html += kartuMisi(b.misi);
-    html += kartuGold(b.saya);
+    html += kartuMisi(b.misi, b.saya);
 
-    html += '<section class="kartu"><div class="statistik">' +
-      '<div class="stat"><b>' + b.saya.undangan_total + '</b><span>invitations</span></div>' +
-      '<div class="stat"><b>' + b.saya.tamu_hadir + '</b><span>Visitors attended</span></div>' +
-      '<div class="stat"><b>' + b.saya.sponsor + '</b><span>sponsored</span></div>' +
-    '</div></section>';
-    if (tm && tm.ok && (tm.acara_ronde.length || tm.tamu.length)) {
-      var mine = tm.tamu.filter(function (g) { return g.saya; }).length;
-      html += '<section class="kartu ronde"><div class="tanda" style="border-style:solid">' + tm.tamu.length + '</div><div class="teks"><h3>This Wednesday</h3><p class="kecil">' +
-        (tm.tamu.length ? tm.tamu.length + ' Visitor' + (tm.tamu.length > 1 ? 's' : '') + ' registered' + (mine ? ', ' + mine + ' invited by me' : '') + '.' : 'No Visitors registered yet.') +
-        '</p></div><a class="tombol kecil kedua" href="#minggu">See all</a></section>';
-    }
     var dapat = b.lencana.filter(function (l) { return l.didapat; }).length;
     html += lipat('My badges', dapat + ' of 5',
       '<div class="lencana-baris">' + b.lencana.map(function (l) {
@@ -1196,7 +1146,7 @@
       urut.map(function (d) {
         return '<div class="dampak-baris' + (d.saya ? ' saya' : '') + '"><span class="dampak-nama">' + esc(d.nama_depan) + (d.saya ? ' <span class="chip merah">me</span>' : '') + '</span><b>' + d.undangan + '</b><b>' + d.hadir + '</b><b>' + d.bergabung + '</b></div>';
       }).join('') + '</div></section>' +
-      '<p class="catatan-main">Since the start. Invites and Attended count different guests. Joined counts members sponsored. Tap a heading to sort. Attendance is a requirement, not a contest.</p>';
+      '<p class="catatan-main">Since the start. Joined counts members sponsored. Tap a heading to sort.</p>';
   }
   function kartuBelum(nama) {
     if (!nama) return '';
@@ -1223,12 +1173,12 @@
           sel(r.bergabung, 'joined') +
         '</div>' +
         '<details class="lipat-kecil"><summary>Who invited</summary>' + daftar + '</details></section>';
-    }).join('') + '<p class="catatan-main">Rounds run Thursday to Wednesday. Invited is counted by invitation date. Registered and attended are counted by event date. Everything is kept, nothing is erased when a round ends.</p>';
+    }).join('') + '<p class="catatan-main">Rounds run Thursday to Wednesday. Nothing is erased when a round ends.</p>';
   }
 
   async function layarPapan(isi) {
-    var h = await Promise.all([api('papan'), api('beranda'), tabPapan === 'riwayat' ? api('riwayatRonde') : Promise.resolve(null)]);
-    var p = h[0], b = h[1], rw = h[2];
+    var h = await Promise.all([api('papan'), api('beranda')]);
+    var p = h[0], b = h[1];
     if (!p.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(p.pesan) + '</p>'; return; }
     function daftar(rows, satuan, kosong) {
       if (!rows.length) return '<p class="kosong-isi">' + kosong + '</p>';
@@ -1236,31 +1186,28 @@
         return '<li class="peringkat-' + (i + 1) + (r.saya ? ' saya' : '') + '"><span class="lambang">' + (i + 1) + '</span><div class="utama"><b>' + esc(r.nama_depan) + (r.saya ? ' <span class="chip merah">me</span>' : '') + '</b></div><span class="nilai">' + r.jumlah + '</span><span class="kecil">' + satuan + '</span></li>';
       }).join('') + '</ul>';
     }
-    isi.innerHTML = '<div class="sapa"><h1>Board</h1><p class="kecil">A game, not a ranking. Attendance is not a contest because it is a requirement.</p></div>' +
-      '<div class="tab" role="tablist"><button role="tab" data-tab="pengundang" aria-selected="' + (tabPapan === 'pengundang') + '">Round</button><button role="tab" data-tab="dampak" aria-selected="' + (tabPapan === 'dampak') + '">Impact</button><button role="tab" data-tab="sponsor" aria-selected="' + (tabPapan === 'sponsor') + '">Sponsors</button><button role="tab" data-tab="riwayat" aria-selected="' + (tabPapan === 'riwayat') + '">History</button></div>' +
+    isi.innerHTML = '<div class="sapa"><h1>Board</h1><p class="kecil">A game, not a ranking.</p></div>' +
+      '<div class="tab" role="tablist"><button role="tab" data-tab="pengundang" aria-selected="' + (tabPapan !== 'dampak') + '">This round</button><button role="tab" data-tab="dampak" aria-selected="' + (tabPapan === 'dampak') + '">All time</button></div>' +
       (tabPapan === 'pengundang'
         ? '<section class="kartu">' + daftar(p.pengundang, 'invitations', 'No invitations this round yet. Be the first.') + '</section><p class="catatan-main">Round ends ' + esc(tglHari(b.ronde.selesai)) + ' at 23:59. The board resets every Thursday.</p>' + kartuBelum(p.belum_ronde)
-        : tabPapan === 'dampak' ? tabelDampak(p.dampak)
-        : tabPapan === 'riwayat' ? daftarRiwayat(rw)
-        : '<section class="kartu">' + daftar(p.sponsor, 'members', 'No sponsors yet. Members who bring in new members are listed here permanently.') + '</section><p class="catatan-main">The sponsor wall is never reset.</p>');
+        : tabelDampak(p.dampak));
     isi.querySelectorAll('[data-tab]').forEach(function (t) { t.onclick = function () { tabPapan = t.dataset.tab; layarPapan(isi); }; });
     isi.querySelectorAll('[data-urut]').forEach(function (t) { t.onclick = function () { urutDampak = t.dataset.urut; layarPapan(isi); }; });
   }
 
   /* ---------- TIM (LT dan LDC) ---------- */
   function layarTim(isi, sub) {
-    var tabs = [['calon', 'Interviews'], ['jadwal', 'Schedule']];
-    tabs.push(['rabu', 'Check-in']);
-    tabs.push(['info', 'Announce']);
-    tabs.push(['regroup', 'Regroup']);
-    if (isLDC()) tabs.push(['ringkas', 'Summary']);
-    var aktif = tabs.some(function (t) { return t[0] === sub; }) ? sub : 'calon';
+    var tabs = [['calon', 'Interviews'], ['jadwal', 'Schedule'], ['rabu', 'Check-in'], ['lainnya', 'More']];
+    var dalamMore = ['info', 'regroup', 'ringkas', 'riwayat'];
+    var subAktif = ['calon', 'jadwal', 'rabu', 'lainnya'].concat(dalamMore).indexOf(sub) >= 0 && (sub !== 'ringkas' || isLDC()) ? sub : 'calon';
+    var aktif = dalamMore.indexOf(subAktif) >= 0 ? 'lainnya' : subAktif;
     isi.innerHTML = '<div class="tab" role="tablist">' + tabs.map(function (t) {
       return '<button role="tab" data-sub="' + t[0] + '" aria-selected="' + (t[0] === aktif) + '">' + t[1] + '</button>';
     }).join('') + '</div><div id="sub"><div class="muat"></div></div>';
     isi.querySelectorAll('[data-sub]').forEach(function (t) { t.onclick = function () { location.hash = '#tim-' + t.dataset.sub; }; });
     var wadah = isi.querySelector('#sub');
-    ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, info: subInfo, regroup: subRegroup, ringkas: subRingkas })[aktif](wadah);
+    if (dalamMore.indexOf(subAktif) >= 0) wadah.insertAdjacentHTML('beforebegin', '<a class="kembali" href="#tim-lainnya">&#8249; More</a>');
+    ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, lainnya: subLainnya, info: subInfo, regroup: subRegroup, ringkas: subRingkas, riwayat: subRiwayat })[subAktif](wadah);
   }
 
   /* ---------- pendaftar Form yang perlu diputuskan ---------- */
@@ -1270,7 +1217,7 @@
     if (pc.perlu_cek.length) bagian.push(pc.perlu_cek.length + ' to match');
     if (pc.tanpa_pengundang.length) bagian.push(pc.tanpa_pengundang.length + ' without inviter');
     return '<section class="kartu sorotan"><div class="langkah-atas"><span class="chip merah">Form sign-ups</span></div>' +
-      '<h3>' + pc.jumlah + ' sign-up' + (pc.jumlah > 1 ? 's' : '') + ' need a decision</h3><p class="kecil">' + esc(bagian.join(', ')) + '. Until decided, they stay out of the inviter board and the guest list may be incomplete.</p>' +
+      '<h3>' + pc.jumlah + ' sign-up' + (pc.jumlah > 1 ? 's' : '') + ' need a decision</h3><p class="kecil">' + esc(bagian.join(', ')) + '.</p>' +
       '<div class="baris-tombol"><button class="tombol" id="b-cek">Review</button></div></section>';
   }
   function labelAcaraCek(a) {
@@ -1282,7 +1229,7 @@
     var pc = h[0], ang = h[1];
     if (!pc.ok) { bukaLembar('<p class="kosong-isi">' + esc(pc.pesan) + '</p>'); return; }
     var opsi = (ang.anggota || []).map(function (a) { return '<option value="' + esc(a.id_orang) + '">' + esc(a.nama) + '</option>'; }).join('');
-    var html = '<h2>Form sign-ups</h2><p class="kecil" style="margin:6px 0 12px">Decide each one so the guest list and the inviter board stay accurate.</p>';
+    var html = '<h2>Form sign-ups</h2><p class="kecil" style="margin:6px 0 12px">Decide each one to keep the guest list accurate.</p>';
     if (!pc.jumlah) html += '<p class="kosong-isi">All sign-ups are handled.</p>';
     if (pc.perlu_cek.length) {
       html += '<div class="judul-bagian"><h2>Is it the same person?</h2><span class="kecil">' + pc.perlu_cek.length + '</span></div>' + pc.perlu_cek.map(function (c) {
@@ -1562,6 +1509,18 @@
           tutupLembar(); toast('Event info saved.'); segarkan();
         };
       });
+  }
+
+  function subLainnya(w) {
+    var item = [['info', 'Announcements', 'Write announcements, set speaker and poster'], ['regroup', 'Regroup', 'Names per launch team member, seats without prospects'], ['riwayat', 'Round history', 'Invited, registered, attended and joined per week']];
+    if (isLDC()) item.push(['ringkas', 'Summary', 'Chapter numbers and warning lights']);
+    w.innerHTML = '<section class="kartu"><ul class="daftar">' + item.map(function (x) {
+      return '<li><a class="ketuk" href="#tim-' + x[0] + '" style="flex:1;min-width:0;display:block"><div class="utama"><b>' + x[1] + '</b><span>' + x[2] + '</span></div></a></li>';
+    }).join('') + '</ul></section>';
+  }
+  async function subRiwayat(w) {
+    w.innerHTML = '<div class="muat"></div>';
+    w.innerHTML = daftarRiwayat(await api('riwayatRonde'));
   }
 
   async function subRegroup(w) {

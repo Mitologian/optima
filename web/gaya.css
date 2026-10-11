@@ -425,3 +425,15 @@ li.program .utama span { display: block; }
 .ronde-riwayat .langkah-atas h3 { margin: 0; }
 details.lipat-kecil { margin-top: 10px; border-top: 1px solid var(--garis); padding-top: 8px; }
 details.lipat-kecil summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--tinta-2); }
+
+/* gold di kartu Mission, tautan kembali */
+.misi .gold-baris { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .25); font-size: 13px; }
+.misi .gold-baris span { font-weight: 700; opacity: .85; }
+.misi .gold-baris b { font-family: var(--huruf-judul); font-size: 15px; }
+.misi .gold-baris .bilah { background: rgba(255, 255, 255, .28); }
+.misi .gold-baris .bilah > i { background: #fff; }
+.misi .gold-baris .bilah.emas > i { background: var(--emas-muda); }
+a.kembali { display: inline-block; margin: 2px 0 10px; font-size: 14px; font-weight: 700; color: var(--merah); text-decoration: none; }
+
+a.ketuk { text-decoration: none; color: inherit; }
+a.ketuk .utama span { display: block; }

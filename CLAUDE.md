@@ -27,6 +27,13 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
 - Referral (istilah BNI untuk potensi bisnis antar member) tidak dipakai di app. Yang dipakai: undangan
   dan sponsor.
 
+## Prinsip tampilan
+
+App harus tetap simpel, dilihat maupun dipakai. Menambah fitur berarti mengurangi atau menggabungkan yang lama.
+Home hanya memuat satu langkah berikutnya, satu pengumuman, Chapter Mission (dengan Gold path), lencana, dan berita.
+Board dua tab (This round, All time). Team empat tab (Interviews, Schedule, Check-in, More). Fitur yang jarang dipakai
+masuk More.
+
 ## Aturan bahasa di app dan dokumen
 
 - Bahasa app: Inggris (dipakai di app, termasuk klasifikasi). Dokumen kerja untuk Coach Dedy tetap Bahasa Indonesia.

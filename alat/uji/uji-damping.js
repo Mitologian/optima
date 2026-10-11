@@ -1,0 +1,18 @@
+const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
+const B='http://localhost:8765/web/index.html';
+(async()=>{const b=await chromium.launch();const errs=[];const p=await b.newPage({viewport:{width:390,height:844}});
+p.on('pageerror',e=>errs.push(e.message));
+await p.goto(B+'?fase=BOD');await p.evaluate(()=>localStorage.clear());await p.goto(B+'?fase=BOD');
+await p.fill('input.kode','LT0001');await p.click('button[type=submit]');await p.waitForTimeout(800);
+await p.goto(B+'?fase=BOD#tim-jadwal');await p.waitForTimeout(800);
+console.log('LT view:', (await p.innerText('#sub')).slice(0,700).replace(/\n+/g,' | '));
+await p.click('[data-dampingi="1"]');await p.waitForTimeout(500);
+await p.screenshot({path:process.argv[2]+'/d1-lt.png'});
+await p.click('#b-buka-jam');await p.waitForTimeout(300);await p.click('[data-jam="19:00"]');
+await p.click('#f-jam button[type=submit]');await p.waitForTimeout(300);console.log('no partner:', await p.innerText('#salah'));
+await p.click('[data-damping]');await p.screenshot({path:process.argv[2]+'/d2-pair.png'});await p.click('#f-jam button[type=submit]');await p.waitForTimeout(600);
+console.log('after:', (await p.innerText('#sub')).match(/Agung \+ [^|\n]*/g));
+await p.evaluate(()=>localStorage.setItem('optima_kode','LDC001'));await p.reload();await p.waitForTimeout(800);
+await p.goto(B+'?fase=BOD#tim-jadwal');await p.waitForTimeout(800);await p.screenshot({path:process.argv[2]+'/d3-ldc.png'});
+await p.click('#b-buka-jam');await p.waitForTimeout(300);await p.screenshot({path:process.argv[2]+'/d4-ldc-buka.png'});
+console.log('errors',JSON.stringify(errs));await b.close();})();

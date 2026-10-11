@@ -1,5 +1,7 @@
 # Alur kerja BNI Optima
 
+App dibedakan menurut peran, bukan fase: LDC dan LT melihat semua fitur LT, anggota melihat fitur anggota. Sebelum ESM hanya LDC dan LT yang punya kode akses, jadi mereka yang memakainya. Anggota baru mendapat kode setelah ESM.
+
 Satu halaman untuk Coach Dedy, Lapis, dan siapa pun yang menyentuh app. Teks app berbahasa Inggris, dokumen ini Indonesia.
 
 ## Dua jalur calon
@@ -25,7 +27,7 @@ bergabung, menunggu pembayaran), Anggota (pembayaran masuk). Keluar: Joined_Othe
 
 Anggota hanya melihat jam kosong dan pesanan calonnya sendiri. LT bisa memakai "Other time" di luar slot.
 
-## Pre-ESM · LDC dan LT (tanpa Google Form)
+## Tahap pembentukan (sebelum ESM) · LDC dan LT (tanpa Google Form)
 
 | Langkah | Di app | Di sheet |
 |---|---|---|
@@ -36,7 +38,7 @@ Anggota hanya melihat jam kosong dan pesanan calonnya sendiri. LT bisa memakai "
 | 5. Pembayaran masuk | Interviews, Interviewed, Joined (pilih sponsor) | tahap Anggota, jenis Founding |
 | Keluar | ketuk nama, pilih Joined other chapter, Declined, atau Rejected, isi alasan | tahap Joined_Other, Declined, Rejected |
 
-## Post-ESM · anggota dan LT
+## Setelah ESM · anggota dan LT
 
 | Kebutuhan | Di app |
 |---|---|

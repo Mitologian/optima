@@ -83,7 +83,6 @@
     return r;
   }
 
-  var fasePra = function () { return S.atur && S.atur.fase === 'Pembentukan'; };
   var isLT = function () { return S.profil && (S.profil.peran === 'LT' || S.profil.peran === 'LDC'); };
   var isLDC = function () { return S.profil && S.profil.peran === 'LDC'; };
 
@@ -105,10 +104,11 @@
   /* ---------- kerangka ---------- */
   function menu() {
     var m = [{ id: 'misi', label: 'Home' }];
-    if (!fasePra()) { m.push({ id: 'undang', label: 'My list' }); m.push({ id: 'minggu', label: 'This week' }); }
+    m.push({ id: 'undang', label: 'My list' });
+    m.push({ id: 'minggu', label: 'This week' });
     m.push({ id: 'kursi', label: 'Seats' });
-    if (!fasePra()) m.push({ id: 'papan', label: 'Board' });
-    if (isLT()) m.push({ id: 'tim', label: fasePra() ? 'Interviews' : 'Team' });
+    m.push({ id: 'papan', label: 'Board' });
+    if (isLT()) m.push({ id: 'tim', label: 'Team' });
     return m;
   }
 
@@ -119,30 +119,11 @@
     $app.innerHTML =
       '<header class="kepala"><div class="kepala-dalam">' +
         '<div class="merek"><b>BNI</b><span>' + esc(S.atur.nama_chapter) + '</span></div>' +
-        (Api.tiruan ? '<button class="fase ganti" id="ganti-fase" aria-label="Switch preview phase">' + esc(S.atur.fase === 'Pembentukan' ? 'Pre-ESM' : 'Post-ESM') + ' &#9662;</button>'
-                    : '<span class="fase">' + esc(S.atur.fase === 'Pembentukan' ? 'Pre-ESM' : 'Post-ESM') + '</span>') +
+        '<span class="fase">' + esc(S.profil.peran === 'LDC' ? 'LDC' : S.profil.peran === 'LT' ? 'Launch team' : 'Member') + '</span>' +
         '<button class="keluar" id="keluar" aria-label="Log out">Log out</button>' +
       '</div></header>' +
       '<main class="wadah" id="isi"><div class="muat" style="margin-top:22px"></div><div class="muat"></div></main>' +
       '<nav class="nav" aria-label="Main menu">' + nav + '</nav>';
-    var gf = document.getElementById('ganti-fase');
-    if (gf) gf.onclick = function () {
-      bukaLembar('<h2>Preview phase</h2><p class="kecil" style="margin:6px 0 14px">Sample data only. Switch to see how the app looks before and after ESM.</p>' +
-        '<div class="pilihan" style="flex-direction:column"><button type="button" data-f="Pembentukan" aria-pressed="' + (S.atur.fase === 'Pembentukan') + '">Pre-ESM (Coach Dedy and launch team only)</button>' +
-        '<button type="button" data-f="BOD" aria-pressed="' + (S.atur.fase !== 'Pembentukan') + '">Post-ESM (all members, weekly BOD era)</button></div>' +
-        '<p class="kecil redup" style="margin-top:12px">Member code AGT001 only works post-ESM.</p>', function (el) {
-        el.querySelectorAll('[data-f]').forEach(function (b) {
-          b.onclick = async function () {
-            await Tiruan.setFase(b.dataset.f);
-            var r = await Api.panggil('masuk');
-            tutupLembar();
-            if (!r.ok) { keluar(); return; }
-            S.atur = r.pengaturan; S.profil = r.profil; S.cache = {};
-            location.hash = '#misi'; rute();
-          };
-        });
-      });
-    };
     document.getElementById('keluar').onclick = function () {
       bukaLembar('<h2>Log out of the app?</h2><p class="kecil" style="margin:6px 0 14px">The access code must be entered again to log in.</p><button class="tombol" id="ya-keluar">Log out</button><div class="baris-tombol"><button class="tombol kedua" data-tutup>Cancel</button></div>', function (el) {
         el.querySelector('#ya-keluar').onclick = function () { tutupLembar(); keluar(); };
@@ -176,16 +157,8 @@
           '<button class="tombol" type="submit">Log in</button>' +
         '</form>' +
         '<p class="kecil redup" style="margin-top:14px">The access code is shared by Coach Dedy or the launch team.</p>' +
-        (Api.tiruan ? '<div class="petunjuk-tiruan"><b>Sample mode.</b> Mock data, not connected to the sheet. Try code <b>LDC001</b> (Coach Dedy), <b>LT0001</b> (launch team), or <b>AGT001</b> (member, post-ESM only).' +
-          '<p style="margin:10px 0 6px">View the app in phase:</p><div class="pilihan" id="pil-fase"><button type="button" data-fase="Pembentukan">Pre-ESM</button><button type="button" data-fase="BOD">Post-ESM</button></div></div>' : '') +
+        (Api.tiruan ? '<div class="petunjuk-tiruan"><b>Sample mode.</b> Mock data, not connected to the sheet. Try code <b>LDC001</b> (Coach Dedy), <b>LT0001</b> (launch team), or <b>AGT001</b> (member).</div>' : '') +
       '</div>';
-    var pf = document.getElementById('pil-fase');
-    if (pf) {
-      Tiruan.fase().then(function (now) { pf.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.fase === now); }); });
-      pf.querySelectorAll('button').forEach(function (b) {
-        b.onclick = async function () { await Tiruan.setFase(b.dataset.fase); pf.querySelectorAll('button').forEach(function (z) { z.setAttribute('aria-pressed', z === b); }); };
-      });
-    }
     var f = document.getElementById('f-masuk');
     f.onsubmit = async function (e) {
       e.preventDefault();
@@ -332,7 +305,7 @@
     return '<section class="kartu"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>My name list</h3><b style="font-family:var(--huruf-judul);font-size:22px">' + n + '<span class="redup" style="font-size:14px"> / ' + maks + '</span></b></div>' +
       '<div class="bilah-ganda"><div class="bilah' + (n >= min ? ' emas' : '') + '"><i style="width:' + Math.min(100, n / maks * 100) + '%"></i></div><span class="tanda-min" style="left:' + (min / maks * 100) + '%"></span></div>' +
       '<p class="kecil">' + esc(pesan) + ' Each name is tied to one seat on the Seat Board.</p>' +
-      '<div class="baris-tombol"><a class="tombol kecil" href="#kursi">Add name</a>' + (isLT() ? '<a class="tombol kecil kedua" href="#tim">My prospects</a>' : fasePra() ? '' : '<a class="tombol kecil kedua" href="#undang">View list</a>') + '</div></section>';
+      '<div class="baris-tombol"><a class="tombol kecil" href="#kursi">Add name</a>' + (isLT() ? '<a class="tombol kecil kedua" href="#tim">My prospects</a>' : '<a class="tombol kecil kedua" href="#undang">View list</a>') + '</div></section>';
   }
 
 
@@ -350,17 +323,18 @@
     } else if (isLT() && cs) {
       judul = 'Record coffee session results'; href = '#tim'; tombol = 'Open interviews';
       isi = cs + ' coffee session' + (cs > 1 ? 's' : '') + ' scheduled. After each one, tap Done, then Accepted when the prospect says yes.';
-    } else if (!fasePra() && st.undangan_ronde < 1) {
+    } else if (b.ronde.acara_berikut && st.undangan_ronde < 1) {
       judul = 'Invite one Visitor'; href = '#undang'; tombol = 'Open my list';
       isi = 'Pick one name from the list and send the invitation via WhatsApp before Wednesday night.';
     } else if (n < maks) {
       judul = 'Keep building the name list'; href = '#kursi'; tombol = 'Add name';
       isi = 'Minimum of ' + min + ' reached. Goal is ' + maks + ' names.';
     } else {
-      judul = 'All steps done'; href = fasePra() ? '#kursi' : '#minggu'; tombol = fasePra() ? 'View seats' : 'See this week';
-      isi = 'Goal of ' + maks + ' names reached' + (fasePra() ? '.' : ' and this Wednesday mission is done.');
+      var adaAcara = !!b.ronde.acara_berikut;
+      judul = 'All steps done'; href = adaAcara ? '#minggu' : '#kursi'; tombol = adaAcara ? 'See this week' : 'View seats';
+      isi = 'Goal of ' + maks + ' names reached' + (adaAcara ? ' and this Wednesday mission is done.' : '.');
     }
-    var api = !fasePra() ? '<span class="chip emas">' + b.saya.rabu_beruntun + ' Wednesday streak</span>' : '';
+    var api = b.saya.rabu_beruntun > 0 ? '<span class="chip emas">' + b.saya.rabu_beruntun + ' Wednesday streak</span>' : '';
     return '<section class="kartu langkah"><div class="langkah-atas"><span class="chip merah">Next step</span>' + api + '</div>' +
       '<h2>' + esc(judul) + '</h2><p class="kecil">' + esc(isi) + '</p>' +
       '<div class="bilah-ganda"><div class="bilah' + (n >= min ? ' emas' : '') + '"><i style="width:' + Math.min(100, n / maks * 100) + '%"></i></div><span class="tanda-min" style="left:' + (min / maks * 100) + '%"></span></div>' +
@@ -411,8 +385,7 @@
   }
 
   async function layarMisi(isi) {
-    var tugas = [api('beranda'), isLT() ? api('calonSaya', {}) : Promise.resolve(null), api('pengumuman')];
-    if (!fasePra()) { tugas.push(api('undanganSaya')); tugas.push(api('tamuPekanIni')); }
+    var tugas = [api('beranda'), isLT() ? api('calonSaya', {}) : Promise.resolve(null), api('pengumuman'), api('undanganSaya'), api('tamuPekanIni')];
     var h = await Promise.all(tugas);
     var b = h[0], pipa = h[1] && h[1].ok ? h[1].calon : null, pg = h[2], ud = h[3], tm = h[4];
     if (!b.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(b.pesan) + '</p>'; return; }
@@ -431,18 +404,16 @@
     html += kartuMisi(b.misi);
     html += kartuGold(b.saya);
 
-    if (!fasePra()) {
-      html += '<section class="kartu"><div class="statistik">' +
-        '<div class="stat"><b>' + b.saya.undangan_total + '</b><span>invitations</span></div>' +
-        '<div class="stat"><b>' + b.saya.tamu_hadir + '</b><span>Visitors attended</span></div>' +
-        '<div class="stat"><b>' + b.saya.sponsor + '</b><span>sponsored</span></div>' +
-      '</div></section>';
-      if (tm && tm.ok) {
-        var mine = tm.tamu.filter(function (g) { return g.saya; }).length;
-        html += '<section class="kartu ronde"><div class="tanda" style="border-style:solid">' + tm.tamu.length + '</div><div class="teks"><h3>This Wednesday</h3><p class="kecil">' +
-          (tm.tamu.length ? tm.tamu.length + ' Visitor' + (tm.tamu.length > 1 ? 's' : '') + ' registered' + (mine ? ', ' + mine + ' invited by me' : '') + '.' : 'No Visitors registered yet.') +
-          '</p></div><a class="tombol kecil kedua" href="#minggu">See all</a></section>';
-      }
+    html += '<section class="kartu"><div class="statistik">' +
+      '<div class="stat"><b>' + b.saya.undangan_total + '</b><span>invitations</span></div>' +
+      '<div class="stat"><b>' + b.saya.tamu_hadir + '</b><span>Visitors attended</span></div>' +
+      '<div class="stat"><b>' + b.saya.sponsor + '</b><span>sponsored</span></div>' +
+    '</div></section>';
+    if (tm && tm.ok && (tm.acara_ronde.length || tm.tamu.length)) {
+      var mine = tm.tamu.filter(function (g) { return g.saya; }).length;
+      html += '<section class="kartu ronde"><div class="tanda" style="border-style:solid">' + tm.tamu.length + '</div><div class="teks"><h3>This Wednesday</h3><p class="kecil">' +
+        (tm.tamu.length ? tm.tamu.length + ' Visitor' + (tm.tamu.length > 1 ? 's' : '') + ' registered' + (mine ? ', ' + mine + ' invited by me' : '') + '.' : 'No Visitors registered yet.') +
+        '</p></div><a class="tombol kecil kedua" href="#minggu">See all</a></section>';
     }
     var dapat = b.lencana.filter(function (l) { return l.didapat; }).length;
     html += lipat('My badges', dapat + ' of 5',
@@ -544,7 +515,7 @@
   async function bukaKursi(id, segarkan) {
     bukaLembar('<div class="muat"></div>');
     var tugas = [id ? api('kursiDetail', { id_kursi: id }) : Promise.resolve({ ok: true, kursi: { id_kursi: '', bidang: 'Undecided classification', singkat: '?', sphere: 'No seat', status: 'kosong', jumlah_calon: 0, jumlah_butuh: 0, saya_butuh: false }, calon: [], calon_saya: [] })];
-    if (!fasePra()) tugas.push(api('acara'));
+    tugas.push(api('acara'));
     var h = await Promise.all(tugas);
     var d = h[0], ac = h[1];
     if (!d.ok) { bukaLembar('<p class="kosong-isi">' + esc(d.pesan) + '</p>'); return; }
@@ -587,7 +558,7 @@
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<button class="tombol" type="submit">Add name</button>' +
     '</form>';
-    if (id && (!isLT() || !fasePra())) {
+    if (id) {
       html += '<div class="baris-tombol"><button class="tombol kedua" id="b-butuh" aria-pressed="' + x.saya_butuh + '">' + (x.saya_butuh ? 'Remove "I need this" mark' : 'I need this classification in the chapter') + '</button></div>';
     }
 
@@ -1120,11 +1091,12 @@
 
   /* Pilihan undang untuk anggota: kunjungan Rabu atau langsung coffee session */
   function lembarPilihUndang(u, acara, segarkan) {
-    var bisaKunjung = !u.status_undangan && u.tahap === 'Listed';
+    var bisaKunjung = !u.status_undangan && u.tahap === 'Listed' && acara.length > 0;
     var bisaKopi = ['Listed', 'Invited', 'Attended', 'Coffee_Scheduled'].indexOf(u.tahap) >= 0;
     var depan = u.nama.split(/\s+/)[0];
     bukaLembar('<h2>Invite ' + esc(depan) + '</h2><p class="kecil" style="margin:6px 0 14px">' + esc(u.bidang) + '</p>' +
       '<div class="pilihan kolom">' +
+      (!acara.length && u.tahap === 'Listed' && !u.status_undangan ? '<p class="kecil redup" style="margin-bottom:8px">No Wednesday meetings are open yet, so a coffee session is the way to invite for now.</p>' : '') +
       (bisaKunjung ? '<button type="button" id="p-kunjung"><b>Visit a Wednesday meeting</b><small>BOD or Lunch Networking, then a coffee session</small></button>' : '') +
       (bisaKopi ? '<button type="button" id="p-kopi"><b>' + (u.tahap === 'Coffee_Scheduled' ? 'Coffee session booked' : 'Coffee session straight away') + '</b><small>' + (u.tahap === 'Coffee_Scheduled' ? 'See the time, confirm, or change it' : '30 minutes 1 on 1 with Coach Dedy, no visit needed') + '</small></button>' : '') +
       '</div>',
@@ -1192,7 +1164,7 @@
         '<span>' + esc(e.mode === 'Online' ? 'Online, ' + (e.lokasi || 'Zoom') : (e.lokasi || 'Onsite')) + '</span>' +
         '<span>' + (e.pembicara ? 'Speaker: ' + esc(e.pembicara) : 'Speaker to be announced') + '</span>' + kartuPoster(e.poster) + '</div></li>';
     }).join('');
-    isi.innerHTML = '<div class="sapa"><h1>This week</h1><p class="kecil">Visitors registered for Wednesday, with their classification. Phone numbers are not shown.</p></div>' +
+    isi.innerHTML = '<div class="sapa"><h1>This week</h1><p class="kecil">' + ((tm.acara_ronde || []).length ? 'Visitors registered for Wednesday, with their classification. Phone numbers are not shown.' : 'No Wednesday meetings are scheduled yet. They appear here once the launch team adds them.') + '</p></div>' +
       (prog ? '<div class="judul-bagian"><h2>Wednesday program</h2><span class="kecil">' + tm.acara_ronde.length + ' sessions</span></div><section class="kartu"><ul class="daftar">' + prog + '</ul></section>' : '') +
       '<div class="judul-bagian"><h2>Invited by me</h2><span class="kecil">' + saya.length + '</span></div>' +
       '<section class="kartu">' + (saya.length ? '<ul class="daftar">' + saya.map(baris).join('') + '</ul>' : '<p class="kosong-isi">None of my invitees are registered yet. Check "My list" for who still needs a reminder.</p>') + '</section>' +
@@ -1228,7 +1200,7 @@
   /* ---------- TIM (LT dan LDC) ---------- */
   function layarTim(isi, sub) {
     var tabs = [['calon', 'Interviews'], ['jadwal', 'Schedule']];
-    if (!fasePra()) tabs.push(['rabu', 'Check-in']);
+    tabs.push(['rabu', 'Check-in']);
     tabs.push(['info', 'Announce']);
     tabs.push(['regroup', 'Regroup']);
     if (isLDC()) tabs.push(['ringkas', 'Summary']);
@@ -1351,7 +1323,7 @@
     var opsi = '<option value="">Choose a sponsor</option><option value="BNI">BNI (no member known personally)</option>' +
       (r.anggota || []).map(function (a) { return '<option value="' + esc(a.id_orang) + '">' + esc(a.nama) + '</option>'; }).join('');
     bukaLembar(
-      '<h2>' + esc(c.nama.split(/\s+/)[0]) + ' joined</h2><p class="kecil" style="margin:4px 0 0">Confirm once the membership payment is in.</p><p class="kecil" style="margin:6px 0 14px">Seat: <b>' + esc(c.bidang) + '</b>. Type: ' + (fasePra() ? 'Founding' : 'Core Group') + '.</p>' +
+      '<h2>' + esc(c.nama.split(/\s+/)[0]) + ' joined</h2><p class="kecil" style="margin:4px 0 0">Confirm once the membership payment is in.</p><p class="kecil" style="margin:6px 0 14px">Seat: <b>' + esc(c.bidang) + '</b>. Type: ' + (S.atur.fase === 'Pembentukan' ? 'Founding' : 'Core Group') + '.</p>' +
       '<form id="f-ang">' + (c.id_kursi ? '' : pilihKursiKosong('id_kursi', true)) + '<label class="isian"><span>Sponsor</span><select name="sponsor" required>' + opsi + '</select></label>' +
       '<p class="kecil" style="margin:-4px 0 14px">BNI rule: the sponsor is the member who invited the prospect and is known to them personally. If there is none, choose BNI, unless the prospect names a specific member.</p>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Confirm</button></form>',

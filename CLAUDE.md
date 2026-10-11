@@ -13,7 +13,7 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
 - Tahap pembentukan: Pembentukan (kumpulkan 17 sampai 20 founding member, oleh LDC dan LT) → ESM →
   era BOD setiap **Rabu** (BOD pagi, Lunch Networking siang, 10 sampai 12 kali) → **CGT di 37 anggota** →
   Soft Launch → Grand Launch (**52**).
-- Sebelum ESM, app hanya dipakai LDC dan LT. Setelah ESM semua anggota. Setiap orang mengisi **20 sampai 40
+- Tampilan app dibedakan menurut **peran** (LDC, LT, anggota), bukan menurut fase. Sebelum ESM hanya LDC dan LT yang punya kode, jadi otomatis hanya mereka yang memakai. Kode anggota dibagikan setelah ESM. `Pengaturan.fase` tetap ada, tetapi hanya untuk target Misi Chapter (20, 37, 52) dan label Founding atau Core Group. Setiap orang mengisi **20 sampai 40
   nama**, terikat ke kursi atau "bidang belum pasti".
 - **Tanpa poin.** Hanya angka nyata (undangan, tamu hadir, sponsor) dan lencana.
 - Semua anggota melihat nama lengkap dan bidang tamu yang terdaftar hadir Rabu itu, tanpa nomor telepon.
@@ -50,4 +50,4 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
 
 Mode tiruan: buka `web/index.html` lewat server statis (`python3 -m http.server` dari akar repo), lalu
 `/web/`. Kode contoh: `LDC001` (Coach Dedy), `LT0001` (LT), `AGT001` (anggota). Tambahkan `?fase=BOD`
-untuk melihat layar setelah ESM.
+untuk melihat target Misi dan label anggota seperti setelah ESM.

@@ -27,7 +27,7 @@ python3 -m http.server 8000
 ```
 
 Kode contoh: `LDC001` (Coach Dedy), `LT0001` (launch team), `AGT001` (anggota).
-Tambahkan `?fase=BOD` untuk layar setelah ESM, `?reset=1` untuk mengulang data contoh.
+Tambahkan `?fase=BOD` untuk target Misi dan label anggota seperti setelah ESM, `?reset=1` untuk mengulang data contoh.
 
 ## Menyambung ke sheet asli
 

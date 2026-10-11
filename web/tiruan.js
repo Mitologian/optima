@@ -2,8 +2,9 @@
    Aktif saat CONFIG.API_URL kosong. Kode contoh: LDC001, LT0001, AGT001.
    Tambahkan ?fase=BOD di alamat untuk melihat layar setelah ESM. Tambahkan ?reset=1 untuk mengulang data. */
 var Tiruan = (function () {
-  var KUNCI = 'optima_tiruan_v6';
+  var KUNCI = 'optima_tiruan_v7';
   var HARI = 864e5;
+  var POSTER_CONTOH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#C8102E"/><text x="32" y="92" font-family="Arial" font-size="22" fill="#fff" opacity=".8">BNI OPTIMA · BUSINESS OPPORTUNITY DAY</text><text x="32" y="190" font-family="Arial" font-weight="700" font-size="44" fill="#fff">One seat per</text><text x="32" y="244" font-family="Arial" font-weight="700" font-size="44" fill="#fff">classification</text><text x="32" y="316" font-family="Arial" font-size="20" fill="#fff">Wednesday 07:00 to 09:00</text></svg>');
   var data = null;
 
   function simpanLokal() { try { localStorage.setItem(KUNCI, JSON.stringify(data)); } catch (e) {} }
@@ -104,7 +105,8 @@ var Tiruan = (function () {
     var ev = [];
     for (var i = 0; i < 8; i++) {
       var r = rabuBerikut(now, i);
-      ev.push({ id_event: 'E' + (i * 2 + 1), tanggal: tanggal(r), jam_mulai: '07:00', jam_selesai: '09:00', nama_acara: 'Wednesday BOD', jenis: 'BOD', mode: i % 3 === 2 ? 'Onsite' : 'Online', lokasi: i % 3 === 2 ? 'South Jakarta' : 'Zoom', kapasitas: 60, status: 'Terbuka', tampil_di_form: 'TRUE' });
+      ev.push({ id_event: 'E' + (i * 2 + 1), tanggal: tanggal(r), jam_mulai: '07:00', jam_selesai: '09:00', nama_acara: 'Wednesday BOD', jenis: 'BOD', mode: i % 3 === 2 ? 'Onsite' : 'Online', lokasi: i % 3 === 2 ? 'South Jakarta' : 'Zoom', kapasitas: 60, status: 'Terbuka', tampil_di_form: 'TRUE',
+        pembicara: i === 0 ? 'Coach Dedy Dahlan: Why one seat per classification matters' : '', poster: i === 0 ? POSTER_CONTOH : '' });
       ev.push({ id_event: 'E' + (i * 2 + 2), tanggal: tanggal(r), jam_mulai: '12:00', jam_selesai: '13:30', nama_acara: 'Lunch Networking', jenis: 'Lunch Networking', mode: 'Onsite', lokasi: 'South Jakarta', kapasitas: 20, status: 'Terbuka', tampil_di_form: 'TRUE' });
     }
     var lewat = new Date(rabuBerikut(now, 0).getTime() - 7 * HARI);
@@ -133,7 +135,11 @@ var Tiruan = (function () {
       Hadir: hadir,
       Butuh: [{ id_kursi: 'K15', id_orang: anggota[1].id_orang, tanggal: lalu(2) }, { id_kursi: 'K15', id_orang: anggota[3].id_orang, tanggal: lalu(1) }, { id_kursi: 'K12', id_orang: anggota[2].id_orang, tanggal: lalu(1) }],
       Wawancara: [{ id_wawancara: 'W1', tanggal: lalu(1), id_orang: 'P0015', kanal: 'Online', PIC: dedy.id_orang, hasil: 'Tertarik' }],
-      Jadwal_CS: slot, Responses: [], Lencana: [], Log: []
+      Jadwal_CS: slot, Responses: [], Lencana: [], Log: [],
+      Pengumuman: [
+        { id_pengumuman: 'A0001', tanggal_tayang: lalu(1), tanggal_berakhir: '', judul: 'Bring one guest this Wednesday', isi: 'Every member invites one business owner before Wednesday night. Check "This week" for who is already registered, and use the ready messages in My list.', poster: '', dibuat_oleh: dedy.id_orang, status: 'Aktif' },
+        { id_pengumuman: 'A0002', tanggal_tayang: lalu(3), tanggal_berakhir: '', judul: 'Lunch Networking starts at 12:00', isi: 'Guests who cannot make the morning BOD are welcome at lunch. Pay your own lunch.', poster: '', dibuat_oleh: agung.id_orang, status: 'Aktif' }
+      ]
     };
   }
 

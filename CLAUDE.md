@@ -20,7 +20,8 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
 - Notifikasi hanya di dalam app (sorotan saat app dibuka).
 - Gamifikasi: Misi Chapter (gerbang 20, 37, 52, dengan grafik garis), Papan 64 Kursi (8 baris contact sphere x 8 kursi),
   Ronde Rabu (satu undangan per pekan), 5 lencana, papan pengundang ronde ini, dinding sponsor.
-- Dibuang dari app Ventura: poin, tim dan bonus tim, gold progress, persentase konversi, member
+- Jalur Gold (6 member baru) kembali sebagai angka nyata, bukan poin (keputusan Coach Dedy, 11 Oktober). Pengumuman dan info acara (pembicara, poster) ada di app, ditulis LT.
+- Dibuang dari app Ventura: poin, tim dan bonus tim, persentase konversi, member
   mengundang ke coffee session, PIN bersama, halaman terpisah. Brain jolter dan permintaan klasifikasi
   dilebur ke Papan 64 Kursi.
 - Referral (istilah BNI untuk potensi bisnis antar member) tidak dipakai di app. Yang dipakai: undangan

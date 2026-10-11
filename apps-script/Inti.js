@@ -112,12 +112,13 @@ var Inti = (function () {
     if (this._atur) return this._atur;
     var a = {};
     this.tab('Pengaturan').forEach(function (r) { if (teks(r.kunci)) a[teks(r.kunci)] = r.nilai; });
-    ['target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks'].forEach(function (k) { a[k] = Number(a[k]) || 0; });
+    ['target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold'].forEach(function (k) { a[k] = Number(a[k]) || 0; });
     a.target_founding = a.target_founding || 20;
     a.target_cgt = a.target_cgt || 37;
     a.target_launch = a.target_launch || 52;
     a.target_nama_min = a.target_nama_min || 20;
     a.target_nama_maks = a.target_nama_maks || 40;
+    a.target_gold = a.target_gold || 6;
     a.fase = teks(a.fase) || 'Pembentukan';
     a.nama_chapter = teks(a.nama_chapter) || 'Optima';
     a.hari_bod = teks(a.hari_bod) || 'Rabu';
@@ -288,9 +289,31 @@ var Inti = (function () {
     }).map(function (e) {
       return {
         id_event: teks(e.id_event), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: teks(e.jam_mulai), jam_selesai: teks(e.jam_selesai),
-        nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi)
+        nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi),
+        pembicara: teks(e.pembicara), poster: teks(e.poster)
       };
     }).sort(function (a, b) { return (a.tanggal + a.jam_mulai) < (b.tanggal + b.jam_mulai) ? -1 : 1; });
+  }
+
+  function tautanAman(v) {
+    var u = teks(v);
+    if (!u) return '';
+    if (u.length > 500 || !/^https:\/\/[^\s]+$/i.test(u)) gagal('The poster link must start with https://');
+    return u;
+  }
+
+  function pengumumanAktif(k) {
+    var hariIni = isoTanggal(k.now);
+    return k.tab('Pengumuman').filter(function (r) {
+      if (teks(r.status) === 'Dihapus' || !teks(r.judul)) return false;
+      var tayang = tgl(r.tanggal_tayang);
+      if (tayang && tayang > k.now) return false;
+      var akhir = tgl(r.tanggal_berakhir);
+      return !(akhir && isoTanggal(akhir) < hariIni);
+    }).sort(function (a, b) {
+      var x = tgl(a.tanggal_tayang), y = tgl(b.tanggal_tayang);
+      return (y ? y.getTime() : 0) - (x ? x.getTime() : 0);
+    });
   }
 
   function misi(k) {
@@ -420,7 +443,7 @@ var Inti = (function () {
         pengaturan: {
           nama_chapter: a.nama_chapter, fase: a.fase, hari_bod: a.hari_bod, tautan_form: a.tautan_form, tautan_zoom_cs: a.tautan_zoom_cs,
           target_founding: a.target_founding, target_cgt: a.target_cgt, target_launch: a.target_launch,
-          target_nama_min: a.target_nama_min, target_nama_maks: a.target_nama_maks, tanggal_esm: teks(a.tanggal_esm), tanggal_grand_launch: teks(a.tanggal_grand_launch)
+          target_nama_min: a.target_nama_min, target_nama_maks: a.target_nama_maks, target_gold: a.target_gold, tanggal_esm: teks(a.tanggal_esm), tanggal_grand_launch: teks(a.tanggal_grand_launch)
         }
       };
     },
@@ -432,6 +455,7 @@ var Inti = (function () {
       st.nama_daftar = k.tab('Master').filter(function (r) { return teks(r.diajukan_oleh) === id && teks(r.kategori) === 'Calon'; }).length;
       st.target_nama_min = atur.target_nama_min;
       st.target_nama_maks = atur.target_nama_maks;
+      st.target_gold = atur.target_gold;
       var r = batasRonde(k.ronde());
       var berikut = acaraBerikut(k);
       return {
@@ -710,6 +734,68 @@ var Inti = (function () {
       return { jenis_anggota: jenis, kursi: x.bidang };
     },
 
+    /* ---------- pengumuman dan info acara ---------- */
+    pengumuman: function (k) {
+      return {
+        pengumuman: pengumumanAktif(k).map(function (r) {
+          var akhir = tgl(r.tanggal_berakhir);
+          var tayang = tgl(r.tanggal_tayang);
+          return {
+            id_pengumuman: teks(r.id_pengumuman), judul: teks(r.judul), isi: teks(r.isi), poster: teks(r.poster),
+            tanggal_tayang: tayang ? tayang.toISOString() : '', tanggal_berakhir: akhir ? isoTanggal(akhir) : '',
+            oleh: namaDepan(k.orang(r.dibuat_oleh)) || 'Launch team'
+          };
+        })
+      };
+    },
+
+    tulisPengumuman: function (k, b) {
+      wajibLT(k);
+      var judul = teks(b.judul), isi = teks(b.isi);
+      if (!judul) gagal('Write a title.');
+      if (judul.length > 80) gagal('The title is too long (80 characters at most).');
+      if (!isi) gagal('Write the announcement text.');
+      if (isi.length > 1000) gagal('The text is too long (1000 characters at most).');
+      var poster = tautanAman(b.poster);
+      var akhir = teks(b.tanggal_berakhir);
+      if (akhir && !/^\d{4}-\d{2}-\d{2}$/.test(akhir)) gagal('The end date is not valid.');
+      if (akhir && akhir < isoTanggal(k.now)) gagal('The end date is already past.');
+      var id = teks(b.id_pengumuman);
+      if (id) {
+        var r = k.tab('Pengumuman').filter(function (x) { return teks(x.id_pengumuman) === id && teks(x.status) !== 'Dihapus'; })[0];
+        if (!r) gagal('Announcement not found.');
+        k.ubah('Pengumuman', r, { judul: judul, isi: isi, poster: poster, tanggal_berakhir: akhir });
+        k.log('tulisPengumuman', 'ubah ' + id);
+        return { id_pengumuman: id };
+      }
+      id = idBaru(k.tab('Pengumuman'), 'id_pengumuman', 'A', 4);
+      k.tambah('Pengumuman', { id_pengumuman: id, tanggal_tayang: k.now.toISOString(), tanggal_berakhir: akhir, judul: judul, isi: isi, poster: poster, dibuat_oleh: k.saya.id_orang, status: 'Aktif' });
+      k.log('tulisPengumuman', 'baru ' + id + ': ' + judul);
+      return { id_pengumuman: id };
+    },
+
+    hapusPengumuman: function (k, b) {
+      wajibLT(k);
+      var id = teks(b.id_pengumuman);
+      var r = k.tab('Pengumuman').filter(function (x) { return teks(x.id_pengumuman) === id && teks(x.status) !== 'Dihapus'; })[0];
+      if (!r) gagal('Announcement not found.');
+      k.ubah('Pengumuman', r, { status: 'Dihapus' });
+      k.log('hapusPengumuman', id);
+      return {};
+    },
+
+    ubahAcara: function (k, b) {
+      wajibLT(k);
+      var e = k.tab('Events').filter(function (x) { return teks(x.id_event) === teks(b.id_event); })[0];
+      if (!e) gagal('Event not found.');
+      var pembicara = teks(b.pembicara);
+      if (pembicara.length > 120) gagal('The speaker line is too long (120 characters at most).');
+      var poster = tautanAman(b.poster);
+      k.ubah('Events', e, { pembicara: pembicara, poster: poster });
+      k.log('ubahAcara', teks(e.id_event) + ': ' + (pembicara || 'tanpa pembicara'));
+      return { pembicara: pembicara, poster: poster };
+    },
+
     tamuPekanIni: function (k) {
       var n = k.ronde();
       var acara = {};
@@ -736,7 +822,11 @@ var Inti = (function () {
         });
       });
       var r = batasRonde(n);
-      return { ronde: { mulai: r.mulai.toISOString(), selesai: r.selesai.toISOString() }, tamu: tamu.sort(function (a, b) { return (a.tanggal + a.jam_mulai + a.nama) < (b.tanggal + b.jam_mulai + b.nama) ? -1 : 1; }) };
+      var acaraRonde = Object.keys(acara).map(function (id) {
+        var e = acara[id];
+        return { id_event: id, tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: teks(e.jam_mulai), jam_selesai: teks(e.jam_selesai), nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi), pembicara: teks(e.pembicara), poster: teks(e.poster) };
+      }).sort(function (a, b) { return (a.tanggal + a.jam_mulai) < (b.tanggal + b.jam_mulai) ? -1 : 1; });
+      return { ronde: { mulai: r.mulai.toISOString(), selesai: r.selesai.toISOString() }, acara_ronde: acaraRonde, tamu: tamu.sort(function (a, b) { return (a.tanggal + a.jam_mulai + a.nama) < (b.tanggal + b.jam_mulai + b.nama) ? -1 : 1; }) };
     },
 
     jadwalCS: function (k) {
@@ -938,7 +1028,7 @@ var Inti = (function () {
     }
   };
 
-  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1 };
+  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1 };
 
   /* Titik masuk tunggal. db = adaptor; badan = objek dari JSON. */
   function jalankan(db, badan, sekarang) {

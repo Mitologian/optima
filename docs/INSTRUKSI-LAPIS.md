@@ -58,6 +58,12 @@ Akun `dedydahlan@gmail.com`, privat, editor hanya Coach Dedy dan Lapis.
    berlaku sekarang: `Listed`, `Invited`, `Coffee_Scheduled`, `Attended`, `Coffee_Session`, `Applied`,
    `Anggota`, `Joined_Other`, `Declined`, `Rejected`.
 
+## Tambahan 11 Oktober: pengumuman dan info acara
+
+- Tab `Pengumuman` (kolom di `KONTRAK.md` bagian 4) dan kolom `pembicara`, `poster` di `Events` dibuat otomatis
+  oleh `Api.js` saat pertama kali dipakai. Tidak perlu dibuat tangan. Kalau mau membuatnya sendiri, ikuti urutan kolom di kontrak.
+- `Pengaturan.target_gold` = 6 (opsional, bawaan 6).
+
 ## B. Google Form pendaftaran visitor
 
 Dipakai setelah ESM. Satu Form tetap, tautannya tidak berubah (disimpan di `Pengaturan.tautan_form`).

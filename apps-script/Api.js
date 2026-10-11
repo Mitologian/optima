@@ -35,6 +35,14 @@ function api_json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
+/* Tab dan kolom yang ditambahkan setelah KONTRAK versi awal. Dibuat otomatis kalau belum ada. */
+var TAB_BARU_ = {
+  Pengumuman: ['id_pengumuman', 'tanggal_tayang', 'tanggal_berakhir', 'judul', 'isi', 'poster', 'dibuat_oleh', 'status']
+};
+var KOLOM_BARU_ = {
+  Events: ['pembicara', 'poster']
+};
+
 /* Adaptor sheet: baca seluruh tab sekali per permintaan, tulis per baris. */
 function api_adaptor_() {
   var props = PropertiesService.getScriptProperties();
@@ -47,9 +55,18 @@ function api_adaptor_() {
   function siapkan(nama) {
     if (info[nama]) return info[nama];
     var sh = ss.getSheetByName(nama);
+    if (!sh && TAB_BARU_[nama]) {
+      // tab yang ditambahkan setelah sheet dibuat: dibuat otomatis supaya deploy tidak menunggu pekerjaan manual
+      sh = ss.insertSheet(nama);
+      sh.getRange(1, 1, 1, TAB_BARU_[nama].length).setValues([TAB_BARU_[nama]]);
+      sh.getRange(2, 1, sh.getMaxRows() - 1, TAB_BARU_[nama].length).setNumberFormat('@');
+    }
     if (!sh) throw new Error('Tab tidak ada: ' + nama);
     var lebar = sh.getLastColumn();
     var kepala = lebar ? sh.getRange(1, 1, 1, lebar).getValues()[0].map(function (h) { return String(h).trim(); }) : [];
+    (KOLOM_BARU_[nama] || []).forEach(function (h) {
+      if (kepala.indexOf(h) < 0) { sh.getRange(1, kepala.length + 1).setValue(h); kepala.push(h); }
+    });
     info[nama] = { sheet: sh, kepala: kepala };
     return info[nama];
   }

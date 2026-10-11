@@ -82,6 +82,7 @@ Dua kolom: `kunci` · `nilai`.
 | `target_launch` | 52 |
 | `target_nama_min` | 20 (nama minimal per orang, berlaku untuk LDC, LT, dan anggota) |
 | `target_nama_maks` | 40 (sasaran nama per orang) |
+| `target_gold` | 6 (jumlah member baru untuk jalur Gold, dihitung dari `id_sponsor`) |
 | `hari_bod` | Rabu |
 | `tanggal_esm` | 2027-05-24 |
 | `tanggal_grand_launch` | 2027-08-02 |
@@ -150,12 +151,13 @@ Kalau LT juga anggota chapter, `kategori` tetap `LT` dan `tahap` = `Anggota`.
 
 ### `Events`
 `id_event` · `tanggal` · `jam_mulai` · `jam_selesai` · `nama_acara` · `jenis` · `mode` · `lokasi` ·
-`kapasitas` · `status` · `tampil_di_form`
+`kapasitas` · `status` · `tampil_di_form` · `pembicara` · `poster`
 
 - `jenis`: `CS` · `ESM` · `BOD` · `Lunch Networking` · `CGT` · `Soft Launch` · `Grand Launch`
 - `mode`: `Online` · `Onsite`
 - `status`: `Terbuka` · `Penuh` · `Selesai` · `Batal`
 - Setiap Rabu biasanya dua baris: `BOD` pagi dan `Lunch Networking` siang.
+- `pembicara`: teks bebas (nama dan topik). `poster`: tautan https (Drive atau gambar). Diisi LT lewat app (`ubahAcara`) atau langsung di sheet. Kolom ini dibuat otomatis oleh `Api.js` kalau belum ada.
 
 ### `Butuh`
 Member menandai bidang yang mereka butuhkan di chapter.
@@ -180,6 +182,13 @@ Member menandai bidang yang mereka butuhkan di chapter.
   dan boleh memakai jam di luar slot (baris baru langsung `Terisi`).
 - Memesan mengubah calon ke `Coffee_Scheduled` dan mengisi `jadwal_cs`. Ganti jam atau batal membebaskan
   slot lama kembali ke `Kosong`.
+
+### `Pengumuman`
+`id_pengumuman` · `tanggal_tayang` · `tanggal_berakhir` · `judul` · `isi` · `poster` · `dibuat_oleh` · `status`
+
+- Ditulis LT dan LDC lewat app (tab Team, Announce). Semua pemegang kode melihatnya di Home.
+- `status`: `Aktif` · `Dihapus` (hapus lunak, baris tidak dibuang). `tanggal_berakhir` boleh kosong (tayang terus).
+- `poster`: tautan https saja. App menolak tautan lain. Tab ini dibuat otomatis oleh `Api.js` kalau belum ada.
 
 ### `Responses`
 Mentah dari Google Form, tidak diubah tangan:
@@ -211,6 +220,8 @@ Semua dihitung `Api.js` dari data di atas. Tidak ada poin dan tidak ada tim.
 
 **Misi Chapter.** Jumlah `Master` dengan `tahap` = `Anggota`, dibandingkan gerbang 20, 37, 52, plus grafik
 garis jumlah anggota di akhir setiap ronde.
+
+**Jalur Gold.** Bilah "n dari 6" di Home, n = jumlah anggota dengan `id_sponsor` orang itu. Angka nyata, tanpa poin. Target dari `Pengaturan.target_gold`.
 
 **Daftar nama.** Setiap orang (LDC, LT, anggota) mengisi 20 sampai 40 nama, masing-masing terikat ke satu
 kursi atau ke "bidang belum pasti".
@@ -258,17 +269,18 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | action | Masukan | Balasan |
 |---|---|---|
 | `masuk` | | `profil {id_orang, nama, nama_depan, peran}`, `pengaturan {...}` |
-| `beranda` | | `misi {anggota, gerbang[], fase, target, riwayat [{selesai, jumlah}], hari_ke_esm, hari_ke_launch, tamu_pekan, anggota_baru_pekan}`, `ronde {mulai, selesai, acara_berikut}`, `saya {undangan_ronde, undangan_total, tamu_hadir, sponsor, rabu_beruntun, nama_daftar, target_nama_min, target_nama_maks}`, `lencana [{kode, nama, didapat, tanggal}]`, `kabar [{jenis, teks, waktu}]` |
+| `beranda` | | `misi {anggota, gerbang[], fase, target, riwayat [{selesai, jumlah}], hari_ke_esm, hari_ke_launch, tamu_pekan, anggota_baru_pekan}`, `ronde {mulai, selesai, acara_berikut}`, `saya {undangan_ronde, undangan_total, tamu_hadir, sponsor, rabu_beruntun, nama_daftar, target_nama_min, target_nama_maks, target_gold}`, `lencana [{kode, nama, didapat, tanggal}]`, `kabar [{jenis, teks, waktu}]` |
 | `kursi` | | `baris [{nomor, sphere, terisi, kursi [{id_kursi, bidang, singkat, status, pemilik, jumlah_calon, jumlah_butuh, saya_butuh, saya_calon}]}]` |
 | `kursiDetail` | `id_kursi` | `kursi {...}`, `calon [...]` (LT dan LDC saja), `calon_saya [{id_orang, nama, tahap}]` nama milik sendiri |
 | `tambahCalon` | `id_kursi?` (kosong = bidang belum pasti), `nama, bisnis, whatsapp?, id_event?` | `{id_orang, id_undangan?}` atau `ok:false` dengan `duplikat {nama_depan, tahap?, pic?}` |
 | `butuh` | `id_kursi` | `{saya_butuh}` (sakelar) |
-| `acara` | | `acara [{id_event, tanggal, jam_mulai, nama_acara, jenis, mode, lokasi}]` yang akan datang |
+| `acara` | | `acara [{id_event, tanggal, jam_mulai, jam_selesai, nama_acara, jenis, mode, lokasi, pembicara, poster}]` yang akan datang |
 | `undang` | `id_orang, id_event, whatsapp?` | `{id_undangan}` atau `ok:false` kalau sudah dua kali diundang. `whatsapp` mengisi nomor calon kalau sebelumnya kosong |
 | `usulanSaya` | | `usulan [{id_orang, nama, bidang, tahap, punya_wa, whatsapp, bisnis, jumlah_undangan, jadwal_cs, status_undangan, acara_undangan, tanggal_undangan}]` nama yang diajukan sendiri |
 | `undanganSaya` | | `undangan [{id_undangan, nama_depan, bidang, acara, tanggal, status}]`. `status` = `Bergabung` bila tamunya sudah anggota |
+| `pengumuman` | | `pengumuman [{id_pengumuman, judul, isi, poster, tanggal_tayang, tanggal_berakhir, oleh}]` yang sedang tayang, terbaru di atas |
 | `papan` | | `pengundang [{nama_depan, jumlah}]`, `sponsor [{nama_depan, jumlah}]` |
-| `tamuPekanIni` | | `tamu [{nama, bidang, sphere, pengundang, acara, jenis, tanggal, jam_mulai, status, bergabung}]` tamu berstatus `Terdaftar` atau `Hadir` di acara ronde ini. Tanpa nomor telepon |
+| `tamuPekanIni` | | `acara_ronde [{id_event, tanggal, jam_mulai, jam_selesai, nama_acara, jenis, mode, lokasi, pembicara, poster}]` acara ronde ini, `tamu [{nama, bidang, sphere, pengundang, acara, jenis, tanggal, jam_mulai, status, bergabung}]` tamu berstatus `Terdaftar` atau `Hadir` di acara ronde ini. Tanpa nomor telepon |
 | `daftarAnggota` | | `anggota [{nama, bidang, sphere, jenis_anggota, sponsor, tanggal_bergabung}]` tanpa kontak |
 | `slotCS` | | `slot [{id_slot, waktu, tanggal, jam, tempat, pic, pic_id, pic_ldc, status, id_orang?, nama?, tahap?}]` 4 pekan ke depan. Anggota: jam `Kosong` dan pesanan calonnya sendiri. LT: semua, ditambah `bidang, whatsapp, bisnis, pengundang, saya_dampingi, boleh_hapus`; semua slot memuat `pendamping []` nama depan, `pewawancara [...]`, `perlu_hasil [{id_orang, nama, waktu, pic}]` |
 | `pesanSlot` | `id_orang, id_slot` atau `waktu` (LT saja), `whatsapp?`, `pic?`, `tempat?` | `{waktu, tempat, pic}`. Calon menjadi `Coffee_Scheduled` |
@@ -288,6 +300,9 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `daftarHadir` | `id_event` | `orang [{id_orang, nama, peran, hadir}]` |
 | `checkin` | `id_event, id_orang, hadir` | `{hadir}` |
 | `anggota` | | `anggota [{id_orang, nama}]` untuk pemilih sponsor |
+| `tulisPengumuman` | `judul` (maks 80), `isi` (maks 1000), `poster?` (https), `tanggal_berakhir?` (YYYY-MM-DD), `id_pengumuman?` (mengubah) | `{id_pengumuman}` |
+| `hapusPengumuman` | `id_pengumuman` | `{}` |
+| `ubahAcara` | `id_event, pembicara?` (maks 120), `poster?` (https) | `{pembicara, poster}` |
 | `jadikanAnggota` | `id_orang, id_kursi` (wajib bila calon belum punya kursi), `id_sponsor` | `{jenis_anggota, kursi}` |
 
 ### 6.3 Khusus LDC
@@ -316,3 +331,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-04 | Tambah aksi `usulanSaya`, parameter `whatsapp` di `undang`, aturan format Plain text | menunggu Coach Dedy |
 | 2026-10-05 | Jadwal coffee session: kolom `tempat`, `dipesan_oleh` di `Jadwal_CS`, aksi `slotCS`, `tambahSlot`, `hapusSlot`, `pesanSlot`, `batalSlot`, pengaturan `tautan_zoom_cs`. Anggota boleh mengundang langsung ke coffee session. Opsi `Tidak Ada` di Form | menunggu Coach Dedy |
 | 2026-10-05 | Coach Dedy pewawancara utama, LT pendamping (kolom `pendamping`, aksi `dampingiSlot`), LT boleh membuka jam hanya untuk wawancara berdua | menunggu Coach Dedy |
+| 2026-10-11 | Jalur Gold sebagai angka nyata (`Pengaturan.target_gold`, `saya.target_gold`). Tab `Pengumuman`, kolom `pembicara` dan `poster` di `Events`, aksi `pengumuman`, `tulisPengumuman`, `hapusPengumuman`, `ubahAcara`, `tamuPekanIni.acara_ronde`. `Api.js` membuat tab dan kolom baru otomatis | Coach Dedy, 11 Oktober 2026 |

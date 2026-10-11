@@ -289,6 +289,43 @@
     '</section>';
   }
 
+  /* ---------- pengumuman, poster, gold ---------- */
+  function urlPoster(u) {
+    u = String(u || '');
+    var m = u.match(/^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/) || u.match(/^https:\/\/drive\.google\.com\/open\?id=([\w-]+)/);
+    return m ? 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w800' : u;
+  }
+  function kartuPoster(u) {
+    if (!u) return '';
+    var ok = /^https:\/\//i.test(u) || /^data:image\//i.test(u);
+    if (!ok) return '';
+    return '<a class="poster" href="' + esc(u) + '" target="_blank" rel="noopener"><img class="poster-img" src="' + esc(urlPoster(u)) + '" alt="Poster" loading="lazy"><span class="poster-tautan">Open poster</span></a>';
+  }
+  document.addEventListener('error', function (e) {
+    var t = e.target;
+    if (t && t.classList && t.classList.contains('poster-img')) { t.remove(); }
+  }, true);
+
+  function kartuPengumuman(daftar) {
+    if (!daftar.length) return '';
+    var item = daftar.map(function (a, i) {
+      return '<details class="pengumuman"' + (i === 0 ? ' open' : '') + '><summary><b>' + esc(a.judul) + '</b><em>' + esc(lalu(a.tanggal_tayang)) + '</em></summary>' +
+        '<p>' + esc(a.isi).replace(/\n/g, '<br>') + '</p>' + kartuPoster(a.poster) +
+        '<p class="kecil redup">By ' + esc(a.oleh) + (a.tanggal_berakhir ? ' · until ' + esc(tglPendek(a.tanggal_berakhir)) : '') + '</p></details>';
+    }).join('');
+    return '<section class="kartu sorotan-info"><div class="langkah-atas"><span class="chip merah">Announcements</span><span class="kecil redup">' + daftar.length + ' active</span></div>' + item + '</section>';
+  }
+
+  function kartuGold(st) {
+    var n = st.sponsor, maks = st.target_gold || 6, sisa = Math.max(0, maks - n);
+    var tercapai = n >= maks;
+    return '<section class="kartu"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Gold path</h3>' +
+      '<b style="font-family:var(--huruf-judul);font-size:22px">' + n + '<span class="redup" style="font-size:14px"> / ' + maks + '</span></b></div>' +
+      '<div class="bilah' + (tercapai ? ' emas' : '') + '" style="margin:10px 0 8px"><i style="width:' + Math.min(100, n / maks * 100) + '%"></i></div>' +
+      '<p class="kecil">' + (tercapai ? 'Gold path reached: ' + n + ' new members brought in. Thank you.' : n + ' of ' + maks + ' new members brought in. ' + sisa + ' more to go.') +
+      ' Every member who joins through an invitation counts. Real numbers, no points.</p></section>';
+  }
+
   function kartuDaftar(st) {
     var min = st.target_nama_min, maks = st.target_nama_maks, n = st.nama_daftar;
     var pesan = n >= maks ? 'Goal of ' + maks + ' names reached.' : n >= min ? 'Minimum of ' + min + ' reached. Keep going toward ' + maks + '.' : (min - n) + ' more names to reach the minimum of ' + min + '.';
@@ -367,17 +404,17 @@
       '<div class="tanda">' + (selesai ? '&#10003;' : '1') + '</div>' +
       '<div class="teks"><h3>Wednesday Round ' + esc(tglPendek(akhir)) + '</h3>' +
         '<p class="kecil">' + (selesai ? 'Round mission done: ' + st.undangan_ronde + ' invitations.' : 'Mission: one invitation before Wednesday night.') + '</p>' +
-        (ac ? '<p class="kecil redup">Next: ' + esc(ac.nama_acara) + ', ' + esc(tglHari(ac.tanggal)) + ' ' + esc(ac.jam_mulai) + '</p>' : '') +
+        (ac ? '<p class="kecil redup">Next: ' + esc(ac.nama_acara) + ', ' + esc(tglHari(ac.tanggal)) + ' ' + esc(ac.jam_mulai) + (ac.pembicara ? ' · ' + esc(ac.pembicara) : '') + '</p>' : '') +
       '</div>' +
       '<div class="api"><b>' + st.rabu_beruntun + '</b><span>Wednesday streak</span></div>' +
     '</section>';
   }
 
   async function layarMisi(isi) {
-    var tugas = [api('beranda'), isLT() ? api('calonSaya', {}) : Promise.resolve(null)];
+    var tugas = [api('beranda'), isLT() ? api('calonSaya', {}) : Promise.resolve(null), api('pengumuman')];
     if (!fasePra()) { tugas.push(api('undanganSaya')); tugas.push(api('tamuPekanIni')); }
     var h = await Promise.all(tugas);
-    var b = h[0], pipa = h[1] && h[1].ok ? h[1].calon : null, ud = h[2], tm = h[3];
+    var b = h[0], pipa = h[1] && h[1].ok ? h[1].calon : null, pg = h[2], ud = h[3], tm = h[4];
     if (!b.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(b.pesan) + '</p>'; return; }
     var html = '<div class="sapa"><h1>Hello, ' + esc(S.profil.nama_depan) + '</h1>' +
       '</div>';
@@ -389,8 +426,10 @@
       }).join('') + '</ul><div class="baris-tombol"><button class="tombol kecil kedua" id="b-sorot">Mark as read</button></div></section>';
     }
 
+    html += kartuPengumuman(pg && pg.ok ? pg.pengumuman : []);
     html += kartuLangkah(b, pipa);
     html += kartuMisi(b.misi);
+    html += kartuGold(b.saya);
 
     if (!fasePra()) {
       html += '<section class="kartu"><div class="statistik">' +
@@ -1148,7 +1187,13 @@
     }
     var saya = tm.tamu.filter(function (g) { return g.saya; });
     var lain = tm.tamu.filter(function (g) { return !g.saya; });
+    var prog = (tm.acara_ronde || []).map(function (e) {
+      return '<li class="program"><div class="utama"><b>' + esc(e.jenis === 'BOD' ? 'BOD' : e.nama_acara) + ' · ' + esc(e.jam_mulai) + (e.jam_selesai ? ' to ' + esc(e.jam_selesai) : '') + '</b>' +
+        '<span>' + esc(e.mode === 'Online' ? 'Online, ' + (e.lokasi || 'Zoom') : (e.lokasi || 'Onsite')) + '</span>' +
+        '<span>' + (e.pembicara ? 'Speaker: ' + esc(e.pembicara) : 'Speaker to be announced') + '</span>' + kartuPoster(e.poster) + '</div></li>';
+    }).join('');
     isi.innerHTML = '<div class="sapa"><h1>This week</h1><p class="kecil">Visitors registered for Wednesday, with their classification. Phone numbers are not shown.</p></div>' +
+      (prog ? '<div class="judul-bagian"><h2>Wednesday program</h2><span class="kecil">' + tm.acara_ronde.length + ' sessions</span></div><section class="kartu"><ul class="daftar">' + prog + '</ul></section>' : '') +
       '<div class="judul-bagian"><h2>Invited by me</h2><span class="kecil">' + saya.length + '</span></div>' +
       '<section class="kartu">' + (saya.length ? '<ul class="daftar">' + saya.map(baris).join('') + '</ul>' : '<p class="kosong-isi">None of my invitees are registered yet. Check "My list" for who still needs a reminder.</p>') + '</section>' +
       '<div class="judul-bagian"><h2>Other Visitors</h2><span class="kecil">' + lain.length + '</span></div>' +
@@ -1184,6 +1229,7 @@
   function layarTim(isi, sub) {
     var tabs = [['calon', 'Interviews'], ['jadwal', 'Schedule']];
     if (!fasePra()) tabs.push(['rabu', 'Check-in']);
+    tabs.push(['info', 'Announce']);
     tabs.push(['regroup', 'Regroup']);
     if (isLDC()) tabs.push(['ringkas', 'Summary']);
     var aktif = tabs.some(function (t) { return t[0] === sub; }) ? sub : 'calon';
@@ -1192,7 +1238,7 @@
     }).join('') + '</div><div id="sub"><div class="muat"></div></div>';
     isi.querySelectorAll('[data-sub]').forEach(function (t) { t.onclick = function () { location.hash = '#tim-' + t.dataset.sub; }; });
     var wadah = isi.querySelector('#sub');
-    ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, regroup: subRegroup, ringkas: subRingkas })[aktif](wadah);
+    ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, info: subInfo, regroup: subRegroup, ringkas: subRingkas })[aktif](wadah);
   }
 
   var semuaCalon = false;
@@ -1352,6 +1398,73 @@
         var j = w.querySelector('#jml'); j.textContent = Number(j.textContent) + (jadi ? 1 : -1);
       };
     });
+  }
+
+  /* ---------- Announce: pengumuman dan info acara ---------- */
+  async function subInfo(w) {
+    var h = await Promise.all([api('pengumuman'), api('acara')]);
+    var pg = h[0], ac = h[1];
+    if (!pg.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(pg.pesan) + '</p>'; return; }
+    var acara = (ac.acara || []).slice(0, 8);
+    w.innerHTML =
+      '<div class="judul-bagian"><h2>Announcements</h2><button class="tombol kecil" id="p-baru">New</button></div>' +
+      '<section class="kartu">' + (pg.pengumuman.length ? '<ul class="daftar">' + pg.pengumuman.map(function (a) {
+        return '<li><div class="utama"><b>' + esc(a.judul) + '</b><span>' + esc(lalu(a.tanggal_tayang)) + ' · by ' + esc(a.oleh) + (a.tanggal_berakhir ? ' · until ' + esc(tglPendek(a.tanggal_berakhir)) : '') + '</span></div>' +
+          '<button class="tombol kecil kedua" data-ubah="' + esc(a.id_pengumuman) + '">Edit</button><button class="tombol kecil kedua" data-hapus="' + esc(a.id_pengumuman) + '">Remove</button></li>';
+      }).join('') + '</ul>' : '<p class="kosong-isi">No active announcements. Members see announcements on Home.</p>') + '</section>' +
+      '<div class="judul-bagian"><h2>Event info</h2><span class="kecil">speaker and poster</span></div>' +
+      '<section class="kartu">' + (acara.length ? '<ul class="daftar">' + acara.map(function (e) {
+        return '<li><div class="utama"><b>' + esc(tglHari(e.tanggal)) + ' · ' + esc(e.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + esc(e.jam_mulai) + '</b><span>' + (e.pembicara ? esc(e.pembicara) : 'No speaker yet') + (e.poster ? ' · poster set' : '') + '</span></div>' +
+          '<button class="tombol kecil kedua" data-acara="' + esc(e.id_event) + '">Edit</button></li>';
+      }).join('') + '</ul>' : '<p class="kosong-isi">No upcoming events in the sheet yet.</p>') + '</section>' +
+      '<p class="catatan-main">Poster: paste a share link (Google Drive set to "Anyone with the link", or any https image link).</p>';
+    var segar = function () { subInfo(w); };
+    w.querySelector('#p-baru').onclick = function () { lembarPengumuman(null, segar); };
+    w.querySelectorAll('[data-ubah]').forEach(function (b) { b.onclick = function () { lembarPengumuman(pg.pengumuman.filter(function (a) { return a.id_pengumuman === b.dataset.ubah; })[0], segar); }; });
+    w.querySelectorAll('[data-hapus]').forEach(function (b) {
+      b.onclick = async function () {
+        if (!confirm('Remove this announcement for everyone?')) return;
+        var r = await api('hapusPengumuman', { id_pengumuman: b.dataset.hapus });
+        if (!r.ok) return toast(r.pesan);
+        toast('Announcement removed.'); segar();
+      };
+    });
+    w.querySelectorAll('[data-acara]').forEach(function (b) { b.onclick = function () { lembarAcara(acara.filter(function (e) { return e.id_event === b.dataset.acara; })[0], segar); }; });
+  }
+
+  function lembarPengumuman(a, segarkan) {
+    var hariIni = new Date(Date.now() + 7 * 36e5).toISOString().slice(0, 10);
+    bukaLembar('<h2>' + (a ? 'Edit announcement' : 'New announcement') + '</h2><p class="kecil" style="margin:6px 0 14px">Everyone with the app sees it on Home until the end date.</p>' +
+      '<form id="f-p"><label class="isian"><span>Title</span><input name="judul" maxlength="80" required value="' + esc(a ? a.judul : '') + '"></label>' +
+      '<label class="isian"><span>Text</span><textarea name="isi" rows="5" maxlength="1000" required>' + esc(a ? a.isi : '') + '</textarea></label>' +
+      '<label class="isian"><span>Poster link (optional)</span><input name="poster" type="url" placeholder="https://" value="' + esc(a ? a.poster : '') + '"></label>' +
+      '<label class="isian"><span>Show until (optional)</span><input type="date" name="akhir" min="' + hariIni + '" value="' + esc(a ? a.tanggal_berakhir : '') + '"></label>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">' + (a ? 'Save changes' : 'Publish') + '</button></form>',
+      function (el) {
+        el.querySelector('#f-p').onsubmit = async function (e) {
+          e.preventDefault();
+          var f = e.target, sl = el.querySelector('#salah');
+          var r = await api('tulisPengumuman', { id_pengumuman: a ? a.id_pengumuman : '', judul: f.judul.value, isi: f.isi.value, poster: f.poster.value.trim(), tanggal_berakhir: f.akhir.value });
+          if (!r.ok) { sl.textContent = r.pesan; sl.hidden = false; return; }
+          tutupLembar(); toast(a ? 'Announcement updated.' : 'Announcement published.'); segarkan();
+        };
+      });
+  }
+
+  function lembarAcara(e, segarkan) {
+    bukaLembar('<h2>Event info</h2><p class="kecil" style="margin:6px 0 14px">' + esc(tglHari(e.tanggal)) + ' · ' + esc(e.nama_acara) + ' ' + esc(e.jam_mulai) + '</p>' +
+      '<form id="f-a"><label class="isian"><span>Speaker and topic</span><input name="pembicara" maxlength="120" value="' + esc(e.pembicara) + '" placeholder="Name: topic"></label>' +
+      '<label class="isian"><span>Poster link (optional)</span><input name="poster" type="url" placeholder="https://" value="' + esc(e.poster) + '"></label>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save</button></form>',
+      function (el) {
+        el.querySelector('#f-a').onsubmit = async function (ev) {
+          ev.preventDefault();
+          var f = ev.target, sl = el.querySelector('#salah');
+          var r = await api('ubahAcara', { id_event: e.id_event, pembicara: f.pembicara.value, poster: f.poster.value.trim() });
+          if (!r.ok) { sl.textContent = r.pesan; sl.hidden = false; return; }
+          tutupLembar(); toast('Event info saved.'); segarkan();
+        };
+      });
   }
 
   async function subRegroup(w) {

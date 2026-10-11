@@ -48,6 +48,8 @@ Anggota hanya melihat jam kosong dan pesanan calonnya sendiri. LT bisa memakai "
 | Lihat klasifikasi terisi | Seats, Papan Kursi |
 | Lihat roster anggota | Seats, Member list |
 | Lihat leaderboard | Board |
+| Lihat pengumuman, pembicara, dan poster BOD | Home (Announcements), This week (Wednesday program) |
+| Lihat jalur menuju Gold (6 member baru) | Home, Gold path |
 
 Pesan undangan mengikuti panduan Ventura dan menyesuaikan kedekatan: Close friend (lu/gue), Friend (aku/kamu),
 Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 15 menit dengan Coach Dedy.
@@ -60,6 +62,7 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Buka jam dan lihat jadwal coffee session | Team, Schedule |
 | Catat siapa hadir tiap BOD (anggota dan tamu) | Team, Check-in |
 | Lihat siapa sering absen | Seats, Member list, lencana `hadir/total BOD` |
+| Tulis pengumuman, isi pembicara dan poster acara | Team, Announce |
 | Pantau nama per LT dan kursi kosong | Team, Regroup |
 | Ringkasan chapter | Team, Summary (hanya LDC) |
 

@@ -2,7 +2,7 @@
    Aktif saat CONFIG.API_URL kosong. Kode contoh: LDC001, LT0001, AGT001.
    Tambahkan ?fase=BOD di alamat untuk target Misi dan label anggota seperti setelah ESM. Tambahkan ?reset=1 untuk mengulang data. */
 var Tiruan = (function () {
-  var KUNCI = 'optima_tiruan_v10';
+  var KUNCI = 'optima_tiruan_v11';
   var HARI = 864e5;
   var POSTER_CONTOH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#C8102E"/><text x="32" y="92" font-family="Arial" font-size="22" fill="#fff" opacity=".8">BNI OPTIMA · BUSINESS OPPORTUNITY DAY</text><text x="32" y="190" font-family="Arial" font-weight="700" font-size="44" fill="#fff">One seat per</text><text x="32" y="244" font-family="Arial" font-weight="700" font-size="44" fill="#fff">classification</text><text x="32" y="316" font-family="Arial" font-size="20" fill="#fff">Wednesday 07:00 to 09:00</text></svg>');
   var data = null;
@@ -122,7 +122,7 @@ var Tiruan = (function () {
       und.push({ id_undangan: 'U000' + (i + 2), tanggal: lalu(i), id_pengundang: p[0].id_orang, id_orang_calon: M[14 + i * 3].id_orang, id_event: 'E1', status: i < 2 ? 'Terdaftar' : 'Diundang', sumber: i < 2 ? 'form' : 'app' });
     });
 
-    ['Citra Lestari', 'Fajar Nugroho', 'Lukman Hakim'].forEach(function (n) { M.forEach(function (m) { if (m.nama === n) m.driver = 'TRUE'; }); });
+    ['Gita Permata', 'Fajar Nugroho', 'Lukman Hakim'].forEach(function (n) { M.forEach(function (m) { if (m.nama === n) m.driver = 'TRUE'; }); });
     // riwayat enam pekan: BOD, Lunch, kehadiran anggota, undangan, dan aktivitas, untuk rekomendasi driver
     var budi = anggota[0], citra = anggota[1], eko = anggota[2];
     budi.tanggal_bergabung = lalu(42); citra.tanggal_bergabung = lalu(38); eko.tanggal_bergabung = lalu(36);
@@ -146,6 +146,12 @@ var Tiruan = (function () {
         var datang = w !== 3;
         und.push({ id_undangan: 'UB0' + w, tanggal: iso(new Date(hari(w).getTime() - 2 * HARI)), id_pengundang: budi.id_orang, id_orang_calon: tamu.id_orang, id_event: idB, status: datang ? 'Hadir' : 'Terdaftar', sumber: 'app' });
         if (datang) hadir.push({ id_hadir: 'HV0' + w, id_event: idB, id_orang: tamu.id_orang, peran: 'Visitor', waktu_checkin: iso(hari(w)), dicatat_oleh: agung.id_orang });
+      }
+      if (w >= 2 && w <= 5) {                           // Citra: mengundang 4 dari 6 pekan, 3 tamu datang, belum ada yang bergabung
+        var tamuC = orang('Tamu Citra ' + w, 'Calon', 'Invited', '', { diajukan_oleh: citra.id_orang, tanggal_masuk: iso(hari(w)) });
+        var datangC = w !== 4;
+        und.push({ id_undangan: 'UC0' + w, tanggal: iso(new Date(hari(w).getTime() - 2 * HARI)), id_pengundang: citra.id_orang, id_orang_calon: tamuC.id_orang, id_event: idB, status: datangC ? 'Hadir' : 'Terdaftar', sumber: 'app' });
+        if (datangC) hadir.push({ id_hadir: 'HC0' + w, id_event: idB, id_orang: tamuC.id_orang, peran: 'Visitor', waktu_checkin: iso(hari(w)), dicatat_oleh: agung.id_orang });
       }
       if (w <= 5) log.push({ waktu: iso(new Date(hari(w).getTime() - HARI)), id_orang: budi.id_orang, aksi: 'tambahCalon', ringkasan: 'contoh' });
       if (w <= 2) log.push({ waktu: iso(new Date(hari(w).getTime() - HARI)), id_orang: citra.id_orang, aksi: 'tambahCalon', ringkasan: 'contoh' });

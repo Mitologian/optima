@@ -1531,14 +1531,24 @@
       '<div class="baris-tombol"><button class="tombol kecil" id="b-driver">Add a driver</button></div></section>';
   }
   function kartuRekomendasi(d) {
+    function ikon(ok) { return '<i>' + (ok === true ? '&#10003;' : ok === false ? '&#10005;' : '&ndash;') + '</i>'; }
+    function kls(ok) { return ok === true ? 'ya' : ok === false ? 'tidak' : 'belum'; }
+    function baris(c) {
+      return '<li class="' + kls(c.ok) + '">' + ikon(c.ok) + '<div><b>' + esc(c.label) + '</b><span>' + esc(c.teks) + (c.ok === null ? ' (not enough data yet)' : '') + '</span></div></li>';
+    }
     function satu(x, tombol) {
-      return '<details class="rekom"><summary><span><b>' + esc(x.nama) + '</b><em>' + esc(x.bidang) + ' · ' + x.minggu + ' weeks</em></span><span class="chip ' + (tombol ? 'emas' : '') + '">' + x.memenuhi + ' of ' + x.dari + '</span></summary>' +
-        '<ul class="syarat">' + x.kriteria.map(function (c) {
-          return '<li class="' + (c.ok === true ? 'ya' : c.ok === false ? 'tidak' : 'belum') + '"><i>' + (c.ok === true ? '&#10003;' : c.ok === false ? '&#10005;' : '&ndash;') + '</i><div><b>' + esc(c.label) + '</b><span>' + esc(c.teks) + (c.ok === null ? ' (not enough data yet)' : '') + '</span></div></li>';
-        }).join('') + '</ul>' + (tombol ? '<div class="baris-tombol"><button class="tombol kecil" data-tandai-rek="' + esc(x.id_orang) + '">Mark as driver</button></div>' : '') + '</details>';
+      var peta = {}; x.kriteria.forEach(function (c) { peta[c.kode] = c; });
+      var chips = x.pilar.map(function (q) { return '<span class="chip ' + (q.ok ? 'hijau' : '') + '">' + (q.ok ? '&#10003; ' : '') + ({ komit: 'Committed', network: 'Network', pengaruh: 'Influence' })[q.kode] + '</span>'; }).join('');
+      return '<details class="rekom"><summary><span><b>' + esc(x.nama) + '</b><em>' + esc(x.bidang) + ' · ' + x.minggu + ' weeks</em></span></summary>' +
+        '<div class="pilar-chips">' + chips + '</div>' +
+        x.pilar.map(function (q) {
+          return '<p class="pilar-judul ' + kls(q.ok) + '">' + ikon(q.ok) + esc(q.label) + '</p><ul class="syarat">' + q.kriteria.map(function (kd) { return baris(peta[kd]); }).join('') + '</ul>';
+        }).join('') +
+        '<p class="pilar-judul bonus"><i>+</i>Bonus, voluntary</p><ul class="syarat">' + baris(peta.lunch) + '</ul>' +
+        (tombol ? '<div class="baris-tombol"><button class="tombol kecil" data-tandai-rek="' + esc(x.id_orang) + '">Mark as driver</button></div>' : '') + '</details>';
     }
     if (!d.rekomendasi.length && !d.hampir.length) return '<p class="kecil redup" style="margin-top:8px">Suggestions appear automatically once members have a few weeks of activity.</p>';
-    return '<div class="rekom-blok"><p class="kecil"><b>Suggested</b> · meets at least ' + d.syarat_min + ' of 6 checks</p>' +
+    return '<div class="rekom-blok"><p class="kecil"><b>Suggested</b> · committed, has a network, and has influence</p>' +
       (d.rekomendasi.length ? d.rekomendasi.map(function (x) { return satu(x, true); }).join('') : '<p class="kecil redup">No one yet.</p>') +
       (d.hampir.length ? '<details class="lipat-kecil"><summary>Almost there (' + d.hampir.length + ')</summary>' + d.hampir.map(function (x) { return satu(x, false); }).join('') + '</details>' : '') +
       '<p class="kecil redup" style="margin-top:6px">A starting point for the regroup, not a verdict. Lunch Networking is voluntary and never counts as mandatory attendance.</p></div>';

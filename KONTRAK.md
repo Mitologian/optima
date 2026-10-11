@@ -84,10 +84,9 @@ Dua kolom: `kunci` · `nilai`.
 | `target_nama_maks` | 40 (sasaran nama per orang) |
 | `target_gold` | 6 (jumlah member baru untuk jalur Gold, dihitung dari `id_sponsor`) |
 | `target_driver` | 5 (jumlah driver minimal, peringatan menyala bila kurang) |
-| `driver_syarat_min` | 5 (dari 6 syarat rekomendasi driver) |
 | `driver_ronde_min` | 4 (minggu sejak bergabung sebelum seseorang dinilai) |
-| `driver_hadir_bod` · `driver_undang` · `driver_tamu_hadir` · `driver_konversi` · `driver_lunch` | 90 · 80 · 80 · 30 · 50 (persen) |
-| `driver_aktif_ronde` | 3 (dari 4 minggu terakhir ada aksi di app) |
+| `driver_hadir_bod` · `driver_undang` · `driver_tamu_hadir` · `driver_konversi` · `driver_lunch` | 80 · 60 · 60 · 20 · 50 (persen) |
+| `driver_aktif_ronde` | 2 (dari 4 minggu terakhir ada aksi di app) |
 | `hari_bod` | Rabu |
 | `tanggal_esm` | 2027-05-24 |
 | `tanggal_grand_launch` | 2027-08-02 |
@@ -264,15 +263,14 @@ Satu baris berisi 8 kursi terisi = **baris lengkap**, dirayakan di Kabar.
 | `RABU_5` | Lima Rabu Beruntun | 5 ronde berturut-turut dengan minimal 1 undangan |
 
 **Rekomendasi driver.** Otomatis, hanya untuk LT dan LDC, tidak pernah tampil ke anggota, dan hanya bahan diskusi regroup. Seorang anggota
-(bukan LDC, belum ditandai) dinilai setelah `driver_ronde_min` minggu sejak bergabung. Enam syarat, direkomendasikan bila memenuhi
-`driver_syarat_min`:
-1. hadir di sedikitnya 90% BOD pagi (wajib)
-2. mengundang di sedikitnya 80% minggu sejak bergabung
-3. tamu yang terdaftar hadir sedikitnya 80% (butuh 3 tamu terdaftar)
-4. sudah memasukkan member dan rasio member terhadap tamu hadir sedikitnya 30%
-5. aktif di app: ada aksi tulis di sedikitnya 3 dari 4 minggu terakhir (dari tab `Log`)
-6. hadir di sedikitnya 50% Lunch Networking. Ini sukarela, dihitung terpisah, dan tidak pernah masuk kehadiran wajib.
-Acara yang belum diabsen sama sekali tidak dihitung. Syarat 1, 3, 6 menunggu minimal 3 acara atau 3 tamu, sebelum itu berstatus "belum cukup data".
+(bukan LDC, belum ditandai) dinilai setelah `driver_ronde_min` minggu sejak bergabung. Direkomendasikan bila ketiga pilar terpenuhi
+(dua pilar = "Almost there"):
+1. **Komit**: hadir di sedikitnya 80% BOD pagi (wajib), dan aktif di app (ada aksi tulis di sedikitnya 2 dari 4 minggu terakhir, dari tab `Log`).
+2. **Punya network**: mengundang di sedikitnya 60% minggu sejak bergabung, dan tamu terdaftarnya hadir sedikitnya 60% (butuh 3 tamu terdaftar, sebelum itu tidak menghalangi).
+3. **Punya pengaruh**: sudah memasukkan member (sponsor), dan member dibagi tamu yang hadir sedikitnya 20%.
+Bonus, tidak diwajibkan: hadir di sedikitnya 50% Lunch Networking. Ini sukarela, dihitung terpisah, dan tidak pernah masuk kehadiran wajib. Hanya dipakai
+sebagai penentu urutan.
+Acara yang belum diabsen sama sekali tidak dihitung. Syarat BOD dan Lunch menunggu minimal 3 acara yang diabsen, sebelum itu berstatus "belum cukup data".
 
 **Papan.** Tiga papan, hanya nama depan dan angka, tidak digabung menjadi satu skor:
 - Pengundang ronde ini (direset setiap Kamis)
@@ -369,4 +367,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-11 | Impact Board: `papan` memuat `dampak`, dan `belum_ronde` untuk LT | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Riwayat per ronde: aksi `riwayatRonde` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Penanda driver: kolom `Master.driver`, `Pengaturan.target_driver`, aksi `kandidatDriver`, `tandaiDriver`, `regroup.driver`, lampu peringatan driver di `ringkas` | Coach Dedy, 11 Oktober 2026 |
-| 2026-10-11 | Rekomendasi driver otomatis: enam syarat, ambang di `Pengaturan` (`driver_*`), `regroup.driver.rekomendasi` dan `hampir` | Coach Dedy, 11 Oktober 2026 |
+| 2026-10-11 | Rekomendasi driver otomatis: tiga pilar (komit, network, pengaruh), ambang di `Pengaturan` (`driver_*`), `regroup.driver.rekomendasi` dan `hampir` | Coach Dedy, 11 Oktober 2026 |

@@ -112,7 +112,7 @@ var Inti = (function () {
     if (this._atur) return this._atur;
     var a = {};
     this.tab('Pengaturan').forEach(function (r) { if (teks(r.kunci)) a[teks(r.kunci)] = r.nilai; });
-    ['target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver', 'driver_syarat_min', 'driver_ronde_min', 'driver_hadir_bod', 'driver_undang', 'driver_tamu_hadir', 'driver_konversi', 'driver_lunch', 'driver_aktif_ronde'].forEach(function (k) { a[k] = Number(a[k]) || 0; });
+    ['target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver', 'driver_ronde_min', 'driver_hadir_bod', 'driver_undang', 'driver_tamu_hadir', 'driver_konversi', 'driver_lunch', 'driver_aktif_ronde'].forEach(function (k) { a[k] = Number(a[k]) || 0; });
     a.target_founding = a.target_founding || 20;
     a.target_cgt = a.target_cgt || 37;
     a.target_launch = a.target_launch || 52;
@@ -121,14 +121,13 @@ var Inti = (function () {
     a.target_gold = a.target_gold || 6;
     a.target_driver = a.target_driver || 5;
     // ambang rekomendasi driver (persen), dapat diubah di Pengaturan
-    a.driver_syarat_min = a.driver_syarat_min || 5;
     a.driver_ronde_min = a.driver_ronde_min || 4;
-    a.driver_hadir_bod = a.driver_hadir_bod || 90;
-    a.driver_undang = a.driver_undang || 80;
-    a.driver_tamu_hadir = a.driver_tamu_hadir || 80;
-    a.driver_konversi = a.driver_konversi || 30;
+    a.driver_hadir_bod = a.driver_hadir_bod || 80;
+    a.driver_undang = a.driver_undang || 60;
+    a.driver_tamu_hadir = a.driver_tamu_hadir || 60;
+    a.driver_konversi = a.driver_konversi || 20;
     a.driver_lunch = a.driver_lunch || 50;
-    a.driver_aktif_ronde = a.driver_aktif_ronde || 3;
+    a.driver_aktif_ronde = a.driver_aktif_ronde || 2;
     a.fase = teks(a.fase) || 'Pembentukan';
     a.nama_chapter = teks(a.nama_chapter) || 'Optima';
     a.hari_bod = teks(a.hari_bod) || 'Rabu';
@@ -391,15 +390,22 @@ var Inti = (function () {
         { kode: 'app', label: 'Active in the app', ok: rondeAktif >= perluAktif, teks: 'Active in ' + rondeAktif + ' of the last ' + Math.min(4, ronde) + ' weeks, needs ' + perluAktif },
         { kode: 'lunch', label: 'Lunch Networking (voluntary)', ok: lunch.total >= 3 ? pLunch >= a.driver_lunch : null, teks: lunch.hadir + ' of ' + lunch.total + ' lunches (' + pLunch + '%), needs ' + a.driver_lunch + '%' }
       ];
+      function ok(kode) { return kriteria.filter(function (c) { return c.kode === kode; })[0].ok; }
+      // tiga pilar: komit, punya network, punya pengaruh. Lunch Networking hanya bonus, tidak diwajibkan.
+      var pilar = [
+        { kode: 'komit', label: 'Committed', ok: ok('bod') === true && ok('app') === true, kriteria: ['bod', 'app'] },
+        { kode: 'network', label: 'Has a network', ok: ok('undang') === true && ok('tamu') !== false, kriteria: ['undang', 'tamu'] },
+        { kode: 'pengaruh', label: 'Has influence', ok: ok('konversi') === true, kriteria: ['konversi'] }
+      ];
       var x = kursiById(k, m.id_kursi);
       hasil.push({
         id_orang: id, nama: teks(m.nama), bidang: x ? x.bidang : (teks(m.bisnis) || ''), minggu: ronde,
-        memenuhi: kriteria.filter(function (c) { return c.ok === true; }).length, dari: kriteria.length,
-        kurang_data: kriteria.filter(function (c) { return c.ok === null; }).length,
-        tamu_bergabung: bergabung, tamu_hadir: nHadir, kriteria: kriteria
+        memenuhi: pilar.filter(function (q) { return q.ok; }).length, dari: pilar.length,
+        bonus_lunch: ok('lunch') === true,
+        tamu_bergabung: bergabung, tamu_hadir: nHadir, pilar: pilar, kriteria: kriteria
       });
     });
-    return hasil.sort(function (p, q) { return q.memenuhi - p.memenuhi || q.tamu_bergabung - p.tamu_bergabung || q.tamu_hadir - p.tamu_hadir || (p.nama < q.nama ? -1 : 1); });
+    return hasil.sort(function (p, q) { return q.memenuhi - p.memenuhi || (q.bonus_lunch ? 1 : 0) - (p.bonus_lunch ? 1 : 0) || q.tamu_bergabung - p.tamu_bergabung || q.tamu_hadir - p.tamu_hadir || (p.nama < q.nama ? -1 : 1); });
   }
 
   function pendaftarPerluCek(k) {
@@ -796,7 +802,7 @@ var Inti = (function () {
       }).sort(function (x, y) { return x.nama < y.nama ? -1 : 1; });
       return {
         founding: { jumlah: founding, target: a.target_founding },
-        driver: { jumlah: drv.length, target: a.target_driver, daftar: drv, rekomendasi: rek.filter(function (x) { return x.memenuhi >= a.driver_syarat_min; }), hampir: rek.filter(function (x) { return x.memenuhi === a.driver_syarat_min - 1; }), syarat_min: a.driver_syarat_min },
+        driver: { jumlah: drv.length, target: a.target_driver, daftar: drv, rekomendasi: rek.filter(function (x) { return x.memenuhi === 3; }), hampir: rek.filter(function (x) { return x.memenuhi === 2; }) },
         lt: lt,
         kursi_tanpa_calon: kosong,
         calon_diam: k.calonAktif().map(function (r) { return { nama: teks(r.nama), pic: namaDepan(k.orang(r.PIC)) || 'None yet', hari: k.hariDiam(r) }; })

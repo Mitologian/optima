@@ -1182,6 +1182,28 @@
 
   /* ---------- PAPAN ---------- */
   var tabPapan = 'pengundang';
+  var urutDampak = 'bergabung';
+  /* ---------- Impact Board: undangan, hadir, bergabung per orang ---------- */
+  function tabelDampak(rows) {
+    if (!rows || !rows.length) return '<section class="kartu"><p class="kosong-isi">No invitations yet. The first invitation starts the board.</p></section>';
+    var urut = rows.slice().sort(function (a, b) {
+      return b[urutDampak] - a[urutDampak] || b.bergabung - a.bergabung || b.hadir - a.hadir || b.undangan - a.undangan || (a.nama_depan < b.nama_depan ? -1 : 1);
+    });
+    function kepala(kunci, label) {
+      return '<button class="dampak-kepala' + (urutDampak === kunci ? ' aktif' : '') + '" data-urut="' + kunci + '" aria-pressed="' + (urutDampak === kunci) + '">' + label + '</button>';
+    }
+    return '<section class="kartu"><div class="dampak"><div class="dampak-baris dampak-judul"><span>Name</span>' + kepala('undangan', 'Invites') + kepala('hadir', 'Attended') + kepala('bergabung', 'Joined') + '</div>' +
+      urut.map(function (d) {
+        return '<div class="dampak-baris' + (d.saya ? ' saya' : '') + '"><span class="dampak-nama">' + esc(d.nama_depan) + (d.saya ? ' <span class="chip merah">me</span>' : '') + '</span><b>' + d.undangan + '</b><b>' + d.hadir + '</b><b>' + d.bergabung + '</b></div>';
+      }).join('') + '</div></section>' +
+      '<p class="catatan-main">Since the start. Invites and Attended count different guests. Joined counts members sponsored. Tap a heading to sort. Attendance is a requirement, not a contest.</p>';
+  }
+  function kartuBelum(nama) {
+    if (!nama) return '';
+    return '<div class="judul-bagian"><h2>No invitation yet this round</h2><span class="kecil">' + nama.length + '</span></div>' +
+      '<section class="kartu">' + (nama.length ? '<p>' + nama.map(esc).join(', ') + '</p><p class="catatan-main">Visible to the launch team only, for a friendly reminder before Wednesday.</p>' : '<p class="kosong-isi">Every member has invited someone this round.</p>') + '</section>';
+  }
+
   async function layarPapan(isi) {
     var h = await Promise.all([api('papan'), api('beranda')]);
     var p = h[0], b = h[1];
@@ -1193,11 +1215,13 @@
       }).join('') + '</ul>';
     }
     isi.innerHTML = '<div class="sapa"><h1>Board</h1><p class="kecil">A game, not a ranking. Attendance is not a contest because it is a requirement.</p></div>' +
-      '<div class="tab" role="tablist"><button role="tab" data-tab="pengundang" aria-selected="' + (tabPapan === 'pengundang') + '">Inviters this round</button><button role="tab" data-tab="sponsor" aria-selected="' + (tabPapan === 'sponsor') + '">Sponsor wall</button></div>' +
+      '<div class="tab" role="tablist"><button role="tab" data-tab="pengundang" aria-selected="' + (tabPapan === 'pengundang') + '">This round</button><button role="tab" data-tab="dampak" aria-selected="' + (tabPapan === 'dampak') + '">Impact</button><button role="tab" data-tab="sponsor" aria-selected="' + (tabPapan === 'sponsor') + '">Sponsors</button></div>' +
       (tabPapan === 'pengundang'
-        ? '<section class="kartu">' + daftar(p.pengundang, 'invitations', 'No invitations this round yet. Be the first.') + '</section><p class="catatan-main">Round ends ' + esc(tglHari(b.ronde.selesai)) + ' at 23:59. The board resets every Thursday.</p>'
+        ? '<section class="kartu">' + daftar(p.pengundang, 'invitations', 'No invitations this round yet. Be the first.') + '</section><p class="catatan-main">Round ends ' + esc(tglHari(b.ronde.selesai)) + ' at 23:59. The board resets every Thursday.</p>' + kartuBelum(p.belum_ronde)
+        : tabPapan === 'dampak' ? tabelDampak(p.dampak)
         : '<section class="kartu">' + daftar(p.sponsor, 'members', 'No sponsors yet. Members who bring in new members are listed here permanently.') + '</section><p class="catatan-main">The sponsor wall is never reset.</p>');
     isi.querySelectorAll('[data-tab]').forEach(function (t) { t.onclick = function () { tabPapan = t.dataset.tab; layarPapan(isi); }; });
+    isi.querySelectorAll('[data-urut]').forEach(function (t) { t.onclick = function () { urutDampak = t.dataset.urut; layarPapan(isi); }; });
   }
 
   /* ---------- TIM (LT dan LDC) ---------- */

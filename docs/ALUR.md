@@ -49,6 +49,7 @@ Anggota hanya melihat jam kosong dan pesanan calonnya sendiri. LT bisa memakai "
 | Lihat tamu yang akan datang Rabu ini | This week (nama lengkap dan klasifikasi, tanpa nomor) |
 | Lihat klasifikasi terisi | Seats, Papan Kursi |
 | Lihat roster anggota | Seats, Member list |
+| Lihat siapa mengundang berapa, siapa yang hadir dan bergabung | Board, Impact |
 | Lihat leaderboard | Board |
 | Lihat pengumuman, pembicara, dan poster BOD | Home (Announcements), This week (Wednesday program) |
 | Lihat jalur menuju Gold (6 member baru) | Home, Gold path |
@@ -66,6 +67,7 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Lihat siapa sering absen | Seats, Member list, lencana `hadir/total BOD` |
 | Putuskan pendaftar Form yang nomornya belum cocok atau tanpa pengundang | Team, Interviews, kartu Form sign-ups |
 | Tulis pengumuman, isi pembicara dan poster acara | Team, Announce |
+| Lihat anggota yang belum mengundang ronde ini (untuk pengingat) | Board, This round (bagian bawah) |
 | Pantau nama per LT dan kursi kosong | Team, Regroup |
 | Ringkasan chapter | Team, Summary (hanya LDC) |
 

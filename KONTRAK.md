@@ -257,9 +257,10 @@ Satu baris berisi 8 kursi terisi = **baris lengkap**, dirayakan di Kabar.
 | `TIGA_KURSI` | Pembuka Tiga Kursi | `id_sponsor` di 3 anggota |
 | `RABU_5` | Lima Rabu Beruntun | 5 ronde berturut-turut dengan minimal 1 undangan |
 
-**Papan.** Dua papan, hanya nama depan dan angka:
+**Papan.** Tiga papan, hanya nama depan dan angka, tidak digabung menjadi satu skor:
 - Pengundang ronde ini (direset setiap Kamis)
 - Dinding sponsor (tidak direset)
+- Impact Board: undangan, hadir, bergabung per orang sejak awal (tidak direset), bisa diurutkan menurut tiap kolom
 
 Kehadiran tidak dilombakan. Kehadiran adalah syarat, bukan prestasi.
 
@@ -287,7 +288,7 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `usulanSaya` | | `usulan [{id_orang, nama, bidang, tahap, punya_wa, whatsapp, bisnis, jumlah_undangan, jadwal_cs, status_undangan, acara_undangan, tanggal_undangan}]` nama yang diajukan sendiri |
 | `undanganSaya` | | `undangan [{id_undangan, nama_depan, bidang, acara, tanggal, status}]`. `status` = `Bergabung` bila tamunya sudah anggota |
 | `pengumuman` | | `pengumuman [{id_pengumuman, judul, isi, poster, tanggal_tayang, tanggal_berakhir, oleh}]` yang sedang tayang, terbaru di atas |
-| `papan` | | `pengundang [{nama_depan, jumlah}]`, `sponsor [{nama_depan, jumlah}]` |
+| `papan` | | `pengundang [{nama_depan, jumlah, saya}]`, `sponsor [{nama_depan, jumlah, saya}]`, `dampak [{nama_depan, undangan, hadir, bergabung, saya}]` (Impact Board, sejak awal: tamu unik yang diundang, tamu unik yang hadir sebagai Visitor, anggota yang disponsori; hanya yang punya angka). Khusus LT dan LDC: `belum_ronde [nama_depan]` anggota yang belum mengundang di ronde ini |
 | `tamuPekanIni` | | `acara_ronde [{id_event, tanggal, jam_mulai, jam_selesai, nama_acara, jenis, mode, lokasi, pembicara, poster}]` acara ronde ini, `tamu [{nama, bidang, sphere, pengundang, acara, jenis, tanggal, jam_mulai, status, bergabung}]` tamu berstatus `Terdaftar` atau `Hadir` di acara ronde ini. Tanpa nomor telepon |
 | `daftarAnggota` | | `anggota [{nama, bidang, sphere, jenis_anggota, sponsor, tanggal_bergabung}]` tanpa kontak |
 | `slotCS` | | `slot [{id_slot, waktu, tanggal, jam, tempat, pic, pic_id, pic_ldc, status, id_orang?, nama?, tahap?}]` 4 pekan ke depan. Anggota: jam `Kosong` dan pesanan calonnya sendiri. LT: semua, ditambah `bidang, whatsapp, bisnis, pengundang, saya_dampingi, boleh_hapus`; semua slot memuat `pendamping []` nama depan, `pewawancara [...]`, `perlu_hasil [{id_orang, nama, waktu, pic}]` |
@@ -344,3 +345,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-05 | Coach Dedy pewawancara utama, LT pendamping (kolom `pendamping`, aksi `dampingiSlot`), LT boleh membuka jam hanya untuk wawancara berdua | menunggu Coach Dedy |
 | 2026-10-11 | Jalur Gold sebagai angka nyata (`Pengaturan.target_gold`, `saya.target_gold`). Tab `Pengumuman`, kolom `pembicara` dan `poster` di `Events`, aksi `pengumuman`, `tulisPengumuman`, `hapusPengumuman`, `ubahAcara`, `tamuPekanIni.acara_ronde`. `Api.js` membuat tab dan kolom baru otomatis | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Layar LT untuk pendaftar Form: kolom `id_response`, `id_pengundang`, `id_kandidat`, `id_orang_hasil` di `Responses`, nilai `Walk-in` di `Undangan.id_pengundang`, aksi `perluCek`, `selesaikanCek`, `tetapkanPengundang` | Coach Dedy, 11 Oktober 2026 |
+| 2026-10-11 | Impact Board: `papan` memuat `dampak`, dan `belum_ronde` untuk LT | Coach Dedy, 11 Oktober 2026 |

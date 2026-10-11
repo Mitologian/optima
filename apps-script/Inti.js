@@ -596,7 +596,30 @@ var Inti = (function () {
         return Object.keys(peta).map(function (id) { return { nama_depan: namaDepan(k.orang(id)), jumlah: peta[id], saya: id === k.saya.id_orang }; })
           .sort(function (a, b) { return b.jumlah - a.jumlah || (a.nama_depan < b.nama_depan ? -1 : 1); });
       }
-      return { pengundang: urut(hitung).slice(0, 15), sponsor: urut(sp) };
+      /* Impact Board: sejak awal, per orang. Undangan dan hadir dihitung per tamu unik, bergabung = anggota yang disponsori. */
+      var hadirVisitor = {};
+      k.tab('Hadir').forEach(function (h) { if (teks(h.peran) === 'Visitor') hadirVisitor[teks(h.id_orang)] = true; });
+      var dampak = {};
+      function barisDampak(id) { return dampak[id] || (dampak[id] = { u: {}, h: {}, b: 0 }); }
+      k.undanganAktif().forEach(function (u) {
+        var id = teks(u.id_pengundang), calon = teks(u.id_orang_calon);
+        if (!k.orang(id)) return;
+        var d = barisDampak(id);
+        d.u[calon] = true;
+        if (hadirVisitor[calon]) d.h[calon] = true;
+      });
+      Object.keys(sp).forEach(function (id) { if (k.orang(id)) barisDampak(id).b = sp[id]; });
+      var daftarDampak = Object.keys(dampak).map(function (id) {
+        var d = dampak[id];
+        return { nama_depan: namaDepan(k.orang(id)), undangan: Object.keys(d.u).length, hadir: Object.keys(d.h).length, bergabung: d.b, saya: id === k.saya.id_orang };
+      }).filter(function (d) { return d.undangan + d.hadir + d.bergabung > 0; })
+        .sort(function (a, b) { return b.bergabung - a.bergabung || b.hadir - a.hadir || b.undangan - a.undangan || (a.nama_depan < b.nama_depan ? -1 : 1); });
+      var hasil = { pengundang: urut(hitung).slice(0, 15), sponsor: urut(sp), dampak: daftarDampak };
+      if (k.isLT()) {
+        hasil.belum_ronde = k.anggota().filter(function (r) { return !hitung[teks(r.id_orang)]; })
+          .map(function (r) { return namaDepan(r); }).sort();
+      }
+      return hasil;
     },
 
     calonSaya: function (k, b) {

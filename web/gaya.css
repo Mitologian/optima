@@ -407,3 +407,14 @@ a.poster { display: block; margin: 8px 0; border-radius: var(--r); overflow: hid
 a.poster img { display: block; width: 100%; height: auto; }
 a.poster .poster-tautan { display: block; padding: 8px 12px; font-size: 13px; font-weight: 700; color: var(--merah); background: var(--kertas-2); }
 li.program .utama span { display: block; }
+
+/* Impact Board */
+.dampak { display: flex; flex-direction: column; }
+.dampak-baris { display: grid; grid-template-columns: 1fr 64px 76px 64px; align-items: center; gap: 4px; padding: 10px 0; border-top: 1px solid var(--garis); }
+.dampak-baris:first-child { border-top: 0; }
+.dampak-baris b { text-align: center; font-family: var(--huruf-judul); font-size: 17px; }
+.dampak-baris.saya { background: var(--merah-muda); margin: 0 -14px; padding-left: 14px; padding-right: 14px; }
+.dampak-judul { font-size: 12px; font-weight: 700; color: var(--abu); }
+.dampak-kepala { font: inherit; font-size: 12px; font-weight: 700; color: var(--abu); text-align: center; padding: 6px 0; border-radius: 8px; }
+.dampak-kepala.aktif { color: var(--merah); background: var(--merah-muda); }
+.dampak-nama { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; }

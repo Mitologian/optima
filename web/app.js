@@ -426,7 +426,7 @@
             return '<button class="kursi ' + x.status + (redam ? ' redam' : '') + (x.saya_calon ? ' milik' : '') + '" data-kursi="' + esc(x.id_kursi) + '" aria-label="' + esc(x.bidang) + ', ' + (x.status === 'terisi' ? 'filled by ' + x.pemilik : x.status === 'ada_calon' ? x.jumlah_calon + ' prospects' : 'empty') + (x.saya_calon ? ', ' + x.saya_calon + ' from my list' : '') + '">' +
               (x.jumlah_butuh && x.status !== 'terisi' ? '<span class="dicari"></span>' : '') +
               (x.status === 'ada_calon' ? '<span class="badge">' + x.jumlah_calon + '</span>' : '') +
-              '<span class="t">' + esc(x.bidang) + '</span></button>';
+              '<span class="t">' + esc(x.singkat || x.bidang) + '</span></button>';
           }).join('') + '</div>'; }).join('') + '</section>';
       }).join('') + '</div>' +
       '<p class="catatan-main"><span class="titik-emas"></span> member wanted &nbsp; <span class="cincin-saya"></span> from my list</p>' +

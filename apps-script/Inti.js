@@ -27,6 +27,14 @@ var Inti = (function () {
     { kode: 'RABU_5', nama: 'Five Wednesday Streak', ket: 'Invited five rounds in a row' }
   ];
 
+
+  // pengaturan yang boleh diubah LDC dari app, dan tab yang boleh dilihat (tanpa Master dan Akses; keduanya lewat People)
+  var PENGATURAN_BISA = ['fase', 'tanggal_esm', 'tanggal_grand_launch', 'tautan_zoom_cs', 'tautan_form', 'target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver',
+    'driver_ronde_min', 'driver_hadir_bod', 'driver_undang', 'driver_tamu_hadir', 'driver_konversi', 'driver_lunch', 'driver_aktif_ronde'];
+  var PENGATURAN_CONTOH = { tanggal_esm: 'YYYY-MM-DD', tanggal_grand_launch: 'YYYY-MM-DD', tautan_zoom_cs: 'https://...', tautan_form: 'https://...' };
+  var FASE_BOLEH = ['Pembentukan', 'BOD', 'CGT', 'Soft Launch', 'Grand Launch'];
+  var TAB_LIHAT = ['Undangan', 'Hadir', 'Events', 'Wawancara', 'Jadwal_CS', 'Responses', 'Butuh', 'Lencana', 'Pengumuman', 'Log'];
+
   /* ---------- alat bantu ---------- */
 
   function Gagal(pesan, tambahan) {
@@ -537,6 +545,58 @@ var Inti = (function () {
   function wajibLT(k) { if (!k.isLT()) gagal('This feature is for the launch team only.'); }
   function wajibLDC(k) { if (!k.isLDC()) gagal('This feature is for the LDC only.'); }
 
+
+  /* ---------- kode akses ---------- */
+  var HURUF_KODE = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  function kodeBaru(k) {
+    var ada = {};
+    k.tab('Akses').forEach(function (a) { ada[teks(a.kode_akses).toUpperCase()] = true; });
+    for (var n = 0; n < 300; n++) {
+      var s = '';
+      for (var i = 0; i < 6; i++) s += HURUF_KODE.charAt(Math.floor(Math.random() * HURUF_KODE.length));
+      if (!ada[s]) return s;
+    }
+    gagal('Could not make a unique code. Try again.');
+  }
+  function aksesOrang(k, id) {
+    return k.tab('Akses').filter(function (a) { return teks(a.id_orang) === teks(id); })[0] || null;
+  }
+  function setelahEsm(k) { return k.pengaturan().fase !== 'Pembentukan'; }
+  function peranUntuk(o) {
+    if (teks(o.kategori) === 'LT') return 'LT';
+    if (teks(o.kategori) === 'LDC') return 'LDC';
+    return teks(o.tahap) === 'Anggota' ? 'Anggota' : '';
+  }
+  /* Satu orang satu baris Akses. Member baru mendapat kode otomatis; sebelum ESM kodenya belum aktif. */
+  function pastikanAkses(k, o, aktif) {
+    var a = aksesOrang(k, o.id_orang);
+    if (a) return a;
+    var peran = peranUntuk(o);
+    if (!peran) gagal('Only the launch team and members can have an access code.');
+    a = { id_orang: teks(o.id_orang), kode_akses: kodeBaru(k), peran: peran, aktif: aktif ? 'TRUE' : 'FALSE', terakhir_masuk: '' };
+    k.tambah('Akses', a);
+    return a;
+  }
+  function infoAkses(a) {
+    return a ? { ada: true, kode: teks(a.kode_akses), peran: teks(a.peran), aktif: benar(a.aktif), terakhir_masuk: teks(a.terakhir_masuk) } : { ada: false };
+  }
+  /* Menjadikan seseorang member: dipakai alur wawancara (jadikanAnggota) dan penambahan langsung dari luar chapter. */
+  function resmikanAnggota(k, o, x, sp, tambahan) {
+    var jenis = k.pengaturan().fase === 'Pembentukan' ? 'Founding' : 'Core Group';
+    var ubah = { tahap: 'Anggota', id_kursi: x.id_kursi, id_sponsor: sp, jenis_anggota: jenis, tanggal_bergabung: k.now.toISOString(), tanggal_sentuh: k.now.toISOString(), terakhir_diubah: k.now.toISOString() };
+    for (var z in tambahan || {}) ubah[z] = tambahan[z];
+    k.ubah('Master', o, ubah);
+    var a = pastikanAkses(k, o, setelahEsm(k));
+    return { jenis_anggota: jenis, akses: a };
+  }
+  function cekSponsor(k, sp) {
+    if (!sp) gagal('Choose a sponsor. If no member is known personally, choose BNI.');
+    if (sp !== 'BNI') {
+      var so = k.orang(sp);
+      if (!so || teks(so.tahap) !== 'Anggota' || timPendiri(so)) gagal('The sponsor must be a chapter member, or BNI.');
+    }
+  }
+
   function buatUndangan(k, idCalon, idEvent) {
     var calon = k.orang(idCalon);
     if (!calon) gagal('Prospect not found.');
@@ -878,19 +938,15 @@ var Inti = (function () {
       var o = k.orang(b.id_orang);
       if (!o) gagal('Person not found.');
       if (teks(o.tahap) === 'Anggota') gagal(namaDepan(o) + ' is already a member.');
+      if (timPendiri(o)) gagal('Launch team members are founders, not chapter members.');
       var x = kursiById(k, b.id_kursi || o.id_kursi);
       if (!x) gagal('Choose the classification seat.');
       if (x.status === 'terisi') gagal('The ' + x.bidang + ' seat is already taken by ' + x.pemilik + '.');
       var sp = teks(b.id_sponsor);
-      if (!sp) gagal('Choose a sponsor. If no member is known personally, choose BNI.');
-      if (sp !== 'BNI') {
-        var so = k.orang(sp);
-        if (!so || teks(so.tahap) !== 'Anggota') gagal('The sponsor must be a chapter member, or BNI.');
-      }
-      var jenis = k.pengaturan().fase === 'Pembentukan' ? 'Founding' : 'Core Group';
-      k.ubah('Master', o, { tahap: 'Anggota', id_kursi: x.id_kursi, id_sponsor: sp, jenis_anggota: jenis, tanggal_bergabung: k.now.toISOString(), tanggal_sentuh: k.now.toISOString(), terakhir_diubah: k.now.toISOString() });
+      cekSponsor(k, sp);
+      var h = resmikanAnggota(k, o, x, sp);
       k.log('jadikanAnggota', namaDepan(o) + ' di kursi ' + x.bidang + ', sponsor ' + sp);
-      return { jenis_anggota: jenis, kursi: x.bidang };
+      return { jenis_anggota: h.jenis_anggota, kursi: x.bidang, akses: { kode: teks(h.akses.kode_akses), aktif: benar(h.akses.aktif) }, whatsapp: teks(o.whatsapp_norm) };
     },
 
     /* ---------- pendaftar Form yang perlu diputuskan LT ---------- */
@@ -1065,6 +1121,232 @@ var Inti = (function () {
       k.ubah('Master', o, { driver: jadi ? 'TRUE' : '', terakhir_diubah: k.now.toISOString() });
       k.log('tandaiDriver', namaDepan(o) + (jadi ? ' jadi driver' : ' bukan driver'));
       return { driver: jadi };
+    },
+
+    /* ---------- People: seluruh orang sejak awal (hanya LDC) ---------- */
+    orangSemua: function (k) {
+      wajibLDC(k);
+      var akses = {};
+      k.tab('Akses').forEach(function (a) { akses[teks(a.id_orang)] = a; });
+      var diundang = {}, hadir = {};
+      k.undanganAktif().forEach(function (u) { var c = teks(u.id_orang_calon); diundang[c] = (diundang[c] || 0) + 1; });
+      k.tab('Hadir').forEach(function (h) { var c = teks(h.id_orang); hadir[c] = (hadir[c] || 0) + 1; });
+      var orang = k.tab('Master').filter(function (r) { return teks(r.nama); }).map(function (r) {
+        var t = teks(r.tahap), kat = teks(r.kategori);
+        var jenis = timPendiri(r) ? kat : (t === 'Anggota' ? 'Member' : (TAHAP_TUTUP.indexOf(t) >= 0 ? 'Closed' : 'Prospect'));
+        var x = kursiById(k, r.id_kursi);
+        var a = akses[teks(r.id_orang)];
+        var sp = teks(r.id_sponsor);
+        return {
+          id_orang: teks(r.id_orang), nama: namaTampil(r), jenis: jenis, tahap: t, bidang: x ? x.bidang : (teks(r.bisnis) || ''),
+          whatsapp: teks(r.whatsapp_norm), sumber: teks(r.sumber),
+          sponsor: sp === 'BNI' ? 'BNI' : namaDepan(k.orang(sp)), diajukan: namaDepan(k.orang(r.diajukan_oleh)), pic: namaDepan(k.orang(r.PIC)),
+          masuk: teks(r.tanggal_masuk), bergabung: teks(r.tanggal_bergabung),
+          undangan: diundang[teks(r.id_orang)] || 0, hadir: hadir[teks(r.id_orang)] || 0,
+          kode: a ? (benar(a.aktif) ? 'aktif' : 'nonaktif') : (peranUntuk(r) ? 'belum' : '')
+        };
+      });
+      return { orang: orang, setelah_esm: setelahEsm(k) };
+    },
+
+    orangDetail: function (k, b) {
+      wajibLDC(k);
+      var o = k.orang(b.id_orang);
+      if (!o) gagal('Person not found.');
+      var id = teks(o.id_orang);
+      var acara = {};
+      k.tab('Events').forEach(function (e) { acara[teks(e.id_event)] = e; });
+      function labelAcara(idE) {
+        var e = acara[teks(idE)];
+        return e ? (teks(e.jenis) === 'BOD' ? 'BOD' : 'Lunch') + ' ' + (e.tanggal instanceof Date ? isoTanggal(e.tanggal) : teks(e.tanggal).slice(0, 10)) : teks(idE);
+      }
+      var x = kursiById(k, o.id_kursi);
+      var sp = teks(o.id_sponsor);
+      var mengundang = k.undanganAktif().filter(function (u) { return teks(u.id_pengundang) === id; });
+      var hadirVisitor = {};
+      k.tab('Hadir').forEach(function (h) { if (teks(h.peran) === 'Visitor') hadirVisitor[teks(h.id_orang)] = true; });
+      return {
+        orang: {
+          id_orang: id, nama: namaTampil(o), nama_depan: namaPanggil(o), jenis: timPendiri(o) ? teks(o.kategori) : (teks(o.tahap) === 'Anggota' ? 'Member' : 'Prospect'),
+          tahap: teks(o.tahap), id_kursi: teks(o.id_kursi), bidang: x ? x.bidang : '', bisnis: teks(o.bisnis), perusahaan: teks(o.perusahaan),
+          whatsapp: teks(o.whatsapp_norm), sumber: teks(o.sumber), jenis_anggota: teks(o.jenis_anggota),
+          id_sponsor: sp, sponsor: sp === 'BNI' ? 'BNI' : namaDepan(k.orang(sp)), diajukan: namaDepan(k.orang(o.diajukan_oleh)), pic: namaDepan(k.orang(o.PIC)),
+          masuk: teks(o.tanggal_masuk), bergabung: teks(o.tanggal_bergabung), jadwal_cs: teks(o.jadwal_cs), catatan: teks(o.catatan), alasan: teks(o.alasan_tidak_lanjut),
+          driver: benar(o.driver)
+        },
+        akses: infoAkses(aksesOrang(k, id)),
+        bisa_akses: !!peranUntuk(o),
+        diundang_ke: k.undanganAktif().filter(function (u) { return teks(u.id_orang_calon) === id; }).map(function (u) {
+          return { acara: labelAcara(u.id_event), status: teks(u.status), oleh: namaDepan(k.orang(u.id_pengundang)) || 'No inviter', tanggal: teks(u.tanggal) };
+        }),
+        hadir: k.tab('Hadir').filter(function (h) { return teks(h.id_orang) === id; }).map(function (h) {
+          return { acara: labelAcara(h.id_event), peran: teks(h.peran), waktu: teks(h.waktu_checkin) };
+        }),
+        wawancara: k.tab('Wawancara').filter(function (w) { return teks(w.id_orang) === id; }).map(function (w) {
+          return { tanggal: teks(w.tanggal), kanal: teks(w.kanal), hasil: teks(w.hasil), pic: namaDepan(k.orang(w.PIC)) };
+        }),
+        mengundang: { jumlah: mengundang.length, tamu_hadir: mengundang.filter(function (u) { return hadirVisitor[teks(u.id_orang_calon)]; }).length }
+      };
+    },
+
+    /* LT baru, atau member yang masuk langsung dari luar chapter (bukan lewat LDC, LT, atau member) */
+    tambahOrang: function (k, b) {
+      wajibLDC(k);
+      var jenis = teks(b.jenis);
+      if (jenis !== 'LT' && jenis !== 'Anggota') gagal('Choose what to add: a launch team member or a member.');
+      var nama = teks(b.nama), wa = normWa(b.whatsapp);
+      if (nama.length < 2) gagal('Name is required.');
+      if (!wa) gagal('WhatsApp number is required.');
+      if (wa.length < 10) gagal('WhatsApp number is too short.');
+      var ada = k.tab('Master').filter(function (r) { return teks(r.whatsapp_norm) === wa; })[0];
+      if (ada) gagal(namaDepan(ada) + ' is already on the list with this number. Open that person to change the status.');
+      var o = {
+        id_orang: idBaru(k.tab('Master'), 'id_orang', 'P', 4),
+        nama: nama, nama_depan: nama.split(/\s+/)[0], whatsapp_norm: wa, email: '', perusahaan: teks(b.perusahaan), bisnis: teks(b.bisnis),
+        id_kursi: '', kota: '', sumber: jenis === 'LT' ? 'LDC' : 'Luar chapter', kategori: jenis === 'LT' ? 'LT' : 'Calon', tahap: '', jenis_anggota: '',
+        tanggal_bergabung: '', id_sponsor: '', PIC: k.saya.id_orang, diajukan_oleh: '',
+        tanggal_masuk: k.now.toISOString(), tanggal_sentuh: k.now.toISOString(), alasan_tidak_lanjut: '', catatan: teks(b.catatan),
+        terakhir_diubah: k.now.toISOString(), jadwal_cs: ''
+      };
+      var x = null, sp = '';
+      if (jenis === 'Anggota') {
+        x = kursiById(k, b.id_kursi);
+        if (!x) gagal('Choose the classification seat.');
+        if (x.status === 'terisi') gagal('The ' + x.bidang + ' seat is already taken by ' + x.pemilik + '.');
+        sp = teks(b.id_sponsor) || 'BNI';
+        cekSponsor(k, sp);
+        if (!o.bisnis) o.bisnis = x.bidang;
+      }
+      k.tambah('Master', o);
+      k._idx = null;
+      var akses;
+      if (jenis === 'LT') {
+        akses = pastikanAkses(k, o, true);
+        k.log('tambahOrang', 'LT baru: ' + o.nama_depan);
+      } else {
+        akses = resmikanAnggota(k, o, x, sp).akses;
+        k.log('tambahOrang', 'member dari luar chapter: ' + o.nama_depan + ' di kursi ' + x.bidang + ', sponsor ' + sp);
+      }
+      return { id_orang: o.id_orang, akses: infoAkses(akses), whatsapp: wa, nama_depan: o.nama_depan };
+    },
+
+    ubahOrang: function (k, b) {
+      wajibLDC(k);
+      var o = k.orang(b.id_orang);
+      if (!o) gagal('Person not found.');
+      var ubah = {};
+      if (b.nama !== undefined) {
+        var nama = teks(b.nama);
+        if (nama.length < 2) gagal('Name is required.');
+        if (nama !== teks(o.nama)) {
+          ubah.nama = nama;
+          if (!teks(o.nama_depan) || teks(o.nama_depan) === teks(o.nama).split(/\s+/)[0]) ubah.nama_depan = nama.split(/\s+/)[0];
+        }
+      }
+      if (b.whatsapp !== undefined) {
+        var wa = normWa(b.whatsapp);
+        if (wa && wa.length < 10) gagal('WhatsApp number is too short.');
+        var dobel = wa && k.tab('Master').filter(function (r) { return r !== o && teks(r.whatsapp_norm) === wa; })[0];
+        if (dobel) gagal('That number belongs to ' + namaDepan(dobel) + '.');
+        ubah.whatsapp_norm = wa;
+      }
+      if (b.bisnis !== undefined) ubah.bisnis = teks(b.bisnis);
+      if (b.perusahaan !== undefined) ubah.perusahaan = teks(b.perusahaan);
+      if (b.catatan !== undefined) ubah.catatan = teks(b.catatan);
+      if (b.id_kursi !== undefined && teks(b.id_kursi) !== teks(o.id_kursi)) {
+        if (timPendiri(o)) gagal('Launch team members do not take a seat.');
+        var x = kursiById(k, b.id_kursi);
+        if (!x) gagal('Seat not found.');
+        if (x.status === 'terisi') gagal('The ' + x.bidang + ' seat is already taken by ' + x.pemilik + '.');
+        ubah.id_kursi = x.id_kursi;
+      }
+      if (b.id_sponsor !== undefined && teks(b.id_sponsor) !== teks(o.id_sponsor)) {
+        if (teks(o.tahap) !== 'Anggota') gagal('Only members have a sponsor.');
+        if (teks(b.id_sponsor) === teks(o.id_orang)) gagal('A member cannot sponsor themselves.');
+        cekSponsor(k, teks(b.id_sponsor));
+        ubah.id_sponsor = teks(b.id_sponsor);
+      }
+      ubah.terakhir_diubah = k.now.toISOString();
+      k.ubah('Master', o, ubah);
+      k.log('ubahOrang', namaDepan(o) + ': ' + Object.keys(ubah).filter(function (z) { return z !== 'terakhir_diubah'; }).join(', '));
+      return { id_orang: teks(o.id_orang) };
+    },
+
+    /* Kode akses: buat, buat ulang (kode lama mati), matikan, hidupkan */
+    aturAkses: function (k, b) {
+      wajibLDC(k);
+      var o = k.orang(b.id_orang);
+      if (!o) gagal('Person not found.');
+      if (teks(o.id_orang) === k.saya.id_orang) gagal('Your own access cannot be changed here.');
+      var tindakan = teks(b.tindakan);
+      var a = aksesOrang(k, o.id_orang);
+      if (tindakan === 'buat') {
+        if (a) gagal(namaDepan(o) + ' already has a code.');
+        a = pastikanAkses(k, o, true);
+      } else if (!a) {
+        gagal(namaDepan(o) + ' has no code yet.');
+      } else if (tindakan === 'ulang') {
+        k.ubah('Akses', a, { kode_akses: kodeBaru(k), aktif: 'TRUE' });
+      } else if (tindakan === 'matikan') {
+        k.ubah('Akses', a, { aktif: 'FALSE' });
+      } else if (tindakan === 'hidupkan') {
+        k.ubah('Akses', a, { aktif: 'TRUE' });
+      } else {
+        gagal('Unknown action.');
+      }
+      k.log('aturAkses', namaDepan(o) + ': ' + tindakan);
+      return { akses: infoAkses(a) };
+    },
+
+    /* Setelah ESM: hidupkan kode semua member (dan buat yang belum punya) */
+    aktifkanKodeAnggota: function (k) {
+      wajibLDC(k);
+      var n = 0;
+      k.anggota().forEach(function (r) {
+        var a = aksesOrang(k, r.id_orang);
+        if (!a) { pastikanAkses(k, r, true); n++; }
+        else if (!benar(a.aktif)) { k.ubah('Akses', a, { aktif: 'TRUE' }); n++; }
+      });
+      k.log('aktifkanKodeAnggota', n + ' kode');
+      return { jumlah: n };
+    },
+
+    /* ---------- Settings (hanya LDC) ---------- */
+    bacaPengaturan: function (k) {
+      wajibLDC(k);
+      var a = k.pengaturan();
+      return { pengaturan: PENGATURAN_BISA.map(function (kunci) { return { kunci: kunci, nilai: teks(a[kunci]), contoh: PENGATURAN_CONTOH[kunci] || '' }; }), fase_boleh: FASE_BOLEH };
+    },
+
+    ubahPengaturan: function (k, b) {
+      wajibLDC(k);
+      var kunci = teks(b.kunci);
+      if (PENGATURAN_BISA.indexOf(kunci) < 0) gagal('This setting cannot be changed here.');
+      var nilai = teks(b.nilai);
+      if (kunci === 'fase' && FASE_BOLEH.indexOf(nilai) < 0) gagal('Unknown phase.');
+      if (/^(tanggal_esm|tanggal_grand_launch)$/.test(kunci) && nilai && !/^\d{4}-\d{2}-\d{2}$/.test(nilai)) gagal('Use the date format YYYY-MM-DD.');
+      if (/^(target_|driver_)/.test(kunci) && (!/^\d{1,3}$/.test(nilai) || Number(nilai) < 1)) gagal('Enter a whole number.');
+      if (/^tautan_/.test(kunci) && nilai && !/^https:\/\/[^\s]{4,480}$/i.test(nilai)) gagal('The link must start with https://');
+      var baris = k.tab('Pengaturan').filter(function (r) { return teks(r.kunci) === kunci; })[0];
+      if (baris) k.ubah('Pengaturan', baris, { nilai: nilai });
+      else k.tambah('Pengaturan', { kunci: kunci, nilai: nilai });
+      k._atur = null;
+      k.log('ubahPengaturan', kunci + ' = ' + nilai);
+      return { kunci: kunci, nilai: nilai };
+    },
+
+    /* ---------- Data viewer: baca saja (hanya LDC) ---------- */
+    lihatTab: function (k, b) {
+      wajibLDC(k);
+      var nama = teks(b.tab);
+      if (TAB_LIHAT.indexOf(nama) < 0) gagal('This tab cannot be viewed here.');
+      var baris = k.tab(nama);
+      var kolom = baris.length ? Object.keys(baris[0]) : [];
+      var nilai = function (v) { return v instanceof Date ? v.toISOString() : teks(v).slice(0, 200); };
+      return {
+        tab: nama, total: baris.length, kolom: kolom,
+        baris: baris.slice(-150).reverse().map(function (r) { return kolom.map(function (c) { return nilai(r[c]); }); })
+      };
     },
 
     /* ---------- pengumuman dan info acara ---------- */
@@ -1362,7 +1644,7 @@ var Inti = (function () {
     }
   };
 
-  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1 };
+  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1, orangSemua: 1, orangDetail: 1, bacaPengaturan: 1, lihatTab: 1 };
 
   /* Titik masuk tunggal. db = adaptor; badan = objek dari JSON. */
   function jalankan(db, badan, sekarang) {

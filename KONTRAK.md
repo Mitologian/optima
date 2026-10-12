@@ -339,6 +339,14 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `kandidatDriver` | | `orang [{id_orang, nama, tahap, bidang, driver}]` anggota dan calon aktif, tanpa kontak |
 | `tandaiDriver` | `id_orang, driver` (true atau false) | `{driver}`. Tidak bisa menandai orang yang sudah keluar (Declined, Rejected, Joined_Other) |
 | `kontak` | | `anggota [{id_orang, nama, jenis, tahap, bidang, whatsapp}]` member chapter, `calon [...]` calon aktif. Tanpa email dan catatan |
+| `orangSemua` | | **LDC.** `orang [{id_orang, nama, jenis (LDC/LT/Member/Prospect/Closed), tahap, bidang, whatsapp, sumber, sponsor, diajukan, pic, masuk, bergabung, undangan, hadir, kode (aktif/nonaktif/belum/'')}]`, `setelah_esm`. Semua orang di `Master` sejak awal; kode akses tidak ikut |
+| `orangDetail` | `id_orang` | **LDC.** `orang {...}`, `akses {ada, kode, peran, aktif, terakhir_masuk}`, `bisa_akses`, `diundang_ke[]`, `hadir[]`, `wawancara[]`, `mengundang {jumlah, tamu_hadir}` |
+| `tambahOrang` | `jenis` (`LT` atau `Anggota`), `nama`, `whatsapp`, `bisnis`, `id_kursi` dan `id_sponsor` (default `BNI`) untuk Anggota | **LDC.** LT baru (kategori `LT`, tanpa kursi) atau member yang masuk langsung dari luar chapter (`sumber` = `Luar chapter`, tahap `Anggota`). Membuat baris `Akses`. Hasil: `id_orang`, `akses {kode, aktif}`, `whatsapp` |
+| `ubahOrang` | `id_orang` + salah satu dari `nama`, `whatsapp`, `bisnis`, `perusahaan`, `catatan`, `id_kursi`, `id_sponsor` | **LDC.** Kursi harus kosong, nomor tidak boleh milik orang lain |
+| `aturAkses` | `id_orang`, `tindakan` (`buat`, `ulang`, `matikan`, `hidupkan`) | **LDC.** `ulang` membuat kode baru dan mematikan yang lama. Akses sendiri tidak bisa diubah |
+| `aktifkanKodeAnggota` | | **LDC.** Menghidupkan kode semua member dan membuat yang belum punya. Dipakai sesudah ESM |
+| `bacaPengaturan`, `ubahPengaturan` | `kunci`, `nilai` | **LDC.** Hanya kunci dalam daftar putih: `fase`, `tanggal_esm`, `tanggal_grand_launch`, `tautan_zoom_cs`, `tautan_form`, `target_*`, `driver_*` |
+| `lihatTab` | `tab` | **LDC.** Baca saja, 150 baris terbaru. Hanya tab `Undangan`, `Hadir`, `Events`, `Wawancara`, `Jadwal_CS`, `Responses`, `Butuh`, `Lencana`, `Pengumuman`, `Log`. `Master` dan `Akses` tidak lewat sini |
 | `jadikanAnggota` | `id_orang, id_kursi` (wajib bila calon belum punya kursi), `id_sponsor` | `{jenis_anggota, kursi}` |
 
 ### 6.3 Khusus LDC
@@ -375,3 +383,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-11 | Penanda driver: kolom `Master.driver`, `Pengaturan.target_driver`, aksi `kandidatDriver`, `tandaiDriver`, `regroup.driver`, lampu peringatan driver di `ringkas` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Rekomendasi driver otomatis: tiga pilar (komit, network, pengaruh), ambang di `Pengaturan` (`driver_*`), `regroup.driver.rekomendasi` dan `hampir` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-12 | LDC dan LT bukan member chapter (`tahap` kosong, tanpa kursi). Aksi `kontak` untuk LT dan LDC: nama, klasifikasi, nomor WhatsApp member dan calon aktif | Coach Dedy, 12 Oktober 2026 |
+| 2026-10-12 | Menu LDC (More): People, Settings, Data. Kode akses dibuat otomatis saat seseorang menjadi member (belum aktif sebelum ESM; `aktifkanKodeAnggota` menghidupkan). LT baru dan member dari luar chapter ditambah langsung oleh LDC. `jadikanAnggota` mengembalikan `akses` dan `whatsapp`. Aksi `orangSemua`, `orangDetail`, `tambahOrang`, `ubahOrang`, `aturAkses`, `aktifkanKodeAnggota`, `bacaPengaturan`, `ubahPengaturan`, `lihatTab` | Coach Dedy, 12 Oktober 2026 |

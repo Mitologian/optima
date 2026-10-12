@@ -126,3 +126,13 @@ Aturan lengkap ada di `KONTRAK.md`, bagian `Undangan`. Ringkasnya, untuk setiap 
 - Peralihan cangkang PWA ke `web/` sudah disiapkan: akar menjadi pengalih ke `web/`, cangkang lama dipindah ke `lama/`.
   Setelah peralihan, hapus `Main.html`, `Admin.html`, `Dashboard_v2.html`, `Member.html` dari proyek Apps Script
   supaya hanya ada satu `doPost`. Jalan kembali: arahkan akar ke `lama/` (lihat `README.md`).
+
+## F. Menyusul: menu People, kode akses, Settings (12 Oktober 2026)
+
+- Naikkan versi Apps Script lagi supaya aksi baru aktif: `orangSemua`, `orangDetail`, `tambahOrang`, `ubahOrang`, `aturAkses`,
+  `aktifkanKodeAnggota`, `bacaPengaturan`, `ubahPengaturan`, `lihatTab`. Tidak ada tab atau kolom baru di sheet.
+- Kode akses member kini dibuat otomatis oleh app (baris baru di `Akses`, `aktif` FALSE sampai ESM). Lapis tidak perlu membuat
+  kode lagi, cukup jangan menghapus baris `Akses` yang dibuat app.
+- `Pengaturan` boleh diubah app untuk kunci tertentu saja (fase, tanggal, tautan, target, ambang driver). Baris yang belum ada dibuat app.
+- Baris Master Coach Dedy (P0001): kosongkan `tahap` supaya konsisten dengan aturan pendiri bukan member.
+

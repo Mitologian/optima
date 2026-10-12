@@ -1193,8 +1193,8 @@
   /* ---------- TIM (LT dan LDC) ---------- */
   function layarTim(isi, sub) {
     var tabs = [['calon', 'Interviews'], ['jadwal', 'Schedule'], ['rabu', 'Check-in'], ['lainnya', 'More']];
-    var dalamMore = ['info', 'regroup', 'ringkas', 'riwayat', 'kontak'];
-    var subAktif = ['calon', 'jadwal', 'rabu', 'lainnya'].concat(dalamMore).indexOf(sub) >= 0 && (sub !== 'ringkas' || isLDC()) ? sub : 'calon';
+    var dalamMore = ['info', 'regroup', 'ringkas', 'riwayat', 'kontak', 'orang', 'atur', 'data'];
+    var subAktif = ['calon', 'jadwal', 'rabu', 'lainnya'].concat(dalamMore).indexOf(sub) >= 0 && (['ringkas', 'orang', 'atur', 'data'].indexOf(sub) < 0 || isLDC()) ? sub : 'calon';
     var aktif = dalamMore.indexOf(subAktif) >= 0 ? 'lainnya' : subAktif;
     isi.innerHTML = '<div class="tab" role="tablist">' + tabs.map(function (t) {
       return '<button role="tab" data-sub="' + t[0] + '" aria-selected="' + (t[0] === aktif) + '">' + t[1] + '</button>';
@@ -1202,7 +1202,7 @@
     isi.querySelectorAll('[data-sub]').forEach(function (t) { t.onclick = function () { location.hash = '#tim-' + t.dataset.sub; }; });
     var wadah = isi.querySelector('#sub');
     if (dalamMore.indexOf(subAktif) >= 0) wadah.insertAdjacentHTML('beforebegin', '<a class="kembali" href="#tim-lainnya">&#8249; More</a>');
-    ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, lainnya: subLainnya, info: subInfo, regroup: subRegroup, ringkas: subRingkas, riwayat: subRiwayat, kontak: subKontak })[subAktif](wadah);
+    ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, lainnya: subLainnya, info: subInfo, regroup: subRegroup, ringkas: subRingkas, riwayat: subRiwayat, kontak: subKontak, orang: subOrang, atur: subAtur, data: subData })[subAktif](wadah);
   }
 
   /* ---------- pendaftar Form yang perlu diputuskan ---------- */
@@ -1399,7 +1399,12 @@
           e.preventDefault();
           var h = await api('jadikanAnggota', { id_orang: c.id_orang, id_sponsor: e.target.sponsor.value, id_kursi: e.target.id_kursi ? e.target.id_kursi.value : c.id_kursi });
           if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
-          tutupLembar(); toast(c.nama.split(/\s+/)[0] + ' officially took the ' + h.kursi + ' seat', true); segarkan();
+          S.cache.kursi = null; segarkan();
+          var nd = c.nama.split(/\s+/)[0];
+          bukaLembar('<h2>' + esc(nd) + ' officially took the ' + esc(h.kursi) + ' seat</h2><p class="kecil" style="margin:4px 0 12px">' + esc(h.jenis_anggota) + ' member.</p>' +
+            kartuKode(nd, h.whatsapp, h.akses, h.akses.aktif ? 'Send it now. The code works right away.' : 'Active after ESM. The LDC turns on member codes then.') +
+            '<div class="baris-tombol"><button class="tombol kedua" id="t-tutup">Done</button></div>', function (el2) { pasangSalinKode(el2); el2.querySelector('#t-tutup').onclick = tutupLembar; });
+          toast(nd + ' officially took the ' + h.kursi + ' seat', true);
         };
       });
   }
@@ -1508,7 +1513,10 @@
 
   function subLainnya(w) {
     var item = [['kontak', 'Contacts', 'Name, classification and phone of members and prospects'], ['info', 'Announcements', 'Write announcements, set speaker and poster'], ['regroup', 'Regroup', 'Names per launch team member, seats without prospects'], ['riwayat', 'Round history', 'Invited, registered, attended and joined per week']];
-    if (isLDC()) item.push(['ringkas', 'Summary', 'Chapter numbers and warning lights']);
+    if (isLDC()) {
+      item.unshift(['orang', 'People', 'Everyone since the start: history, codes, add launch team or a member']);
+      item.push(['ringkas', 'Summary', 'Chapter numbers and warning lights'], ['atur', 'Settings', 'Phase, dates, targets, driver rules'], ['data', 'Data', 'Read-only view of the sheet tables']);
+    }
     w.innerHTML = '<section class="kartu"><ul class="daftar">' + item.map(function (x) {
       return '<li><a class="ketuk" href="#tim-' + x[0] + '" style="flex:1;min-width:0;display:block"><div class="utama"><b>' + x[1] + '</b><span>' + x[2] + '</span></div></a></li>';
     }).join('') + '</ul></section>';
@@ -1536,6 +1544,222 @@
       var q = cari.value.trim().toLowerCase();
       w.querySelectorAll('li[data-nama]').forEach(function (li) { li.hidden = q && li.dataset.nama.indexOf(q) < 0; });
     };
+  }
+
+  /* ---------- People, Settings, Data (hanya LDC) ---------- */
+  function urlApp() { return location.href.split('#')[0].split('?')[0]; }
+  function pesanKode(nama, kode) {
+    return 'Halo ' + nama + ', ini kode akses BNI Optima Anda: ' + kode + '\n\nBuka ' + urlApp() + ' lalu masukkan kode itu di kotak masuk. Setelah itu app mengingat Anda di perangkat ini.\n\nKode ini pribadi, mohon tidak dibagikan.\n\nSalam,\nCoach Dedy';
+  }
+  function kartuKode(nama, wa, akses, catatan) {
+    return '<section class="kartu kode-kartu"><p class="kecil">Access code' + (akses.aktif ? '' : ' (not active yet)') + '</p><p class="kode-besar">' + esc(akses.kode) + '</p>' +
+      (catatan ? '<p class="kecil">' + esc(catatan) + '</p>' : '') +
+      '<div class="baris-tombol">' + (wa ? '<a class="tombol" target="_blank" rel="noopener" href="' + esc(waLink(wa, pesanKode(nama, akses.kode))) + '">Send code on WhatsApp</a>' : '') +
+      '<button class="tombol kedua" type="button" data-salin-kode="' + esc(akses.kode) + '">Copy code</button></div></section>';
+  }
+  function pasangSalinKode(el) {
+    el.querySelectorAll('[data-salin-kode]').forEach(function (b) {
+      b.onclick = function () { salinTeks(b.dataset.salinKode); toast('Code copied.'); };
+    });
+  }
+  var JENIS_ORANG = { LDC: 'LDC', LT: 'Launch team', Member: 'Member', Prospect: 'Prospect', Closed: 'Closed' };
+  var saringOrang = 'all', cariOrang = '';
+
+  async function subOrang(w) {
+    w.innerHTML = '<div class="muat"></div>';
+    var r = await api('orangSemua');
+    if (!r.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
+    var orang = r.orang;
+    var saring = [['all', 'All'], ['Member', 'Members'], ['Prospect', 'Prospects'], ['team', 'Launch team'], ['Closed', 'Closed']];
+    var tanpaKode = orang.filter(function (o) { return o.jenis === 'Member' && o.kode !== 'aktif'; }).length;
+    function cocok(o) {
+      if (saringOrang === 'team' ? (o.jenis !== 'LT' && o.jenis !== 'LDC') : (saringOrang !== 'all' && o.jenis !== saringOrang)) return false;
+      var q = cariOrang.trim().toLowerCase();
+      return !q || (o.nama + ' ' + o.bidang + ' ' + o.whatsapp).toLowerCase().indexOf(q) >= 0;
+    }
+    function barisOrang(o) {
+      var lencanaKode = o.kode === 'aktif' ? '' : (o.kode === 'belum' ? '<span class="chip">no code</span> ' : (o.kode === 'nonaktif' ? '<span class="chip">code off</span> ' : ''));
+      var sub = (o.jenis === 'Prospect' || o.jenis === 'Closed') ? lblTahap(o.tahap) + (o.bidang ? ' · ' + o.bidang : '') : (o.bidang || JENIS_ORANG[o.jenis]);
+      return '<li class="ketuk" data-o="' + esc(o.id_orang) + '"><div class="utama"><b>' + esc(o.nama) + '</b><span>' + esc(sub) + '</span></div>' + lencanaKode + '<span class="chip' + (o.jenis === 'Member' ? ' merah' : '') + '">' + esc(JENIS_ORANG[o.jenis] || o.jenis) + '</span></li>';
+    }
+    function gambar() {
+      var tampil = orang.filter(cocok).sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+      w.querySelector('#daftar-orang').innerHTML = tampil.length ? '<ul class="daftar">' + tampil.map(barisOrang).join('') + '</ul>' : '<p class="kosong-isi">No one matches.</p>';
+      w.querySelectorAll('[data-o]').forEach(function (li) { li.onclick = function () { lembarOrang(li.dataset.o, function () { subOrang(w); }); }; });
+      w.querySelector('#jml-orang').textContent = tampil.length;
+    }
+    w.innerHTML = '<div class="judul-bagian"><h2>People</h2><span class="kecil"><b id="jml-orang"></b> of ' + orang.length + '</span><button class="tombol kecil" id="o-baru">Add</button></div>' +
+      (r.setelah_esm && tanpaKode ? '<section class="kartu sorotan"><h3>' + tanpaKode + ' member' + (tanpaKode > 1 ? 's' : '') + ' cannot log in yet</h3><p class="kecil">Turn on every member code, then send the codes from each profile.</p><div class="baris-tombol"><button class="tombol" id="o-aktif">Turn on member codes</button></div></section>'
+        : (!r.setelah_esm && tanpaKode ? '<p class="catatan-main">Member codes stay off until ESM is done. After the phase changes in Settings, turn them on here.</p>' : '')) +
+      '<div class="pilihan" style="margin-bottom:10px">' + saring.map(function (f) { return '<button type="button" data-f="' + f[0] + '" aria-pressed="' + (f[0] === saringOrang) + '">' + f[1] + '</button>'; }).join('') + '</div>' +
+      '<input class="cari" id="cari-orang" placeholder="Search name, classification or number" type="search" value="' + esc(cariOrang) + '">' +
+      '<section class="kartu" id="daftar-orang"></section>' +
+      '<p class="catatan-main">Everyone ever recorded, from before ESM on. Nothing here is deleted when a round ends.</p>';
+    gambar();
+    w.querySelectorAll('[data-f]').forEach(function (b) {
+      b.onclick = function () { saringOrang = b.dataset.f; w.querySelectorAll('[data-f]').forEach(function (z) { z.setAttribute('aria-pressed', z === b); }); gambar(); };
+    });
+    w.querySelector('#cari-orang').oninput = function (e) { cariOrang = e.target.value; gambar(); };
+    w.querySelector('#o-baru').onclick = function () { lembarTambahOrang(function () { subOrang(w); }); };
+    var ba = w.querySelector('#o-aktif');
+    if (ba) ba.onclick = async function () {
+      ba.disabled = true;
+      var h = await api('aktifkanKodeAnggota');
+      if (!h.ok) { ba.disabled = false; return toast(h.pesan); }
+      toast(h.jumlah + ' member code' + (h.jumlah === 1 ? '' : 's') + ' turned on.'); subOrang(w);
+    };
+  }
+
+  async function lembarOrang(id, segarkan) {
+    bukaLembar('<div class="muat"></div>');
+    var d = await api('orangDetail', { id_orang: id });
+    if (!d.ok) { bukaLembar('<p class="kosong-isi">' + esc(d.pesan) + '</p>'); return; }
+    var o = d.orang, a = d.akses, saya = o.id_orang === S.profil.id_orang;
+    if (!S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
+    var anggotaR = o.jenis === 'Member' ? await api('anggota') : { anggota: [] };
+    function baris(k, v) { return v ? '<li><div class="utama"><b>' + esc(k) + '</b><span>' + esc(v) + '</span></div></li>' : ''; }
+    function jejak(judul, daftar, f) {
+      return daftar.length ? '<div class="judul-bagian"><h2>' + judul + '</h2><span class="kecil">' + daftar.length + '</span></div><section class="kartu"><ul class="daftar">' + daftar.map(f).join('') + '</ul></section>' : '';
+    }
+    var kursiOpsi = '';
+    (S.cache.kursi || []).forEach(function (b) { b.kursi.forEach(function (x) { if (x.status !== 'terisi' || x.id_kursi === o.id_kursi) kursiOpsi += '<option value="' + esc(x.id_kursi) + '"' + (x.id_kursi === o.id_kursi ? ' selected' : '') + '>' + esc(x.bidang) + '</option>'; }); });
+    var sponsorOpsi = '<option value="BNI"' + (o.id_sponsor === 'BNI' ? ' selected' : '') + '>BNI (no member known personally)</option>' +
+      (anggotaR.anggota || []).filter(function (m) { return m.id_orang !== o.id_orang; }).map(function (m) { return '<option value="' + esc(m.id_orang) + '"' + (m.id_orang === o.id_sponsor ? ' selected' : '') + '>' + esc(m.nama) + '</option>'; }).join('');
+    var akun = '';
+    if (d.bisa_akses && !saya) {
+      akun = a.ada
+        ? kartuKode(o.nama_depan, o.whatsapp, a, a.aktif ? (a.terakhir_masuk ? 'Last login ' + lalu(a.terakhir_masuk) + '.' : 'Not used yet.') : 'Login stays blocked until the code is turned on.') +
+          '<div class="baris-tombol"><button class="tombol kecil kedua" data-akses="' + (a.aktif ? 'matikan' : 'hidupkan') + '">' + (a.aktif ? 'Turn off' : 'Turn on') + '</button><button class="tombol kecil kedua" data-akses="ulang">New code</button></div>'
+        : '<section class="kartu"><p class="kecil">No access code yet.</p><div class="baris-tombol"><button class="tombol kecil" data-akses="buat">Create code</button></div></section>';
+    }
+    bukaLembar(
+      '<div class="tajuk"><span class="lambang" style="width:52px;height:52px;font-size:20px">' + inisial(o.nama) + '</span><div><p class="kecil">' + esc(JENIS_ORANG[o.jenis] || o.jenis) + (o.jenis === 'Prospect' ? ' · ' + esc(lblTahap(o.tahap)) : '') + '</p><h2>' + esc(o.nama) + '</h2>' + (o.bidang || o.bisnis ? '<p class="kecil">' + esc(o.bidang || o.bisnis) + '</p>' : '') + '</div></div>' +
+      (o.whatsapp ? '<a class="tombol kedua" target="_blank" rel="noopener" href="' + esc(waLink(o.whatsapp)) + '" style="margin-bottom:14px">Chat on WhatsApp</a>' : '') +
+      '<section class="kartu"><ul class="daftar">' + baris('WhatsApp', o.whatsapp ? '+' + o.whatsapp : 'No number') + baris('Source', o.sumber) + baris('Added', o.masuk ? tglPendek(o.masuk) : '') +
+        (o.jenis === 'Member' ? baris('Sponsor', o.sponsor) + baris('Joined', (o.bergabung ? tglPendek(o.bergabung) : '') + (o.jenis_anggota ? ' · ' + o.jenis_anggota : '')) : '') +
+        baris('Registered by', o.diajukan) + baris('Handled by', o.pic) + baris('Coffee session', o.jadwal_cs ? tglPendek(o.jadwal_cs) : '') + baris('Notes', o.catatan) + baris('Why not continued', o.alasan) + '</ul></section>' +
+      akun +
+      (d.mengundang.jumlah ? '<section class="kartu"><p class="kecil">Invited <b>' + d.mengundang.jumlah + '</b> guest' + (d.mengundang.jumlah > 1 ? 's' : '') + ', <b>' + d.mengundang.tamu_hadir + '</b> attended.</p></section>' : '') +
+      jejak('Invited to', d.diundang_ke, function (u) { return '<li><div class="utama"><b>' + esc(u.acara) + '</b><span>' + esc(lblStatus(u.status)) + ' · by ' + esc(u.oleh) + '</span></div></li>'; }) +
+      jejak('Attended', d.hadir, function (h) { return '<li><div class="utama"><b>' + esc(h.acara) + '</b><span>' + esc(PERAN_LABEL[h.peran] || h.peran) + '</span></div></li>'; }) +
+      jejak('Interviews', d.wawancara, function (x) { return '<li><div class="utama"><b>' + esc(tglPendek(x.tanggal)) + (x.kanal ? ' · ' + esc(x.kanal) : '') + '</b><span>' + esc(x.hasil || 'No result noted') + (x.pic ? ' · with ' + esc(x.pic) : '') + '</span></div></li>'; }) +
+      '<div class="judul-bagian"><h2>Edit</h2></div>' +
+      '<form id="f-edit"><label class="isian"><span>Name</span><input name="nama" value="' + esc(o.nama.replace(/ \(LDC\)$/, '')) + '" required></label>' +
+      '<label class="isian"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" value="' + esc(o.whatsapp) + '"></label>' +
+      '<label class="isian"><span>Business</span><input name="bisnis" value="' + esc(o.bisnis) + '"></label>' +
+      (o.jenis === 'Member' ? '<label class="isian"><span>Classification seat</span><select name="id_kursi">' + kursiOpsi + '</select></label><label class="isian"><span>Sponsor</span><select name="id_sponsor">' + sponsorOpsi + '</select></label>' : '') +
+      '<label class="isian"><span>Notes</span><textarea name="catatan">' + esc(o.catatan) + '</textarea></label>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save changes</button></form>' +
+      (o.jenis === 'Prospect' || o.jenis === 'Closed' ? '<div class="baris-tombol"><button class="tombol kedua" id="o-tahap">Update stage or make a member</button></div>' : ''),
+      function (el) {
+        pasangSalinKode(el);
+        el.querySelectorAll('[data-akses]').forEach(function (b) {
+          b.onclick = async function () {
+            if (b.dataset.akses === 'ulang' && !confirm('Make a new code? The old code stops working right away.')) return;
+            b.disabled = true;
+            var h = await api('aturAkses', { id_orang: o.id_orang, tindakan: b.dataset.akses });
+            if (!h.ok) { b.disabled = false; return toast(h.pesan); }
+            toast('Done.'); segarkan(); lembarOrang(id, segarkan);
+          };
+        });
+        el.querySelector('#f-edit').onsubmit = async function (e) {
+          e.preventDefault();
+          var f = e.target;
+          var data = { id_orang: o.id_orang, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value, catatan: f.catatan.value };
+          if (f.id_kursi) { data.id_kursi = f.id_kursi.value; data.id_sponsor = f.id_sponsor.value; }
+          var h = await api('ubahOrang', data);
+          if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
+          S.cache.kursi = null; toast('Saved.'); segarkan(); lembarOrang(id, segarkan);
+        };
+        var bt = el.querySelector('#o-tahap');
+        if (bt) bt.onclick = function () {
+          lembarCalon({ id_orang: o.id_orang, nama: o.nama, bidang: o.bidang || 'Undecided classification', bisnis: o.bisnis, whatsapp: o.whatsapp, tahap: o.tahap, jadwal_cs: o.jadwal_cs, id_kursi: o.id_kursi }, function () { S.cache.kursi = null; segarkan(); });
+        };
+      });
+  }
+
+  async function lembarTambahOrang(segarkan) {
+    bukaLembar('<div class="muat"></div>');
+    var h = await Promise.all([api('anggota'), S.cache.kursi ? { ok: true, baris: S.cache.kursi } : api('kursi')]);
+    if (h[1].ok) S.cache.kursi = h[1].baris;
+    var sponsor = '<option value="BNI">BNI (no member known personally)</option>' + (h[0].anggota || []).map(function (m) { return '<option value="' + esc(m.id_orang) + '">' + esc(m.nama) + '</option>'; }).join('');
+    var jenis = 'Anggota';
+    bukaLembar(
+      '<h2>Add a person</h2><p class="kecil" style="margin:4px 0 12px">For people who did not come through an interview: new launch team members, or a member joining from outside the chapter.</p>' +
+      '<div class="pilihan" style="margin-bottom:14px"><button type="button" data-j="Anggota" aria-pressed="true">Member</button><button type="button" data-j="LT" aria-pressed="false">Launch team</button></div>' +
+      '<form id="f-tambah"><label class="isian"><span>Full name</span><input name="nama" required></label><label class="isian"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" required placeholder="0812..."></label>' +
+      '<label class="isian"><span>Business</span><input name="bisnis"></label>' +
+      '<div id="bag-member">' + pilihKursiKosong('id_kursi', false) + '<label class="isian"><span>Sponsor</span><select name="id_sponsor">' + sponsor + '</select></label>' +
+      '<p class="kecil" style="margin:-4px 0 14px">A member from outside the chapter has no inviter here. Keep BNI unless a member brought them in.</p></div>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Add and create code</button></form>',
+      function (el) {
+        el.querySelectorAll('[data-j]').forEach(function (b) {
+          b.onclick = function () {
+            jenis = b.dataset.j;
+            el.querySelectorAll('[data-j]').forEach(function (z) { z.setAttribute('aria-pressed', z === b); });
+            el.querySelector('#bag-member').hidden = jenis !== 'Anggota';
+          };
+        });
+        el.querySelector('#f-tambah').onsubmit = async function (e) {
+          e.preventDefault();
+          var f = e.target;
+          if (jenis === 'Anggota' && !f.id_kursi.value) { var s0 = el.querySelector('#salah'); s0.textContent = 'Choose the classification seat.'; s0.hidden = false; return; }
+          var r = await api('tambahOrang', { jenis: jenis, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value, id_kursi: jenis === 'Anggota' ? f.id_kursi.value : '', id_sponsor: jenis === 'Anggota' ? f.id_sponsor.value : '' });
+          if (!r.ok) { var s = el.querySelector('#salah'); s.textContent = r.pesan; s.hidden = false; return; }
+          S.cache.kursi = null; segarkan();
+          bukaLembar('<h2>' + esc(r.nama_depan) + ' added</h2><p class="kecil" style="margin:4px 0 12px">' + (jenis === 'LT' ? 'Launch team member.' : 'Member from outside the chapter.') + '</p>' +
+            kartuKode(r.nama_depan, r.whatsapp, r.akses, r.akses.aktif ? 'Send it now. The code works right away.' : 'Active after ESM. Turn on member codes in People then.') +
+            '<div class="baris-tombol"><button class="tombol kedua" id="t-tutup">Done</button></div>', function (el2) { pasangSalinKode(el2); el2.querySelector('#t-tutup').onclick = tutupLembar; });
+        };
+      });
+  }
+
+  var LABEL_ATUR = {
+    fase: 'Phase', tanggal_esm: 'ESM date', tanggal_grand_launch: 'Grand Launch date', tautan_zoom_cs: 'Coffee session Zoom link', tautan_form: 'Guest Form link',
+    target_founding: 'Founding target', target_cgt: 'CGT target', target_launch: 'Launch target', target_nama_min: 'Names per person, minimum', target_nama_maks: 'Names per person, maximum',
+    target_gold: 'Gold path (new members)', target_driver: 'Drivers wanted', driver_ronde_min: 'Driver: rounds since joining', driver_hadir_bod: 'Driver: BOD attendance %',
+    driver_undang: 'Driver: invited in % of rounds', driver_tamu_hadir: 'Driver: guests who came %', driver_konversi: 'Driver: guests who joined %', driver_lunch: 'Driver: Lunch Networking %', driver_aktif_ronde: 'Driver: active rounds'
+  };
+  async function subAtur(w) {
+    w.innerHTML = '<div class="muat"></div>';
+    var r = await api('bacaPengaturan');
+    if (!r.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
+    function kelompok(judul, kunciAwal) {
+      var isi = r.pengaturan.filter(function (x) { return kunciAwal.test(x.kunci); });
+      return '<div class="judul-bagian"><h2>' + judul + '</h2></div><section class="kartu"><ul class="daftar">' + isi.map(function (x) {
+        var kontrol = x.kunci === 'fase'
+          ? '<select name="nilai">' + r.fase_boleh.map(function (f) { return '<option' + (f === x.nilai ? ' selected' : '') + '>' + esc(f) + '</option>'; }).join('') + '</select>'
+          : '<input name="nilai" value="' + esc(x.nilai) + '"' + (x.contoh ? ' placeholder="' + esc(x.contoh) + '"' : '') + (/^(target_|driver_)/.test(x.kunci) ? ' inputmode="numeric"' : '') + '>';
+        return '<li><form class="atur-baris" data-kunci="' + esc(x.kunci) + '"><label class="isian" style="margin:0;flex:1"><span>' + esc(LABEL_ATUR[x.kunci] || x.kunci) + '</span>' + kontrol + '</label><button class="tombol kecil kedua" type="submit">Save</button></form></li>';
+      }).join('') + '</ul></section>';
+    }
+    w.innerHTML = kelompok('Chapter', /^(fase|tanggal_|tautan_)/) + kelompok('Targets', /^target_/) + kelompok('Driver recommendation', /^driver_/) +
+      '<p class="catatan-main">Changing the phase changes the Chapter Mission target and the Founding or Core Group label for new members. Member codes stay off until ESM: after switching the phase, turn them on in People.</p>';
+    w.querySelectorAll('form.atur-baris').forEach(function (f) {
+      f.onsubmit = async function (e) {
+        e.preventDefault();
+        var h = await api('ubahPengaturan', { kunci: f.dataset.kunci, nilai: f.nilai.value });
+        if (!h.ok) return toast(h.pesan);
+        toast('Saved.');
+        if (f.dataset.kunci === 'fase') { var m = await api('masuk'); if (m.ok) S.atur = m.pengaturan; }
+      };
+    });
+  }
+
+  var tabData = 'Undangan';
+  async function subData(w) {
+    w.innerHTML = '<div class="muat"></div>';
+    var r = await api('lihatTab', { tab: tabData });
+    var TAB = ['Undangan', 'Hadir', 'Events', 'Wawancara', 'Jadwal_CS', 'Responses', 'Butuh', 'Lencana', 'Pengumuman', 'Log'];
+    var pilih = '<label class="isian"><span>Table</span><select id="pil-tab">' + TAB.map(function (t) { return '<option' + (t === tabData ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label>';
+    if (!r.ok) { w.innerHTML = pilih + '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; }
+    else {
+      w.innerHTML = pilih + '<p class="kecil" style="margin:0 2px 8px">' + r.total + ' rows' + (r.total > r.baris.length ? ', newest ' + r.baris.length + ' shown' : '') + '. Read only.</p>' +
+        (r.baris.length ? '<div class="tabel-gulir"><table class="tabel-data"><thead><tr>' + r.kolom.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+          r.baris.map(function (b) { return '<tr>' + b.map(function (v) { return '<td>' + esc(v) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' : '<p class="kosong-isi">This table is empty.</p>') +
+        '<p class="catatan-main">People and access codes are managed in People. To correct something here, ask Lapis or edit the sheet.</p>';
+    }
+    w.querySelector('#pil-tab').onchange = function (e) { tabData = e.target.value; subData(w); };
   }
 
   async function subRiwayat(w) {

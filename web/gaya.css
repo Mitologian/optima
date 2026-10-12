@@ -461,3 +461,14 @@ p.pilar-judul i { font-style: normal; width: 20px; height: 20px; border-radius: 
 p.pilar-judul.ya i { background: color-mix(in srgb, var(--hijau) 18%, transparent); color: var(--hijau); }
 ul.syarat { padding-left: 28px; }
 li[data-nama] .utama span { display: block; }
+
+/* People, kode akses, Settings, Data */
+.kode-kartu { text-align: center; }
+.kode-besar { font-family: var(--huruf-judul); font-size: 34px; font-weight: 700; letter-spacing: .18em; color: var(--merah); margin: 4px 0 12px; }
+.kode-kartu .baris-tombol { justify-content: center; }
+li.ketuk[data-o] { cursor: pointer; }
+.atur-baris { display: flex; align-items: flex-end; gap: 10px; width: 100%; }
+.tabel-gulir { overflow-x: auto; border: 1px solid var(--garis); border-radius: 12px; }
+.tabel-data { border-collapse: collapse; font-size: 12px; min-width: 100%; }
+.tabel-data th, .tabel-data td { padding: 6px 10px; text-align: left; white-space: nowrap; border-top: 1px solid var(--garis); max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.tabel-data th { background: var(--kertas-2); font-weight: 700; border-top: 0; position: sticky; top: 0; }

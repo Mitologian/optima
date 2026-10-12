@@ -223,7 +223,7 @@ label.isian > span { display: block; font-size: 13px; font-weight: 700; color: v
 .masuk { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; max-width: 420px; margin: 0 auto; padding: 32px 20px; }
 .masuk .merek-besar { font-family: var(--huruf-judul); font-weight: 800; line-height: .9; letter-spacing: -.04em; }
 .masuk .merek-besar small { display: block; font-size: 14px; letter-spacing: .3em; color: var(--merah); margin-bottom: 8px; }
-.masuk .merek-besar span { font-size: 64px; }
+.masuk .merek-besar span { font-size: 56px; }
 .masuk .kisi-hias { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin: 28px 0; }
 .masuk .kisi-hias i { aspect-ratio: 1; border-radius: 4px; border: 1.5px dashed var(--garis); animation: muncul .5s ease both; }
 .masuk .kisi-hias i.isi { background: var(--merah); border: 0; }
@@ -472,3 +472,6 @@ li.ketuk[data-o] { cursor: pointer; }
 .tabel-data { border-collapse: collapse; font-size: 12px; min-width: 100%; }
 .tabel-data th, .tabel-data td { padding: 6px 10px; text-align: left; white-space: nowrap; border-top: 1px solid var(--garis); max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
 .tabel-data th { background: var(--kertas-2); font-weight: 700; border-top: 0; position: sticky; top: 0; }
+
+.tagline-masuk { margin-top: 12px; font-weight: 700; color: var(--merah); letter-spacing: .01em; }
+.masuk .merek-besar span { letter-spacing: .01em; }

@@ -16,9 +16,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="gaya.css">
+  <style>
+    .splash { position: fixed; inset: 0; z-index: 50; background: #C8102E; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; font-family: Helvetica, Arial, sans-serif; }
+    .splash b { display: block; font-size: 38px; font-weight: 800; letter-spacing: .06em; line-height: 1.05; }
+    .splash p { margin: 10px 0 44px; font-size: 14px; letter-spacing: .02em; color: rgba(255,255,255,.82); }
+    .splash i { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: putar .8s linear infinite; }
+    @keyframes putar { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app"><div class="splash"><b>BNI OPTIMA</b><p>Optimal Network, Optimal Profit</p><i></i></div></div>
   <div id="lembar" class="lembar" hidden>
     <div class="lembar-latar" data-tutup></div>
     <div class="lembar-isi" role="dialog" aria-modal="true"></div>

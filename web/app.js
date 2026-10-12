@@ -148,8 +148,9 @@
     for (var i = 0; i < 32; i++) hias += '<i class="' + (pola.indexOf(i) >= 0 ? 'isi' : '') + '" style="animation-delay:' + (i * 18) + 'ms"></i>';
     $app.innerHTML =
       '<div class="masuk">' +
-        '<div class="merek-besar"><small>BNI CHAPTER</small><span>Optima</span></div>' +
-        '<p class="kecil" style="margin-top:10px">64 seats. One classification per seat. Fill them together.</p>' +
+        '<div class="merek-besar"><small>BNI</small><span>OPTIMA</span></div>' +
+        '<p class="tagline-masuk">Optimal Network, Optimal Profit</p>' +
+        '<p class="kecil" style="margin-top:6px">64 seats. One classification per seat. Fill them together.</p>' +
         '<div class="kisi-hias">' + hias + '</div>' +
         '<form id="f-masuk">' +
           '<label class="isian"><span>Access code</span><input class="kode" name="kode" maxlength="8" autocomplete="one-time-code" autocapitalize="characters" required></label>' +
@@ -1886,7 +1887,7 @@
   (async function mulai() {
     var k = ambil('optima_kode');
     if (k) {
-      $app.innerHTML = '<div class="masuk"><div class="muat"></div></div>';
+      $app.innerHTML = '<div class="splash"><b>BNI OPTIMA</b><p>Optimal Network, Optimal Profit</p><i></i></div>';
       var r = await coba(k);
       if (!r.ok) { simpan('optima_kode', null); layarMasuk(); }
     } else layarMasuk();

@@ -8,14 +8,18 @@
   <meta http-equiv="refresh" content="0; url=web/">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
   <style>
-    html, body { height: 100%; margin: 0; background: #C8102E; color: #fff; font-family: Arial, Helvetica, sans-serif; }
-    body { display: grid; place-items: center; text-align: center; }
-    a { color: #fff; }
+    html, body { height: 100%; margin: 0; background: #C8102E; }
+    .splash { position: fixed; inset: 0; z-index: 50; background: #C8102E; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; font-family: Helvetica, Arial, sans-serif; }
+    .splash b { display: block; font-size: 38px; font-weight: 800; letter-spacing: .06em; line-height: 1.05; }
+    .splash p { margin: 10px 0 44px; font-size: 14px; letter-spacing: .02em; color: rgba(255,255,255,.82); }
+    .splash i { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: putar .8s linear infinite; }
+    @keyframes putar { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <!-- Pengalih ke app baru di web/. Parameter alamat (misalnya ?tiruan=1) dan #bagian ikut diteruskan. -->
-  <p><b>BNI OPTIMA</b><br><a href="web/">Open the app</a></p>
+  <div class="splash"><b>BNI OPTIMA</b><p>Optimal Network, Optimal Profit</p><i></i></div>
+  <noscript><p style="position:fixed;bottom:24px;left:0;right:0;text-align:center;font:14px Arial"><a href="web/" style="color:#fff">Open the app</a></p></noscript>
   <script>location.replace('web/' + location.search + location.hash);</script>
 </body>
 </html>

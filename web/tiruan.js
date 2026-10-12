@@ -2,7 +2,7 @@
    Aktif saat CONFIG.API_URL kosong. Kode contoh: LDC001, LT0001, AGT001.
    Tambahkan ?fase=BOD di alamat untuk target Misi dan label anggota seperti setelah ESM. Tambahkan ?reset=1 untuk mengulang data. */
 var Tiruan = (function () {
-  var KUNCI = 'optima_tiruan_v11';
+  var KUNCI = 'optima_tiruan_v12';
   var HARI = 864e5;
   var POSTER_CONTOH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#C8102E"/><text x="32" y="92" font-family="Arial" font-size="22" fill="#fff" opacity=".8">BNI OPTIMA · BUSINESS OPPORTUNITY DAY</text><text x="32" y="190" font-family="Arial" font-weight="700" font-size="44" fill="#fff">One seat per</text><text x="32" y="244" font-family="Arial" font-weight="700" font-size="44" fill="#fff">classification</text><text x="32" y="316" font-family="Arial" font-size="20" fill="#fff">Wednesday 07:00 to 09:00</text></svg>');
   var data = null;
@@ -55,11 +55,11 @@ var Tiruan = (function () {
       M.push(o);
       return o;
     }
-    var dedy = orang('Dedy Dahlan', 'LDC', 'Anggota', 'K33', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(30), id_sponsor: 'BNI', bisnis: 'Mitologi Inspira' });
-    var agung = orang('Agung Pratama', 'LT', 'Anggota', 'K11', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(28), id_sponsor: dedy.id_orang, bisnis: 'Notary Office' });
-    var dhika = orang('Dhika Ramadhan', 'LT', 'Anggota', 'K19', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(28), id_sponsor: dedy.id_orang, bisnis: 'Photo Studio' });
-    var iman = orang('Iman Santoso', 'LT', 'Anggota', 'K49', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(25), id_sponsor: dedy.id_orang, bisnis: 'IT Support' });
-    var sari = orang('Sari Wulandari', 'LT', 'Anggota', 'K27', { jenis_anggota: 'Founding', tanggal_bergabung: lalu(25), id_sponsor: agung.id_orang, bisnis: 'Home Catering' });
+    var dedy = orang('Dedy Dahlan', 'LDC', '', '', { bisnis: 'Mitologi Inspira' });
+    var agung = orang('Agung Pratama', 'LT', '', '', { bisnis: 'Notary Office' });
+    var dhika = orang('Dhika Ramadhan', 'LT', '', '', { bisnis: 'Photo Studio' });
+    var iman = orang('Iman Santoso', 'LT', '', '', { bisnis: 'IT Support' });
+    var sari = orang('Sari Wulandari', 'LT', '', '', { bisnis: 'Home Catering' });
     var lt = [dedy, agung, dhika, iman, sari];
     // driver contoh dipasang di bawah, setelah semua orang dibuat
 
@@ -69,7 +69,7 @@ var Tiruan = (function () {
       ['Indah Kusuma', 'K41', dedy, 4], ['Joko Susilo', 'K57', agung, 2], ['Kartika Sari', 'K03', dedy, 1]
     ];
     var anggota = anggotaContoh.map(function (a) {
-      return orang(a[0], 'Calon', 'Anggota', a[1], { jenis_anggota: 'Founding', tanggal_bergabung: lalu(a[3]), id_sponsor: a[2].id_orang, PIC: a[2].id_orang, diajukan_oleh: a[2].id_orang, bisnis: '' });
+      return orang(a[0], 'Calon', 'Anggota', a[1], { jenis_anggota: 'Founding', tanggal_bergabung: lalu(a[3]), id_sponsor: 'BNI', PIC: a[2].id_orang, diajukan_oleh: a[2].id_orang, bisnis: '' });
     });
 
     var calonContoh = [

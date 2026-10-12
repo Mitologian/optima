@@ -460,3 +460,4 @@ p.pilar-judul { display: flex; align-items: center; gap: 8px; margin: 8px 0 6px;
 p.pilar-judul i { font-style: normal; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; background: var(--kertas-2); color: var(--abu); }
 p.pilar-judul.ya i { background: color-mix(in srgb, var(--hijau) 18%, transparent); color: var(--hijau); }
 ul.syarat { padding-left: 28px; }
+li[data-nama] .utama span { display: block; }

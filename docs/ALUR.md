@@ -70,6 +70,7 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Tulis pengumuman, isi pembicara dan poster acara | Team, More, Announcements |
 | Lihat anggota yang belum mengundang ronde ini (untuk pengingat) | Board, This round (bagian bawah) |
 | Lihat rekomendasi driver otomatis dan tandai driver (minimal 5) | Team, More, Regroup, kartu Drivers |
+| Lihat nama, klasifikasi, dan nomor member dan calon | Team, More, Contacts |
 | Pantau nama per LT dan kursi kosong | Team, More, Regroup |
 | Ringkasan chapter | Team, More, Summary (hanya LDC) |
 

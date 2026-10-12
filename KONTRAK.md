@@ -124,7 +124,11 @@ Satu baris per orang, dari calon sampai anggota.
 | `jadwal_cs` | tanggal dan jam coffee session, diisi saat tahap diubah ke `CS` |
 
 LT dan LDC juga punya baris di `Master` (kategori `LT` atau `LDC`) supaya punya `id_orang`.
-Kalau LT juga anggota chapter, `kategori` tetap `LT` dan `tahap` = `Anggota`.
+**LDC dan LT adalah pendiri, bukan member chapter** (keputusan Coach Dedy, 12 Oktober): `tahap` dikosongkan,
+tanpa `id_kursi`, `jenis_anggota`, dan `tanggal_bergabung`. App tidak menghitung mereka sebagai anggota, tidak
+memberi kursi, dan tidak memasukkan mereka ke daftar member, sponsor, atau kandidat driver. Mereka tetap bisa
+masuk, mengundang, dan dicatat hadir di Check-in. Baris LDC atau LT dengan `tahap` = `Anggota` tetap diabaikan
+sebagai member selama `kategori`-nya `LT` atau `LDC`.
 
 ### `Undangan`
 `id_undangan` · `tanggal` · `id_pengundang` · `id_orang_calon` · `id_event` · `status` · `sumber`
@@ -334,6 +338,7 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `tetapkanPengundang` | `id_undangan, id_pengundang` (`id_orang` anggota, LT, atau LDC; atau `Walk-in`) | `{id_pengundang}` |
 | `kandidatDriver` | | `orang [{id_orang, nama, tahap, bidang, driver}]` anggota dan calon aktif, tanpa kontak |
 | `tandaiDriver` | `id_orang, driver` (true atau false) | `{driver}`. Tidak bisa menandai orang yang sudah keluar (Declined, Rejected, Joined_Other) |
+| `kontak` | | `anggota [{id_orang, nama, jenis, tahap, bidang, whatsapp}]` member chapter, `calon [...]` calon aktif. Tanpa email dan catatan |
 | `jadikanAnggota` | `id_orang, id_kursi` (wajib bila calon belum punya kursi), `id_sponsor` | `{jenis_anggota, kursi}` |
 
 ### 6.3 Khusus LDC
@@ -344,7 +349,8 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 
 ### 6.4 Aturan wajib
 
-1. Tidak pernah mengirim WhatsApp, email, atau catatan orang lain ke peran `Anggota`.
+1. Tidak pernah mengirim WhatsApp, email, atau catatan orang lain ke peran `Anggota`. LT dan LDC boleh melihat nama,
+   klasifikasi, dan nomor WhatsApp semua member dan calon aktif (aksi `kontak`), tetap tanpa email dan catatan.
 2. Papan dan kursi hanya memuat nama depan. Pengecualian: LDC tampil lengkap dengan perannya, "Dedy Dahlan (LDC)", di semua daftar dan papan. Pengecualian: `tamuPekanIni` dan `daftarAnggota` memuat nama
    lengkap dan bidang untuk semua anggota (keputusan Coach Dedy), tetap tanpa nomor telepon.
 3. Kode salah: setelah 20 kali gagal dalam 10 menit dari semua sumber, semua `masuk` dikunci 10 menit
@@ -368,3 +374,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-11 | Riwayat per ronde: aksi `riwayatRonde` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Penanda driver: kolom `Master.driver`, `Pengaturan.target_driver`, aksi `kandidatDriver`, `tandaiDriver`, `regroup.driver`, lampu peringatan driver di `ringkas` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Rekomendasi driver otomatis: tiga pilar (komit, network, pengaruh), ambang di `Pengaturan` (`driver_*`), `regroup.driver.rekomendasi` dan `hampir` | Coach Dedy, 11 Oktober 2026 |
+| 2026-10-12 | LDC dan LT bukan member chapter (`tahap` kosong, tanpa kursi). Aksi `kontak` untuk LT dan LDC: nama, klasifikasi, nomor WhatsApp member dan calon aktif | Coach Dedy, 12 Oktober 2026 |

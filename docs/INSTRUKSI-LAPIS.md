@@ -46,7 +46,7 @@ Akun `dedydahlan@gmail.com`, privat, editor hanya Coach Dedy dan Lapis.
    | `tautan_zoom_cs` | tautan Zoom tetap Coach Dedy untuk coffee session (minta ke Coach Dedy) |
 
 5. Impor `data/klasifikasi-awal.csv` ke `Klasifikasi` (64 baris, `K01` sampai `K64`, nama Inggris).
-6. Isi `Master` dan `Akses` untuk Coach Dedy dan LT yang sudah menandatangani surat komitmen:
+6. (Pembaruan 12 Oktober: LDC dan LT bukan member chapter, jadi `tahap`, `id_kursi`, `jenis_anggota`, dan `tanggal_bergabung` baris mereka dikosongkan.) Isi `Master` dan `Akses` untuk Coach Dedy dan LT yang sudah menandatangani surat komitmen:
    - `Master`: `id_orang` `P0001` dan seterusnya, `kategori` `LDC` atau `LT`, `tahap` `Anggota`,
      `jenis_anggota` `Founding`, `id_kursi` sesuai bidangnya, `whatsapp_norm` format `62...`.
    - `Akses`: `kode_akses` 6 huruf atau angka huruf besar, unik, `peran` `LDC` atau `LT`, `aktif` TRUE.

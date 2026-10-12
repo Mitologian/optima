@@ -59,6 +59,7 @@ var Inti = (function () {
     else if (s.indexOf('62') !== 0 && s.charAt(0) === '8') s = '62' + s;
     return s;
   }
+  function timPendiri(r) { var kat = teks(r.kategori); return kat === 'LT' || kat === 'LDC'; }
   function namaPanggil(o) {
     if (!o) return '';
     return teks(o.nama_depan) || teks(o.nama).split(/\s+/)[0] || '';
@@ -155,7 +156,8 @@ var Inti = (function () {
     return this._idx[teks(id)] || null;
   };
   Konteks.prototype.anggota = function () {
-    return this.tab('Master').filter(function (r) { return teks(r.tahap) === 'Anggota'; });
+    // LDC dan LT adalah pendiri, bukan member chapter: tidak masuk daftar member, kursi, dan hitungan anggota
+    return this.tab('Master').filter(function (r) { return teks(r.tahap) === 'Anggota' && !timPendiri(r); });
   };
   Konteks.prototype.calonAktif = function () {
     return this.tab('Master').filter(function (r) {
@@ -316,7 +318,7 @@ var Inti = (function () {
   function driverAktif(k) {
     return k.tab('Master').filter(function (r) {
       var t = teks(r.tahap);
-      return benar(r.driver) && (t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0);
+      return benar(r.driver) && !timPendiri(r) && (t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0);
     });
   }
 
@@ -1025,12 +1027,26 @@ var Inti = (function () {
       return { ronde: hasil };
     },
 
+    /* ---------- kontak untuk LT dan LDC: nama, klasifikasi, nomor ---------- */
+    kontak: function (k) {
+      wajibLT(k);
+      function baris(r, jenis) {
+        var x = kursiById(k, r.id_kursi);
+        return { id_orang: teks(r.id_orang), nama: teks(r.nama), jenis: jenis, tahap: teks(r.tahap), bidang: x ? x.bidang : (teks(r.bisnis) || ''), whatsapp: teks(r.whatsapp_norm) };
+      }
+      var urut = function (a, b) { return a.nama < b.nama ? -1 : 1; };
+      return {
+        anggota: k.anggota().map(function (r) { return baris(r, 'Member'); }).sort(urut),
+        calon: k.calonAktif().map(function (r) { return baris(r, 'Prospect'); }).sort(urut)
+      };
+    },
+
     /* ---------- driver (hanya LT dan LDC) ---------- */
     kandidatDriver: function (k) {
       wajibLT(k);
       var hasil = k.tab('Master').filter(function (r) {
         var t = teks(r.tahap);
-        return (t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0) && teks(r.nama);
+        return !timPendiri(r) && (t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0) && teks(r.nama);
       }).map(function (r) {
         var x = kursiById(k, r.id_kursi);
         return { id_orang: teks(r.id_orang), nama: namaTampil(r), tahap: teks(r.tahap), bidang: x ? x.bidang : (teks(r.bisnis) || ''), driver: benar(r.driver) };
@@ -1043,9 +1059,9 @@ var Inti = (function () {
       var o = k.orang(teks(b.id_orang));
       if (!o) gagal('Person not found.');
       var t = teks(o.tahap);
-      var aktif = t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0;
+      var aktif = !timPendiri(o) && (t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0);
       var jadi = b.driver === true || b.driver === 'true';
-      if (jadi && !aktif) gagal(namaDepan(o) + ' is no longer active, so cannot be marked as a driver.');
+      if (jadi && !aktif) gagal(namaDepan(o) + ' is not an active member or prospect, so cannot be marked as a driver.');
       k.ubah('Master', o, { driver: jadi ? 'TRUE' : '', terakhir_diubah: k.now.toISOString() });
       k.log('tandaiDriver', namaDepan(o) + (jadi ? ' jadi driver' : ' bukan driver'));
       return { driver: jadi };
@@ -1346,7 +1362,7 @@ var Inti = (function () {
     }
   };
 
-  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1 };
+  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1 };
 
   /* Titik masuk tunggal. db = adaptor; badan = objek dari JSON. */
   function jalankan(db, badan, sekarang) {

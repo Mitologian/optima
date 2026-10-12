@@ -15,6 +15,7 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
   Soft Launch → Grand Launch (**52**).
 - Tampilan app dibedakan menurut **peran** (LDC, LT, anggota), bukan menurut fase. Sebelum ESM hanya LDC dan LT yang punya kode, jadi otomatis hanya mereka yang memakai. Kode anggota dibagikan setelah ESM. `Pengaturan.fase` tetap ada, tetapi hanya untuk target Misi Chapter (20, 37, 52) dan label Founding atau Core Group. Setiap orang mengisi **20 sampai 40
   nama**, terikat ke kursi atau "bidang belum pasti".
+- **LDC dan LT adalah pendiri, bukan member BNI Optima.** Mereka tidak punya kursi, tidak masuk daftar member, Misi Chapter, sponsor, atau kandidat driver. LT dan LDC boleh melihat nama, klasifikasi, dan nomor WhatsApp semua member dan calon (More, Contacts).
 - **Tanpa poin.** Hanya angka nyata (undangan, tamu hadir, sponsor) dan lencana.
 - Semua anggota melihat nama lengkap dan bidang tamu yang terdaftar hadir Rabu itu, tanpa nomor telepon.
 - Notifikasi hanya di dalam app (sorotan saat app dibuka).

@@ -366,7 +366,7 @@
 
     html += kartuPengumuman(pg && pg.ok ? pg.pengumuman : []);
     html += kartuLangkah(b, pipa, pcek);
-    html += kartuMisi(b.misi, b.saya);
+    html += kartuMisi(b.misi, isLT() ? null : b.saya);
 
     var dapat = b.lencana.filter(function (l) { return l.didapat; }).length;
     html += lipat('My badges', dapat + ' of 5',
@@ -1193,7 +1193,7 @@
   /* ---------- TIM (LT dan LDC) ---------- */
   function layarTim(isi, sub) {
     var tabs = [['calon', 'Interviews'], ['jadwal', 'Schedule'], ['rabu', 'Check-in'], ['lainnya', 'More']];
-    var dalamMore = ['info', 'regroup', 'ringkas', 'riwayat'];
+    var dalamMore = ['info', 'regroup', 'ringkas', 'riwayat', 'kontak'];
     var subAktif = ['calon', 'jadwal', 'rabu', 'lainnya'].concat(dalamMore).indexOf(sub) >= 0 && (sub !== 'ringkas' || isLDC()) ? sub : 'calon';
     var aktif = dalamMore.indexOf(subAktif) >= 0 ? 'lainnya' : subAktif;
     isi.innerHTML = '<div class="tab" role="tablist">' + tabs.map(function (t) {
@@ -1202,7 +1202,7 @@
     isi.querySelectorAll('[data-sub]').forEach(function (t) { t.onclick = function () { location.hash = '#tim-' + t.dataset.sub; }; });
     var wadah = isi.querySelector('#sub');
     if (dalamMore.indexOf(subAktif) >= 0) wadah.insertAdjacentHTML('beforebegin', '<a class="kembali" href="#tim-lainnya">&#8249; More</a>');
-    ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, lainnya: subLainnya, info: subInfo, regroup: subRegroup, ringkas: subRingkas, riwayat: subRiwayat })[subAktif](wadah);
+    ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, lainnya: subLainnya, info: subInfo, regroup: subRegroup, ringkas: subRingkas, riwayat: subRiwayat, kontak: subKontak })[subAktif](wadah);
   }
 
   /* ---------- pendaftar Form yang perlu diputuskan ---------- */
@@ -1507,12 +1507,37 @@
   }
 
   function subLainnya(w) {
-    var item = [['info', 'Announcements', 'Write announcements, set speaker and poster'], ['regroup', 'Regroup', 'Names per launch team member, seats without prospects'], ['riwayat', 'Round history', 'Invited, registered, attended and joined per week']];
+    var item = [['kontak', 'Contacts', 'Name, classification and phone of members and prospects'], ['info', 'Announcements', 'Write announcements, set speaker and poster'], ['regroup', 'Regroup', 'Names per launch team member, seats without prospects'], ['riwayat', 'Round history', 'Invited, registered, attended and joined per week']];
     if (isLDC()) item.push(['ringkas', 'Summary', 'Chapter numbers and warning lights']);
     w.innerHTML = '<section class="kartu"><ul class="daftar">' + item.map(function (x) {
       return '<li><a class="ketuk" href="#tim-' + x[0] + '" style="flex:1;min-width:0;display:block"><div class="utama"><b>' + x[1] + '</b><span>' + x[2] + '</span></div></a></li>';
     }).join('') + '</ul></section>';
   }
+  /* ---------- Contacts: nama, klasifikasi, nomor (hanya LT dan LDC) ---------- */
+  async function subKontak(w) {
+    w.innerHTML = '<div class="muat"></div>';
+    var r = await api('kontak');
+    if (!r.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
+    function baris(o) {
+      var no = o.whatsapp;
+      return '<li data-nama="' + esc((o.nama + ' ' + o.bidang).toLowerCase()) + '"><div class="utama"><b>' + esc(o.nama) + '</b><span>' + esc(o.bidang || 'Undecided classification') + (o.jenis === 'Prospect' ? ' · ' + esc(lblTahap(o.tahap)) : '') + '</span>' +
+        '<span>' + (no ? '+' + esc(no) : 'No number yet') + '</span></div>' +
+        (no ? '<a class="tombol kecil kedua" href="' + esc(waLink(no)) + '" target="_blank" rel="noopener">WhatsApp</a>' : '') + '</li>';
+    }
+    function bagian(judul, daftar, kosong) {
+      return '<div class="judul-bagian"><h2>' + judul + '</h2><span class="kecil">' + daftar.length + '</span></div><section class="kartu">' +
+        (daftar.length ? '<ul class="daftar">' + daftar.map(baris).join('') + '</ul>' : '<p class="kosong-isi">' + kosong + '</p>') + '</section>';
+    }
+    w.innerHTML = '<label class="isian"><span>Search by name or classification</span><input id="cari-kontak" autocomplete="off"></label>' +
+      bagian('Members', r.anggota, 'No members yet.') + bagian('Prospects', r.calon, 'No active prospects.') +
+      '<p class="catatan-main">Visible to the launch team only. Please use these numbers only for chapter business.</p>';
+    var cari = w.querySelector('#cari-kontak');
+    cari.oninput = function () {
+      var q = cari.value.trim().toLowerCase();
+      w.querySelectorAll('li[data-nama]').forEach(function (li) { li.hidden = q && li.dataset.nama.indexOf(q) < 0; });
+    };
+  }
+
   async function subRiwayat(w) {
     w.innerHTML = '<div class="muat"></div>';
     w.innerHTML = daftarRiwayat(await api('riwayatRonde'));

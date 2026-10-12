@@ -144,8 +144,8 @@
   /* ---------- masuk ---------- */
   function layarMasuk(pesan) {
     var hias = '';
-    // 32 kotak: separuh terisi (merah), beberapa diundang (merah muda), sisanya kursi kosong
-    var pola = [0, 1, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 22, 27, 28, 31];
+    // 32 kotak: sebagian terisi (merah), beberapa diundang (merah muda), sisanya kursi kosong
+    var pola = [0, 1, 3, 6, 9, 10, 12, 15, 17, 18, 22, 27, 28, 31];
     var diundang = [2, 13, 21, 25];
     for (var i = 0; i < 32; i++) hias += '<i class="' + (pola.indexOf(i) >= 0 ? 'isi' : (diundang.indexOf(i) >= 0 ? 'undang' : '')) + '" style="animation-delay:' + (i * 18) + 'ms"></i>';
     $app.innerHTML =
@@ -154,7 +154,6 @@
         '<p class="tagline-masuk">Optimal Network, Optimal Profits</p>' +
         '<p class="kecil" style="margin-top:6px">64 seats. One classification per seat. Fill them together.</p>' +
         '<div class="kisi-hias">' + hias + '</div>' +
-        '<p class="legenda-kisi"><span><i class="isi"></i>Seated</span><span><i class="undang"></i>Invited</span><span><i></i>Open</span></p>' +
         '<form id="f-masuk">' +
           '<label class="isian"><span>Access code</span><input class="kode" name="kode" maxlength="8" autocomplete="one-time-code" autocapitalize="characters" required></label>' +
           (pesan ? '<p class="pesan-salah">' + esc(pesan) + '</p>' : '') +

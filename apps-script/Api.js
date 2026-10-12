@@ -48,12 +48,16 @@ var KOLOM_BARU_ = {
 
 /* Simpanan sementara hasil baca tab (CacheService), supaya permintaan beruntun tidak membaca sheet berulang.
    - Kunci memuat nomor versi per tab. Setiap tulisan lewat app menaikkan versi tab itu, jadi data lama tidak terpakai lagi.
-   - Isi hanya hidup 45 detik, sebagai pengaman untuk perubahan di luar app (sheet diedit tangan, Form, otomasi Lapis).
-     Kode Lapis yang menulis ke sheet boleh memanggil api_bersihkanCache_() supaya app langsung melihatnya.
+   - Isi hidup 10 menit sebagai pengaman. Perubahan di luar app dibersihkan lewat: pemicu onEdit (edit tangan di sheet),
+     api_bersihkanCache_() yang dipanggil kode Lapis setelah menulis (Form, otomasi), dan tulisan app sendiri.
+     Edit lewat API Sheets atau skrip tidak memicu onEdit, jadi baru terlihat setelah paling lama 10 menit atau setelah api_bersihkanCache_().
+   - Pemicu waktu api_panaskan_ (tiap 5 menit) memuat ulang semua tab, jadi simpanan selalu hangat dan tidak ada permintaan pertama yang lambat.
+     Pasang kedua pemicu sekali dengan menjalankan api_pasangPemicu_() dari editor.
    - Spreadsheet baru dibuka bila ada tab yang belum tersimpan atau ada tulisan. Bila semua tab ada di simpanan, tidak ada panggilan ke sheet. */
-var CACHE_DETIK_ = 45;
+var CACHE_DETIK_ = 600;
 var CACHE_VERSI_DETIK_ = 21600;
 var TANPA_CACHE_ = { Log: true, Responses: true };
+var TAB_CACHE_ = ['Pengaturan', 'Klasifikasi', 'Master', 'Undangan', 'Hadir', 'Events', 'Butuh', 'Wawancara', 'Jadwal_CS', 'Akses', 'Lencana', 'Pengumuman'];
 
 function api_kemas_(baris) {
   return JSON.stringify(baris.map(function (o) { return { b: o._baris, o: o }; }), function (k, v) {
@@ -72,13 +76,35 @@ function api_pulihkan_(teks) {
 /* Dipanggil dari kode lain di proyek ini setelah menulis ke sheet di luar app, supaya app tidak memakai simpanan lama. */
 function api_bersihkanCache_() {
   var cache = CacheService.getScriptCache();
-  var nama = ['Pengaturan', 'Klasifikasi', 'Master', 'Undangan', 'Hadir', 'Events', 'Butuh', 'Wawancara', 'Jadwal_CS', 'Akses', 'Lencana', 'Pengumuman'];
+  var nama = TAB_CACHE_;
   var baru = String(Date.now()) + Math.floor(Math.random() * 1000);
   nama.forEach(function (n) { cache.put('v_' + n, baru, CACHE_VERSI_DETIK_); });
 }
 
-/* Adaptor sheet: baca tab (dengan simpanan sementara), tulis per baris. */
-function api_adaptor_() {
+/* Pemicu waktu: muat ulang semua tab ke simpanan supaya selalu hangat. */
+function api_panaskan_() {
+  var db = api_adaptor_({ paksa: true });
+  TAB_CACHE_.forEach(function (n) {
+    try { db.baca(n); } catch (err) { console.warn('api_panaskan_ ' + n + ': ' + err); }
+  });
+}
+/* Pemicu onEdit terpasang: edit tangan di sheet langsung membersihkan simpanan. */
+function api_saatEdit_() { api_bersihkanCache_(); }
+/* Jalankan sekali dari editor Apps Script (aman diulang): memasang pemicu waktu 5 menit dan pemicu onEdit. */
+function api_pasangPemicu_() {
+  var id = PropertiesService.getScriptProperties().getProperty('DATA_SHEET_ID');
+  if (!id) throw new Error('DATA_SHEET_ID belum diisi di Script Properties');
+  var ada = {};
+  ScriptApp.getProjectTriggers().forEach(function (t) { ada[t.getHandlerFunction()] = true; });
+  if (!ada.api_panaskan_) ScriptApp.newTrigger('api_panaskan_').timeBased().everyMinutes(5).create();
+  if (!ada.api_saatEdit_) ScriptApp.newTrigger('api_saatEdit_').forSpreadsheet(id).onEdit().create();
+  api_panaskan_();
+  console.log('Pemicu api_panaskan_ (5 menit) dan api_saatEdit_ (onEdit) terpasang.');
+}
+
+/* Adaptor sheet: baca tab (dengan simpanan sementara), tulis per baris. opsi.paksa: lewati simpanan dan isi ulang. */
+function api_adaptor_(opsi) {
+  opsi = opsi || {};
   var props = PropertiesService.getScriptProperties();
   var idSheet = props.getProperty('DATA_SHEET_ID');
   if (!idSheet) throw new Error('DATA_SHEET_ID belum diisi di Script Properties');
@@ -126,7 +152,7 @@ function api_adaptor_() {
       var kunci = null;
       if (!TANPA_CACHE_[nama]) {
         kunci = 'd_' + nama + '_' + versiTab(nama);
-        var isi = cache.get(kunci);
+        var isi = opsi.paksa ? null : cache.get(kunci);
         if (isi) { try { return api_pulihkan_(isi); } catch (err) { /* simpanan rusak, baca ulang dari sheet */ } }
       }
       var t = siapkan(nama);

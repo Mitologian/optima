@@ -160,3 +160,19 @@ tab yang belum tersimpan atau ada tulisan. Tulisan lewat app langsung membuat si
   (misalnya `curl -w "%{time_total}"`, dua kali berturut-turut). Perkiraan: permintaan kedua dan seterusnya lebih cepat dari yang pertama.
 - Bila ada galat baru `Server error` setelah deploy, kembalikan ke versi sebelumnya dan kabari Claude beserta pesan galat dari log eksekusi.
 
+## J. Menyusul: simpanan 10 menit, pemicu onEdit, dan pemanasan tiap 5 menit (12 Oktober 2026)
+
+Hanya `apps-script/Api.js` yang berubah. Simpanan tab kini hidup 10 menit (sebelumnya 45 detik) dan dijaga tetap hangat.
+
+1. Deploy seperti biasa (`clasp push`, `clasp deploy -i <id yang sama>`).
+2. Dari editor Apps Script, jalankan **`api_pasangPemicu_`** satu kali (aman diulang). Fungsi itu memasang:
+   - pemicu waktu `api_panaskan_` tiap 5 menit, yang memuat ulang semua tab ke simpanan,
+   - pemicu `api_saatEdit_` pada sheet "Optima - Data Chapter" (onEdit terpasang), yang membersihkan simpanan setiap kali ada edit tangan.
+   Izinkan otorisasi bila diminta. Jangan memasang pemicu lain dengan nama fungsi yang sama.
+3. Aturan lama tetap: kode Lapis yang menulis ke sheet lewat skrip atau API Sheets memanggil `api_bersihkanCache_();` setelah menulis,
+   karena onEdit tidak aktif untuk perubahan lewat skrip atau API.
+4. Ukur ulang waktu `{"action":"beranda","kode":"<kode>"}`: satu kali sesudah jeda lebih dari 10 menit, lalu dua kali berturut-turut.
+   Harapannya permintaan pertama sesudah jeda pun mendekati angka permintaan beruntun (sekitar 2,5 detik). Laporkan angkanya.
+5. Bila ada galat baru, hapus kedua pemicu itu (Triggers di editor) dan kabari Claude. Aplikasi tetap jalan tanpa pemicu,
+   hanya simpanannya kembali kedaluwarsa tiap 10 menit.
+

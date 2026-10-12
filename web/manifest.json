@@ -1,4 +1,5 @@
 {
+  "id": "optima-app",
   "name": "BNI Optima",
   "short_name": "Optima",
   "description": "Launch team and member app for BNI Optima",
@@ -10,7 +11,17 @@
   "theme_color": "#C8102E",
   "lang": "en",
   "icons": [
-    { "src": "ikon/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "ikon/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "ikon/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "ikon/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

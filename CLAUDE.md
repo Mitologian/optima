@@ -46,6 +46,8 @@ masuk More.
 
 ## Struktur repo
 
+- Alamat app (GitHub Pages, dari branch `main`): https://mitologian.github.io/optima/ (dikonfirmasi Coach Dedy, 12 Oktober 2026). Root meneruskan ke `web/`.
+
 - `web/` · PWA baru (HTML, CSS, JS biasa, tanpa build). `web/config.js` memuat alamat API; kosong = mode
   tiruan dengan data contoh dari `web/tiruan.js`.
 - `apps-script/Api.js` · endpoint `doPost` sesuai `KONTRAK.md` bagian 6.

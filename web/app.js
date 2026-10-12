@@ -148,7 +148,7 @@
     for (var i = 0; i < 32; i++) hias += '<i class="' + (pola.indexOf(i) >= 0 ? 'isi' : '') + '" style="animation-delay:' + (i * 18) + 'ms"></i>';
     $app.innerHTML =
       '<div class="masuk">' +
-        '<div class="merek-besar"><small>BNI</small><span>OPTIMA</span></div>' +
+        '<div class="merek-besar"><small>BNI CHAPTER</small><span>OPTIMA</span></div>' +
         '<p class="tagline-masuk">Optimal Network, Optimal Profit</p>' +
         '<p class="kecil" style="margin-top:6px">64 seats. One classification per seat. Fill them together.</p>' +
         '<div class="kisi-hias">' + hias + '</div>' +

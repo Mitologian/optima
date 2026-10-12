@@ -48,8 +48,10 @@ masuk More.
 - `apps-script/Api.js` · endpoint `doPost` sesuai `KONTRAK.md` bagian 6.
 - `apps-script/` lainnya · app lama Ventura yang sudah dinamai Optima. Masih jalan, jangan diubah kecuali
   untuk keamanan. Dipensiunkan setelah app baru dipakai.
-- `index.html`, `manifest.json`, `sw.js` di akar · cangkang lama (iframe ke app lama). Diganti ke `web/`
-  saat peralihan.
+- `index.html`, `manifest.json`, `sw.js` di akar · pengalih ke `web/` (peralihan 12 Oktober 2026). `sw.js` hanya
+  pembersih untuk perangkat yang masih menyimpan cangkang lama, lalu mencabut dirinya.
+- `lama/index.html` · cangkang lama (iframe ke app lama), disimpan sebagai jalan kembali selama `Main.html` masih
+  ada di proyek Apps Script. Hapus setelah app lama dipensiunkan.
 - `data/klasifikasi-awal.csv` · draf 64 kursi.
 - Skrip `.sh` di akar milik Lapis.
 

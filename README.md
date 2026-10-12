@@ -14,7 +14,8 @@ Mulai dari `KONTRAK.md` (sheet, API, fase, aturan permainan) dan `CLAUDE.md` (ke
 | `apps-script/Api.js` | Endpoint `doPost` untuk PWA | Claude |
 | `apps-script/` lainnya | App lama turunan Ventura, masih jalan sampai app baru dipakai | Lapis |
 | `data/klasifikasi-awal.csv` | Draf 64 kursi, 8 contact sphere | Coach Dedy |
-| `index.html`, `manifest.json`, `sw.js` di akar | Cangkang lama (iframe ke app lama) | Lapis |
+| `index.html`, `manifest.json`, `sw.js` di akar | Pengalih ke `web/`. `sw.js` hanya membersihkan cache cangkang lama | Claude |
+| `lama/index.html` | Cangkang lama (iframe ke app lama), jalan kembali | Lapis |
 | Skrip `.sh` di akar | Alat kerja Lapis | Lapis |
 
 ## Mencoba tanpa sheet
@@ -35,3 +36,11 @@ Tambahkan `?fase=BOD` untuk target Misi dan label anggota seperti setelah ESM, `
 2. Script Properties: `DATA_SHEET_ID` (ID sheet tadi) dan `ADMIN_PIN` (PIN baru untuk halaman admin lama).
 3. `clasp push`, lalu `clasp deploy -i <id deployment yang sudah ada>` supaya alamat tidak berubah.
 4. Isi `API_URL` di `web/config.js` dengan alamat `/exec` web app.
+
+## Peralihan cangkang dan jalan kembali
+
+Sejak 12 Oktober 2026 halaman akar mengalihkan ke `web/`. Cangkang lama tetap bisa dibuka di `lama/`.
+
+Kembali ke tampilan lama bila perlu (selama `Main.html` masih ada di proyek Apps Script):
+1. Di `index.html` akar, ganti `web/` menjadi `lama/` pada tag `meta refresh`, pada `location.replace`, dan pada tautan.
+2. Di `manifest.json` akar, ganti `start_url` menjadi `lama/`.

@@ -123,5 +123,6 @@ Aturan lengkap ada di `KONTRAK.md`, bagian `Undangan`. Ringkasnya, untuk setiap 
 
 - Layar LT untuk baris `Perlu_Cek` dan baris tanpa pengundang sudah ada (Team, Interviews, kartu Form sign-ups).
   Lapis tidak perlu merapikannya di sheet.
-- Peralihan cangkang PWA lama (`index.html`, `manifest.json`, `sw.js` di akar) ke `web/` dilakukan setelah
-  uji akhir lolos, atas izin Coach Dedy.
+- Peralihan cangkang PWA ke `web/` sudah disiapkan: akar menjadi pengalih ke `web/`, cangkang lama dipindah ke `lama/`.
+  Setelah peralihan, hapus `Main.html`, `Admin.html`, `Dashboard_v2.html`, `Member.html` dari proyek Apps Script
+  supaya hanya ada satu `doPost`. Jalan kembali: arahkan akar ke `lama/` (lihat `README.md`).

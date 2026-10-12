@@ -146,3 +146,17 @@ Aturan lengkap ada di `KONTRAK.md`, bagian `Undangan`. Ringkasnya, untuk setiap 
 - Naikkan versi Apps Script lagi: aksi baru `tambahKursi`, parameter `kursi_baru`, dan `kursi.tanpa_kursi`. Tidak ada kolom atau tab baru.
 - App kini menambah baris di tab `Klasifikasi` (kolom `id_kursi`, `baris`, `sphere`, `bidang`, `singkat`, `aktif`). Mohon jangan menghapus atau menyusun ulang baris itu. Jika `Klasifikasi` punya kolom lain yang wajib, kabari agar app mengisinya.
 
+## I. Menyusul: simpanan sementara agar app lebih cepat (12 Oktober 2026)
+
+Hanya `apps-script/Api.js` yang berubah. Pembacaan tab kini disimpan 45 detik di `CacheService`, dan spreadsheet baru dibuka bila ada
+tab yang belum tersimpan atau ada tulisan. Tulisan lewat app langsung membuat simpanan tab itu tidak terpakai lagi.
+
+- Naikkan versi dan deploy seperti biasa (`clasp deploy -i <id yang sama>`).
+- **Dampak ke kode Lapis:** perubahan di sheet yang dibuat di luar app (Form masuk, normalisasi `Responses`, otomasi, edit tangan)
+  bisa baru terlihat di app sampai 45 detik kemudian. Supaya langsung terlihat, panggil `api_bersihkanCache_();` di akhir
+  fungsi Lapis yang menulis ke sheet (misalnya selesai memproses pendaftar Form). Fungsi itu ada di `Api.js` dan aman dipanggil kapan saja.
+- Tab `Log` dan `Responses` sengaja tidak disimpan.
+- Ukur sebelum dan sesudah, lalu laporkan ke Claude: waktu satu permintaan `{"action":"beranda","kode":"<kode>"}` dari alamat `/exec`
+  (misalnya `curl -w "%{time_total}"`, dua kali berturut-turut). Perkiraan: permintaan kedua dan seterusnya lebih cepat dari yang pertama.
+- Bila ada galat baru `Server error` setelah deploy, kembalikan ke versi sebelumnya dan kabari Claude beserta pesan galat dari log eksekusi.
+

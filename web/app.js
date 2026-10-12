@@ -144,14 +144,17 @@
   /* ---------- masuk ---------- */
   function layarMasuk(pesan) {
     var hias = '';
-    var pola = [0, 1, 3, 6, 9, 10, 12, 15, 17, 18, 22, 27, 28, 31];
-    for (var i = 0; i < 32; i++) hias += '<i class="' + (pola.indexOf(i) >= 0 ? 'isi' : '') + '" style="animation-delay:' + (i * 18) + 'ms"></i>';
+    // 32 kotak: separuh terisi (merah), beberapa diundang (merah muda), sisanya kursi kosong
+    var pola = [0, 1, 3, 5, 6, 9, 10, 12, 15, 17, 18, 20, 22, 27, 28, 31];
+    var diundang = [2, 13, 21, 25];
+    for (var i = 0; i < 32; i++) hias += '<i class="' + (pola.indexOf(i) >= 0 ? 'isi' : (diundang.indexOf(i) >= 0 ? 'undang' : '')) + '" style="animation-delay:' + (i * 18) + 'ms"></i>';
     $app.innerHTML =
       '<div class="masuk">' +
         '<div class="merek-besar"><small>BNI CHAPTER</small><span>OPTIMA</span></div>' +
-        '<p class="tagline-masuk">Optimal Network, Optimal Profit</p>' +
+        '<p class="tagline-masuk">Optimal Network, Optimal Profits</p>' +
         '<p class="kecil" style="margin-top:6px">64 seats. One classification per seat. Fill them together.</p>' +
         '<div class="kisi-hias">' + hias + '</div>' +
+        '<p class="legenda-kisi"><span><i class="isi"></i>Seated</span><span><i class="undang"></i>Invited</span><span><i></i>Open</span></p>' +
         '<form id="f-masuk">' +
           '<label class="isian"><span>Access code</span><input class="kode" name="kode" maxlength="8" autocomplete="one-time-code" autocapitalize="characters" required></label>' +
           (pesan ? '<p class="pesan-salah">' + esc(pesan) + '</p>' : '') +
@@ -1887,7 +1890,7 @@
   (async function mulai() {
     var k = ambil('optima_kode');
     if (k) {
-      $app.innerHTML = '<div class="splash"><b>BNI OPTIMA</b><p>Optimal Network, Optimal Profit</p><i></i></div>';
+      $app.innerHTML = '<div class="splash"><b>BNI OPTIMA</b><p>Optimal Network, Optimal Profits</p><i></i></div>';
       var r = await coba(k);
       if (!r.ok) { simpan('optima_kode', null); layarMasuk(); }
     } else layarMasuk();

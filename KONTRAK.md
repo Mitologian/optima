@@ -345,6 +345,8 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | `ubahOrang` | `id_orang` + salah satu dari `nama`, `whatsapp`, `bisnis`, `perusahaan`, `catatan`, `id_kursi`, `id_sponsor` | **LDC.** Kursi harus kosong, nomor tidak boleh milik orang lain |
 | `aturAkses` | `id_orang`, `tindakan` (`buat`, `ulang`, `matikan`, `hidupkan`) | **LDC.** `ulang` membuat kode baru dan mematikan yang lama. Akses sendiri tidak bisa diubah |
 | `aktifkanKodeAnggota` | | **LDC.** Menghidupkan kode semua member dan membuat yang belum punya. Dipakai sesudah ESM |
+| `gantiKodeSaya` | `kode_lama`, `kode_baru` | **LDC.** Mengganti kode sendiri. 6 sampai 8 huruf atau angka, unik, tidak mudah ditebak (kurang dari 4 karakter berbeda, deret angka, pola `LDC001` ditolak). Kode lama harus diketik ulang |
+| `ulangSemuaKode` | `konfirmasi` (`RESET`) | **LDC.** Darurat: semua kode selain milik LDC diganti kode baru acak 6 karakter, kode lama mati, status `aktif` tidak berubah. Hasil: `daftar [{id_orang, nama, peran, whatsapp, kode, aktif}]` |
 | `bacaPengaturan`, `ubahPengaturan` | `kunci`, `nilai` | **LDC.** Hanya kunci dalam daftar putih: `fase`, `tanggal_esm`, `tanggal_grand_launch`, `tautan_zoom_cs`, `tautan_form`, `target_*`, `driver_*` |
 | `lihatTab` | `tab` | **LDC.** Baca saja, 150 baris terbaru. Hanya tab `Undangan`, `Hadir`, `Events`, `Wawancara`, `Jadwal_CS`, `Responses`, `Butuh`, `Lencana`, `Pengumuman`, `Log`. `Master` dan `Akses` tidak lewat sini |
 | `jadikanAnggota` | `id_orang, id_kursi` (wajib bila calon belum punya kursi), `id_sponsor` | `{jenis_anggota, kursi}` |
@@ -384,3 +386,4 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-11 | Rekomendasi driver otomatis: tiga pilar (komit, network, pengaruh), ambang di `Pengaturan` (`driver_*`), `regroup.driver.rekomendasi` dan `hampir` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-12 | LDC dan LT bukan member chapter (`tahap` kosong, tanpa kursi). Aksi `kontak` untuk LT dan LDC: nama, klasifikasi, nomor WhatsApp member dan calon aktif | Coach Dedy, 12 Oktober 2026 |
 | 2026-10-12 | Menu LDC (More): People, Settings, Data. Kode akses dibuat otomatis saat seseorang menjadi member (belum aktif sebelum ESM; `aktifkanKodeAnggota` menghidupkan). LT baru dan member dari luar chapter ditambah langsung oleh LDC. `jadikanAnggota` mengembalikan `akses` dan `whatsapp`. Aksi `orangSemua`, `orangDetail`, `tambahOrang`, `ubahOrang`, `aturAkses`, `aktifkanKodeAnggota`, `bacaPengaturan`, `ubahPengaturan`, `lihatTab` | Coach Dedy, 12 Oktober 2026 |
+| 2026-10-12 | Aksi `gantiKodeSaya` dan `ulangSemuaKode` (LDC). Kode lupa untuk satu orang tetap lewat `aturAkses` `ulang` | Coach Dedy, 12 Oktober 2026 |

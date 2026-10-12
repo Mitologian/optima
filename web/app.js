@@ -1569,6 +1569,59 @@
   var JENIS_ORANG = { LDC: 'LDC', LT: 'Launch team', Member: 'Member', Prospect: 'Prospect', Closed: 'Closed' };
   var saringOrang = 'all', cariOrang = '';
 
+
+  function kodeAcak() {
+    var h = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r = '';
+    var a = new Uint32Array(8);
+    (window.crypto || window.msCrypto).getRandomValues(a);
+    for (var i = 0; i < 8; i++) r += h.charAt(a[i] % h.length);
+    return r;
+  }
+  function lembarGantiKode() {
+    var saran = kodeAcak();
+    bukaLembar(
+      '<h2>Change my code</h2><p class="kecil" style="margin:4px 0 12px">The new code works right away on every device. Devices that are already logged in stay logged in until the next login.</p>' +
+      '<form id="f-ganti"><label class="isian"><span>Current code</span><input name="lama" autocomplete="off" autocapitalize="characters" maxlength="8" required></label>' +
+      '<label class="isian"><span>New code (6 to 8 letters or digits)</span><input name="baru" class="kode" autocomplete="off" autocapitalize="characters" maxlength="8" required></label>' +
+      '<p class="kecil" style="margin:-6px 0 12px">8 characters is safest. <button type="button" class="tombol kecil kedua" id="g-saran">Suggest one</button></p>' +
+      '<label class="isian"><span>Repeat new code</span><input name="ulang" autocomplete="off" autocapitalize="characters" maxlength="8" required></label>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save new code</button></form>',
+      function (el) {
+        el.querySelector('#g-saran').onclick = function () { var f = el.querySelector('#f-ganti'); f.baru.value = saran; f.ulang.value = saran; toast('Suggested code filled in. Write it down before saving.'); saran = kodeAcak(); };
+        el.querySelector('#f-ganti').onsubmit = async function (e) {
+          e.preventDefault();
+          var f = e.target, s = el.querySelector('#salah');
+          var baru = f.baru.value.trim().toUpperCase();
+          if (baru !== f.ulang.value.trim().toUpperCase()) { s.textContent = 'The two new codes do not match.'; s.hidden = false; return; }
+          var r = await api('gantiKodeSaya', { kode_lama: f.lama.value.trim(), kode_baru: baru });
+          if (!r.ok) { s.textContent = r.pesan; s.hidden = false; return; }
+          Api.setKode(baru); S.kode = baru; simpan('optima_kode', baru);
+          tutupLembar(); toast('Your code was changed.');
+        };
+      });
+  }
+  function lembarUlangSemua(segarkan) {
+    bukaLembar(
+      '<h2>Reset all codes</h2><p class="kecil" style="margin:4px 0 12px">Every launch team and member code is replaced with a new one. All old codes stop working at once. Your own code stays. Use this only if codes were leaked or many people lost theirs. For one person, use New code on their profile.</p>' +
+      '<form id="f-reset"><label class="isian"><span>Type RESET to confirm</span><input name="k" autocomplete="off" autocapitalize="characters" required></label>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Reset all codes</button></form>',
+      function (el) {
+        el.querySelector('#f-reset').onsubmit = async function (e) {
+          e.preventDefault();
+          var s = el.querySelector('#salah');
+          var r = await api('ulangSemuaKode', { konfirmasi: e.target.k.value });
+          if (!r.ok) { s.textContent = r.pesan; s.hidden = false; return; }
+          segarkan();
+          bukaLembar('<h2>' + r.daftar.length + ' new codes</h2><p class="kecil" style="margin:4px 0 12px">Send each person their new code. This list is not saved here, but each code also shows on the person\'s profile in People.</p>' +
+            '<section class="kartu"><ul class="daftar">' + r.daftar.map(function (d) {
+              return '<li><div class="utama"><b>' + esc(d.nama) + '</b><span>' + esc(PERAN_LABEL[d.peran] || d.peran) + (d.aktif ? '' : ' · code off until ESM') + ' · <span class="kode-kecil">' + esc(d.kode) + '</span></span></div>' +
+                (d.whatsapp ? '<a class="tombol kecil" target="_blank" rel="noopener" href="' + esc(waLink(d.whatsapp, pesanKode(d.nama_depan || d.nama, d.kode))) + '">Send</a>' : '<span class="kecil">no number</span>') + '</li>';
+            }).join('') + '</ul></section><div class="baris-tombol"><button class="tombol kedua" id="t-tutup">Done</button></div>',
+            function (el2) { el2.querySelector('#t-tutup').onclick = tutupLembar; });
+        };
+      });
+  }
+
   async function subOrang(w) {
     w.innerHTML = '<div class="muat"></div>';
     var r = await api('orangSemua');
@@ -1598,13 +1651,17 @@
       '<div class="pilihan" style="margin-bottom:10px">' + saring.map(function (f) { return '<button type="button" data-f="' + f[0] + '" aria-pressed="' + (f[0] === saringOrang) + '">' + f[1] + '</button>'; }).join('') + '</div>' +
       '<input class="cari" id="cari-orang" placeholder="Search name, classification or number" type="search" value="' + esc(cariOrang) + '">' +
       '<section class="kartu" id="daftar-orang"></section>' +
-      '<p class="catatan-main">Everyone ever recorded, from before ESM on. Nothing here is deleted when a round ends.</p>';
+      '<p class="catatan-main">Everyone ever recorded, from before ESM on. Nothing here is deleted when a round ends.</p>' +
+      '<div class="judul-bagian"><h2>My access</h2></div><section class="kartu"><div class="baris-tombol" style="margin:0"><button class="tombol kedua" id="o-ganti">Change my code</button><button class="tombol kedua" id="o-reset">Reset all codes</button></div>' +
+      '<p class="kecil" style="margin-top:10px">Someone forgot their code? Open their profile and tap New code, then send it on WhatsApp.</p></section>';
     gambar();
     w.querySelectorAll('[data-f]').forEach(function (b) {
       b.onclick = function () { saringOrang = b.dataset.f; w.querySelectorAll('[data-f]').forEach(function (z) { z.setAttribute('aria-pressed', z === b); }); gambar(); };
     });
     w.querySelector('#cari-orang').oninput = function (e) { cariOrang = e.target.value; gambar(); };
     w.querySelector('#o-baru').onclick = function () { lembarTambahOrang(function () { subOrang(w); }); };
+    w.querySelector('#o-ganti').onclick = lembarGantiKode;
+    w.querySelector('#o-reset').onclick = function () { lembarUlangSemua(function () { subOrang(w); }); };
     var ba = w.querySelector('#o-aktif');
     if (ba) ba.onclick = async function () {
       ba.disabled = true;

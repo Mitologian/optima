@@ -74,6 +74,8 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Lihat semua orang sejak awal beserta riwayatnya (LDC) | Team, More, People |
 | Menambah LT baru, atau member yang masuk dari luar chapter (LDC) | Team, More, People, Add |
 | Mengirim kode akses lewat WhatsApp, membuat ulang, mematikan (LDC) | People, buka orangnya |
+| Mengganti kode LDC sendiri | People, My access, Change my code |
+| Semua kode bocor atau banyak yang lupa: ganti semuanya | People, My access, Reset all codes |
 | Menghidupkan kode semua member setelah ESM (LDC) | People, Turn on member codes |
 | Mengubah fase, tanggal, target, aturan driver (LDC) | Team, More, Settings |
 | Melihat isi tabel sheet tanpa membuka sheet (LDC) | Team, More, Data |

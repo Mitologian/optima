@@ -1311,6 +1311,41 @@ var Inti = (function () {
       return { jumlah: n };
     },
 
+    /* LDC mengganti kodenya sendiri. Kode lama harus diketik ulang. */
+    gantiKodeSaya: function (k, b) {
+      wajibLDC(k);
+      var lama = teks(b.kode_lama).toUpperCase();
+      var baru = teks(b.kode_baru).toUpperCase();
+      if (!k.saya.akses || teks(k.saya.akses.kode_akses).toUpperCase() !== lama) gagal('The current code is not correct.');
+      if (!/^[A-Z0-9]{6,8}$/.test(baru)) gagal('Use 6 to 8 letters or digits, without spaces or symbols.');
+      if (baru === lama) gagal('The new code must be different from the current one.');
+      var jenis = {};
+      baru.split('').forEach(function (c) { jenis[c] = true; });
+      if (Object.keys(jenis).length < 4 || /^(0123456|1234567|12345678|123456|234567|345678|456789|654321|987654)$/.test(baru) || /^(LDC|LT|AGT)\d+$/.test(baru) || /^(PASSWORD|BNIOPTIMA|OPTIMA\d*)$/.test(baru)) gagal('That code is too easy to guess. Mix letters and digits.');
+      var dipakai = k.tab('Akses').some(function (a) { return teks(a.kode_akses).toUpperCase() === baru; });
+      if (dipakai) gagal('That code is already in use. Choose another.');
+      k.ubah('Akses', k.saya.akses, { kode_akses: baru });
+      k.log('gantiKodeSaya', 'kode LDC diganti');
+      return { panjang: baru.length };
+    },
+
+    /* Keadaan darurat (kode bocor, banyak yang lupa): semua kode lain diganti, kode lama mati. Status aktif tidak berubah. */
+    ulangSemuaKode: function (k, b) {
+      wajibLDC(k);
+      if (teks(b.konfirmasi).toUpperCase() !== 'RESET') gagal('Type RESET to confirm.');
+      var hasil = [];
+      k.tab('Akses').slice().forEach(function (a) {
+        if (teks(a.id_orang) === k.saya.id_orang) return;
+        var o = k.orang(a.id_orang);
+        var kode = kodeBaru(k);
+        k.ubah('Akses', a, { kode_akses: kode });
+        hasil.push({ id_orang: teks(a.id_orang), nama: o ? namaTampil(o) : teks(a.id_orang), nama_depan: o ? namaPanggil(o) : '', peran: teks(a.peran), whatsapp: o ? teks(o.whatsapp_norm) : '', kode: kode, aktif: benar(a.aktif) });
+      });
+      hasil.sort(function (x, y) { return x.nama < y.nama ? -1 : 1; });
+      k.log('ulangSemuaKode', hasil.length + ' kode');
+      return { daftar: hasil };
+    },
+
     /* ---------- Settings (hanya LDC) ---------- */
     bacaPengaturan: function (k) {
       wajibLDC(k);

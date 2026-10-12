@@ -482,3 +482,5 @@ li.ketuk[data-o] { cursor: pointer; }
 .legenda-kisi i { width: 12px; height: 12px; border-radius: 3px; border: 1.5px dashed var(--garis); display: inline-block; }
 .legenda-kisi i.isi { background: var(--merah); border: 0; }
 .legenda-kisi i.undang { background: var(--merah-muda); border: 1.5px dashed var(--merah); }
+
+.kode-kecil { font-family: var(--huruf-judul); font-weight: 800; letter-spacing: .12em; color: var(--merah); }

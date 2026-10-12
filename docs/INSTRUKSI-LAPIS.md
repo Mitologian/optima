@@ -136,3 +136,8 @@ Aturan lengkap ada di `KONTRAK.md`, bagian `Undangan`. Ringkasnya, untuk setiap 
 - `Pengaturan` boleh diubah app untuk kunci tertentu saja (fase, tanggal, tautan, target, ambang driver). Baris yang belum ada dibuat app.
 - Baris Master Coach Dedy (P0001): kosongkan `tahap` supaya konsisten dengan aturan pendiri bukan member.
 
+## G. Menyusul: ganti kode sendiri dan reset semua kode (12 Oktober 2026)
+
+- Naikkan versi Apps Script lagi supaya aksi `gantiKodeSaya` dan `ulangSemuaKode` aktif. Tidak ada perubahan sheet.
+- Setelah naik, jangan mengubah kolom `kode_akses` di sheet tanpa memberi tahu Coach Dedy, karena kode sekarang diatur dari app.
+

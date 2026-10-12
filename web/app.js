@@ -53,10 +53,48 @@
     var w = wib(iso);
     return w.toISOString().slice(0, 16);
   }
+  /* Isian seat baru: dipakai saat menjadikan member, menambah member langsung, mengubah seat member, dan tombol + seat. */
+  function barisSeat() {
+    return (S.cache.kursi || []).filter(function (b) { return b.nomor <= 8; });
+  }
+  function isianKursiBaru(opsi) {
+    opsi = opsi || {};
+    return '<div class="kursi-baru"' + (opsi.tampil ? '' : ' hidden') + '>' +
+      '<label class="isian"><span>New classification</span><input name="kb_bidang" maxlength="60" autocomplete="off" value="' + esc(opsi.bidang || '') + '" placeholder="Example: Halal catering"></label>' +
+      '<label class="isian"><span>Short name on the seat tile (optional)</span><input name="kb_singkat" maxlength="16" autocomplete="off" placeholder="Up to 16 characters"></label>' +
+      '<label class="isian"><span>Contact sphere (row)</span><select name="kb_baris">' + barisSeat().map(function (b) {
+        return '<option value="' + b.nomor + '"' + (opsi.baris === b.nomor ? ' selected' : '') + '>' + b.nomor + '. ' + esc(b.sphere) + '</option>';
+      }).join('') + '</select></label></div>';
+  }
+  function bacaKursiBaru(f) { return { bidang: f.kb_bidang.value, singkat: f.kb_singkat.value, baris: f.kb_baris.value }; }
+  /* Pilihan seat untuk member: seat kosong, atau "seat baru" bila bisnisnya belum ada di daftar. */
+  function pilihKursiAnggota(nama, pilih, bidangUsulan) {
+    var opsi = '<option value="">Choose a seat</option>';
+    barisSeat().forEach(function (b) { b.kursi.forEach(function (x) { if (x.status !== 'terisi' || x.id_kursi === pilih) opsi += '<option value="' + esc(x.id_kursi) + '"' + (x.id_kursi === pilih ? ' selected' : '') + '>' + esc(x.bidang) + '</option>'; }); });
+    opsi += '<option value="__baru">+ New classification (not on the list)</option>';
+    return '<label class="isian"><span>Classification seat</span><select name="' + nama + '" data-pilih-seat required>' + opsi + '</select></label>' +
+      isianKursiBaru({ bidang: bidangUsulan });
+  }
+  function pasangKursiBaru(el) {
+    var sel = el.querySelector('select[data-pilih-seat]');
+    var kotak = el.querySelector('.kursi-baru');
+    if (!sel || !kotak) return;
+    sel.onchange = function () {
+      var baru = sel.value === '__baru';
+      kotak.hidden = !baru;
+      el.querySelector('[name=kb_bidang]').required = baru;
+    };
+  }
+  /* Bagian seat pada data yang dikirim: id_kursi biasa, atau kursi_baru bila memilih seat baru. */
+  function dataSeat(f, namaSelect) {
+    var v = f[namaSelect].value;
+    return v === '__baru' ? { kursi_baru: bacaKursiBaru(f) } : { id_kursi: v };
+  }
+
   function pilihKursiKosong(nama, wajib) {
     var opsi = [];
     (S.cache.kursi || []).forEach(function (b) { b.kursi.forEach(function (x) { if (x.status !== 'terisi') opsi.push('<option value="' + esc(x.id_kursi) + '">' + esc(x.bidang) + '</option>'); }); });
-    return '<label class="isian"><span>Classification seat' + (wajib ? '' : ' (optional)') + '</span><select name="' + nama + '"' + (wajib ? ' required' : '') + '><option value="">Choose a seat</option>' + opsi.join('') + '</select></label>';
+    return '<label class="isian"><span>' + (wajib ? 'Classification seat' : 'Pick a seat if one fits (optional)') + '</span><select name="' + nama + '"' + (wajib ? ' required' : '') + '><option value="">Choose a seat</option>' + opsi.join('') + '</select></label>';
   }
   function waLink(nomor, teks) { return 'https://wa.me/' + (nomor || '') + (teks ? '?text=' + encodeURIComponent(teks) : ''); }
 
@@ -107,7 +145,7 @@
     m.push({ id: 'undang', label: 'My list' });
     m.push({ id: 'minggu', label: 'This week' });
     m.push({ id: 'kursi', label: 'Seats' });
-    m.push({ id: 'papan', label: 'Board' });
+    if (!isLT()) m.push({ id: 'papan', label: 'Board' });
     if (isLT()) m.push({ id: 'tim', label: 'Team' });
     return m;
   }
@@ -372,7 +410,7 @@
     html += kartuMisi(b.misi, isLT() ? null : b.saya);
 
     var dapat = b.lencana.filter(function (l) { return l.didapat; }).length;
-    html += lipat('My badges', dapat + ' of 5',
+    if (!isLT()) html += lipat('My badges', dapat + ' of 5',
       '<div class="lencana-baris">' + b.lencana.map(function (l) {
         return '<div class="lencana' + (l.didapat ? ' dapat' : '') + (l.baru ? ' baru' : '') + '" title="' + esc(l.ket) + '"><div class="koin">' + IK['L_' + l.kode] + '</div>' + esc(l.nama) + '</div>';
       }).join('') + '</div><p class="catatan-main">A game to cheer each other on, not a ranking.</p>', b.lencana.some(function (l) { return l.baru; }));
@@ -418,7 +456,7 @@
       }).join('') + '</div>' +
       '<div class="papan-kursi">' + r.baris.map(function (b) {
         return '<section class="baris-kursi' + (b.lengkap ? ' lengkap' : '') + '">' +
-          '<header><span class="no">' + (b.nomor > 8 ? '+' : b.nomor) + '</span><h3>' + esc(b.sphere) + '</h3><span class="hitung">' + b.terisi + '/' + b.kursi.length + '</span></header>' +
+          '<header><span class="no">' + (b.nomor > 8 ? '+' : b.nomor) + '</span><h3>' + esc(b.sphere) + '</h3><span class="hitung">' + b.terisi + '/' + b.kursi.length + '</span>' + (isLT() && b.nomor <= 8 ? '<button type="button" class="chip tambah-kursi" data-tambah-baris="' + b.nomor + '" aria-label="Add a seat to ' + esc(b.sphere) + '">+ seat</button>' : '') + '</header>' +
           [b.kursi.slice(0, 4), b.kursi.slice(4)].map(function (sep) { return '<div class="kisi">' + sep.map(function (x) {
             var redam = !lolos(x);
             return '<button class="kursi ' + x.status + (redam ? ' redam' : '') + (x.saya_calon ? ' milik' : '') + '" data-kursi="' + esc(x.id_kursi) + '" aria-label="' + esc(x.bidang) + ', ' + (x.status === 'terisi' ? 'filled by ' + x.pemilik : x.status === 'ada_calon' ? x.jumlah_calon + ' prospects' : 'empty') + (x.saya_calon ? ', ' + x.saya_calon + ' from my list' : '') + '">' +
@@ -428,7 +466,8 @@
           }).join('') + '</div>'; }).join('') + '</section>';
       }).join('') + '</div>' +
       '<p class="catatan-main"><span class="titik-emas"></span> member wanted &nbsp; <span class="cincin-saya"></span> from my list</p>' +
-      '<button class="tombol kedua" id="b-tanpa-kursi" style="margin-top:6px">Name with undecided classification</button>';
+      (isLT() && r.tanpa_kursi && r.tanpa_kursi.length ? '<div class="judul-bagian"><h2>Prospects without a seat</h2><span class="kecil">classification not on the list yet</span></div><section class="kartu"><p>' + r.tanpa_kursi.map(function (x) { return '<span class="chip" style="margin:0 6px 6px 0">' + esc(x.bisnis) + ' · ' + x.jumlah + '</span>'; }).join('') + '</p><p class="catatan-main">When one of them joins, the seat can be created while making them a member.</p></section>' : '') +
+      '<button class="tombol kedua" id="b-tanpa-kursi" style="margin-top:6px">Name with a classification not on the list</button>';
     isi.querySelectorAll('[data-tk]').forEach(function (t) { t.onclick = function () { tabKursi = t.dataset.tk; layarKursi(isi); }; });
     isi.querySelectorAll('[data-saring]').forEach(function (t) {
       t.onclick = function () { saringKursi = t.dataset.saring; layarKursi(isi); };
@@ -437,6 +476,9 @@
       t.onclick = function () { bukaKursi(t.dataset.kursi, function () { layarKursi(isi); }); };
     });
     isi.querySelector('#b-tanpa-kursi').onclick = function () { bukaKursi('', function () { layarKursi(isi); }); };
+    isi.querySelectorAll('[data-tambah-baris]').forEach(function (t) {
+      t.onclick = function (e) { e.stopPropagation(); lembarTambahKursi(Number(t.dataset.tambahBaris), function () { layarKursi(isi); }); };
+    });
   }
 
   async function layarAnggota(isi, tabs) {
@@ -501,8 +543,9 @@
     html += '<form id="f-calon">' +
       '<h3 style="margin:4px 0 10px">' + (id ? 'Add a prospect for ' + esc(x.bidang) : 'Add a name') + '</h3>' +
       '<label class="isian"><span>Full name</span><input name="nama" required autocomplete="off"></label>' +
-      '<label class="isian"><span>Business name or type</span><input name="bisnis" required autocomplete="off"></label>' +
-      (id ? '' : pilihKursiKosong('id_kursi', false)) +
+      (id ? '<label class="isian"><span>Business name or type</span><input name="bisnis" required autocomplete="off"></label>'
+        : '<label class="isian"><span>Classification (their type of business)</span><input name="bisnis" required autocomplete="off" placeholder="Example: Halal catering"></label>' +
+          '<p class="kecil" style="margin:-6px 0 12px">Not on the seat list? Type it here. The launch team can add the seat once the person joins.</p>' + pilihKursiKosong('id_kursi', false)) +
       '<label class="isian"><span>WhatsApp' + (isLT() ? '' : ' (can be added later)') + '</span><input name="whatsapp" inputmode="tel" autocomplete="off" placeholder="08..."' + (isLT() ? ' required' : '') + '></label>' +
       (pilihanAcara.length ? '<label class="saklar"><input type="checkbox" name="undang"><span>Also invite to a Wednesday event<br><span class="kecil">WhatsApp number is required when inviting.</span></span></label>' +
         '<div id="pil-acara" hidden style="margin:-4px 0 14px"></div>' : '') +
@@ -1389,18 +1432,19 @@
   async function lembarAnggota(c, segarkan) {
     bukaLembar('<div class="muat"></div>');
     var r = await api('anggota');
-    if (!c.id_kursi && !S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
+    if (!S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
     var opsi = '<option value="">Choose a sponsor</option><option value="BNI">BNI (no member known personally)</option>' +
       (r.anggota || []).map(function (a) { return '<option value="' + esc(a.id_orang) + '">' + esc(a.nama) + '</option>'; }).join('');
     bukaLembar(
       '<h2>' + esc(c.nama.split(/\s+/)[0]) + ' joined</h2><p class="kecil" style="margin:4px 0 0">Confirm once the membership payment is in.</p><p class="kecil" style="margin:6px 0 14px">Seat: <b>' + esc(c.bidang) + '</b>. Type: ' + (S.atur.fase === 'Pembentukan' ? 'Founding' : 'Core Group') + '.</p>' +
-      '<form id="f-ang">' + (c.id_kursi ? '' : pilihKursiKosong('id_kursi', true)) + '<label class="isian"><span>Sponsor</span><select name="sponsor" required>' + opsi + '</select></label>' +
+      '<form id="f-ang">' + pilihKursiAnggota('id_kursi', c.id_kursi, c.bisnis) + '<label class="isian"><span>Sponsor</span><select name="sponsor" required>' + opsi + '</select></label>' +
       '<p class="kecil" style="margin:-4px 0 14px">BNI rule: the sponsor is the member who invited the prospect and is known to them personally. If there is none, choose BNI, unless the prospect names a specific member.</p>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Confirm</button></form>',
       function (el) {
+        pasangKursiBaru(el);
         el.querySelector('#f-ang').onsubmit = async function (e) {
           e.preventDefault();
-          var h = await api('jadikanAnggota', { id_orang: c.id_orang, id_sponsor: e.target.sponsor.value, id_kursi: e.target.id_kursi ? e.target.id_kursi.value : c.id_kursi });
+          var h = await api('jadikanAnggota', Object.assign({ id_orang: c.id_orang, id_sponsor: e.target.sponsor.value }, dataSeat(e.target, 'id_kursi')));
           if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
           S.cache.kursi = null; segarkan();
           var nd = c.nama.split(/\s+/)[0];
@@ -1565,6 +1609,29 @@
       b.onclick = function () { salinTeks(b.dataset.salinKode); toast('Code copied.'); };
     });
   }
+  /* Tombol + seat di halaman Seats: hanya untuk member yang sudah join. Member pindah ke seat baru. */
+  async function lembarTambahKursi(baris, segarkan) {
+    bukaLembar('<div class="muat"></div>');
+    if (!S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
+    var r = await api('anggota');
+    if (!r.ok) { bukaLembar('<p class="kosong-isi">' + esc(r.pesan) + '</p>'); return; }
+    var opsi = '<option value="">Choose a member</option>' + (r.anggota || []).map(function (a) { return '<option value="' + esc(a.id_orang) + '">' + esc(a.nama) + '</option>'; }).join('');
+    bukaLembar(
+      '<h2>Add a seat</h2><p class="kecil" style="margin:4px 0 12px">Only for a member who has already joined and whose business is not on the list. The member moves to the new seat, and the old seat becomes empty again. For a prospect, add the seat when making them a member.</p>' +
+      '<form id="f-kb"><label class="isian"><span>Member</span><select name="id_orang" required>' + opsi + '</select></label>' +
+      isianKursiBaru({ tampil: true, baris: baris }).replace(' maxlength="60"', ' maxlength="60" required') +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Add seat</button></form>',
+      function (el) {
+        el.querySelector('#f-kb').onsubmit = async function (e) {
+          e.preventDefault();
+          var f = e.target;
+          var h = await api('tambahKursi', { id_orang: f.id_orang.value, kursi_baru: bacaKursiBaru(f) });
+          if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
+          S.cache.kursi = null; tutupLembar(); toast('Seat added: ' + h.kursi, true); segarkan();
+        };
+      });
+  }
+
   var JENIS_ORANG = { LDC: 'LDC', LT: 'Launch team', Member: 'Member', Prospect: 'Prospect', Closed: 'Closed' };
   var saringOrang = 'all', cariOrang = '';
 
@@ -1707,12 +1774,13 @@
       '<form id="f-edit"><label class="isian"><span>Name</span><input name="nama" value="' + esc(o.nama.replace(/ \(LDC\)$/, '')) + '" required></label>' +
       '<label class="isian"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" value="' + esc(o.whatsapp) + '"></label>' +
       '<label class="isian"><span>Business</span><input name="bisnis" value="' + esc(o.bisnis) + '"></label>' +
-      (o.jenis === 'Member' ? '<label class="isian"><span>Classification seat</span><select name="id_kursi">' + kursiOpsi + '</select></label><label class="isian"><span>Sponsor</span><select name="id_sponsor">' + sponsorOpsi + '</select></label>' : '') +
+      (o.jenis === 'Member' ? '<label class="isian"><span>Classification seat</span><select name="id_kursi" data-pilih-seat>' + kursiOpsi + '<option value="__baru">+ New classification (not on the list)</option></select></label>' + isianKursiBaru({}) + '<label class="isian"><span>Sponsor</span><select name="id_sponsor">' + sponsorOpsi + '</select></label>' : '') +
       '<label class="isian"><span>Notes</span><textarea name="catatan">' + esc(o.catatan) + '</textarea></label>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save changes</button></form>' +
       (o.jenis === 'Prospect' || o.jenis === 'Closed' ? '<div class="baris-tombol"><button class="tombol kedua" id="o-tahap">Update stage or make a member</button></div>' : ''),
       function (el) {
         pasangSalinKode(el);
+        pasangKursiBaru(el);
         el.querySelectorAll('[data-akses]').forEach(function (b) {
           b.onclick = async function () {
             if (b.dataset.akses === 'ulang' && !confirm('Make a new code? The old code stops working right away.')) return;
@@ -1726,7 +1794,7 @@
           e.preventDefault();
           var f = e.target;
           var data = { id_orang: o.id_orang, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value, catatan: f.catatan.value };
-          if (f.id_kursi) { data.id_kursi = f.id_kursi.value; data.id_sponsor = f.id_sponsor.value; }
+          if (f.id_kursi) { Object.assign(data, dataSeat(f, 'id_kursi')); data.id_sponsor = f.id_sponsor.value; }
           var h = await api('ubahOrang', data);
           if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
           S.cache.kursi = null; toast('Saved.'); segarkan(); lembarOrang(id, segarkan);
@@ -1749,22 +1817,24 @@
       '<div class="pilihan" style="margin-bottom:14px"><button type="button" data-j="Anggota" aria-pressed="true">Member</button><button type="button" data-j="LT" aria-pressed="false">Launch team</button></div>' +
       '<form id="f-tambah"><label class="isian"><span>Full name</span><input name="nama" required></label><label class="isian"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" required placeholder="0812..."></label>' +
       '<label class="isian"><span>Business</span><input name="bisnis"></label>' +
-      '<div id="bag-member">' + pilihKursiKosong('id_kursi', false) + '<label class="isian"><span>Sponsor</span><select name="id_sponsor">' + sponsor + '</select></label>' +
+      '<div id="bag-member">' + pilihKursiAnggota('id_kursi', '', '') + '<label class="isian"><span>Sponsor</span><select name="id_sponsor">' + sponsor + '</select></label>' +
       '<p class="kecil" style="margin:-4px 0 14px">A member from outside the chapter has no inviter here. Keep BNI unless a member brought them in.</p></div>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Add and create code</button></form>',
       function (el) {
+        pasangKursiBaru(el);
         el.querySelectorAll('[data-j]').forEach(function (b) {
           b.onclick = function () {
             jenis = b.dataset.j;
             el.querySelectorAll('[data-j]').forEach(function (z) { z.setAttribute('aria-pressed', z === b); });
             el.querySelector('#bag-member').hidden = jenis !== 'Anggota';
+            el.querySelector('select[data-pilih-seat]').required = jenis === 'Anggota';
           };
         });
         el.querySelector('#f-tambah').onsubmit = async function (e) {
           e.preventDefault();
           var f = e.target;
           if (jenis === 'Anggota' && !f.id_kursi.value) { var s0 = el.querySelector('#salah'); s0.textContent = 'Choose the classification seat.'; s0.hidden = false; return; }
-          var r = await api('tambahOrang', { jenis: jenis, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value, id_kursi: jenis === 'Anggota' ? f.id_kursi.value : '', id_sponsor: jenis === 'Anggota' ? f.id_sponsor.value : '' });
+          var r = await api('tambahOrang', Object.assign({ jenis: jenis, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value, id_sponsor: jenis === 'Anggota' ? f.id_sponsor.value : '' }, jenis === 'Anggota' ? dataSeat(f, 'id_kursi') : {}));
           if (!r.ok) { var s = el.querySelector('#salah'); s.textContent = r.pesan; s.hidden = false; return; }
           S.cache.kursi = null; segarkan();
           bukaLembar('<h2>' + esc(r.nama_depan) + ' added</h2><p class="kecil" style="margin:4px 0 12px">' + (jenis === 'LT' ? 'Launch team member.' : 'Member from outside the chapter.') + '</p>' +
@@ -1824,7 +1894,8 @@
 
   async function subRiwayat(w) {
     w.innerHTML = '<div class="muat"></div>';
-    w.innerHTML = daftarRiwayat(await api('riwayatRonde'));
+    var h = await Promise.all([api('riwayatRonde'), api('papan')]);
+    w.innerHTML = (h[1].ok ? kartuBelum(h[1].belum_ronde) : '') + daftarRiwayat(h[0]);
   }
 
   /* ---------- driver: hanya terlihat LT dan LDC ---------- */

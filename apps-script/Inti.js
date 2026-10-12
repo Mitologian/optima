@@ -597,6 +597,22 @@ var Inti = (function () {
     }
   }
 
+  /* Seat baru untuk member yang bisnisnya belum ada di daftar. Hanya dipanggil saat ada member yang langsung menempatinya. */
+  function buatKursi(k, kb) {
+    kb = kb || {};
+    var bidang = teks(kb.bidang), singkat = teks(kb.singkat), baris = Number(kb.baris);
+    if (bidang.length < 3 || bidang.length > 60) gagal('The classification name must be 3 to 60 characters.');
+    if (singkat.length > 16) gagal('The short name is too long (16 characters at most).');
+    var aktif = k.tab('Klasifikasi').filter(function (r) { return benar(r.aktif) || teks(r.aktif) === ''; });
+    if (aktif.some(function (r) { return sama(r.bidang, bidang); })) gagal('That classification is already on the seat list. Choose its seat instead.');
+    var contoh = aktif.filter(function (r) { return Number(r.baris) === baris; })[0];
+    if (!contoh) gagal('Choose the row (contact sphere) for the new seat.');
+    var r = { id_kursi: idBaru(k.tab('Klasifikasi'), 'id_kursi', 'K', 2), baris: baris, sphere: teks(contoh.sphere), bidang: bidang, singkat: singkat || bidang, aktif: 'TRUE' };
+    k.tambah('Klasifikasi', r);
+    k.log('buatKursi', bidang + ' di baris ' + baris);
+    return kursiById(k, r.id_kursi);
+  }
+
   function buatUndangan(k, idCalon, idEvent) {
     var calon = k.orang(idCalon);
     if (!calon) gagal('Prospect not found.');
@@ -652,12 +668,25 @@ var Inti = (function () {
         misi: misi(k),
         ronde: { mulai: r.mulai.toISOString(), selesai: r.selesai.toISOString(), acara_berikut: berikut[0] || null },
         saya: st,
-        lencana: lencana(k, id, st),
+        lencana: k.isLT() ? [] : lencana(k, id, st),
         kabar: kabar(k)
       };
     },
 
-    kursi: function (k) { return { baris: petaKursi(k) }; },
+    kursi: function (k) {
+      var hasil = { baris: petaKursi(k) };
+      if (k.isLT()) {
+        var per = {};
+        k.calonAktif().forEach(function (r) {
+          if (teks(r.id_kursi)) return;
+          var t = teks(r.bisnis) || 'Not described';
+          per[t.toLowerCase()] = per[t.toLowerCase()] || { bisnis: t, jumlah: 0 };
+          per[t.toLowerCase()].jumlah++;
+        });
+        hasil.tanpa_kursi = Object.keys(per).map(function (z) { return per[z]; }).sort(function (a, b) { return b.jumlah - a.jumlah; });
+      }
+      return hasil;
+    },
 
     kursiDetail: function (k, b) {
       var x = kursiById(k, b.id_kursi);
@@ -939,14 +968,30 @@ var Inti = (function () {
       if (!o) gagal('Person not found.');
       if (teks(o.tahap) === 'Anggota') gagal(namaDepan(o) + ' is already a member.');
       if (timPendiri(o)) gagal('Launch team members are founders, not chapter members.');
-      var x = kursiById(k, b.id_kursi || o.id_kursi);
-      if (!x) gagal('Choose the classification seat.');
-      if (x.status === 'terisi') gagal('The ' + x.bidang + ' seat is already taken by ' + x.pemilik + '.');
       var sp = teks(b.id_sponsor);
       cekSponsor(k, sp);
+      var x;
+      if (b.kursi_baru) x = buatKursi(k, b.kursi_baru);
+      else {
+        x = kursiById(k, b.id_kursi || o.id_kursi);
+        if (!x) gagal('Choose the classification seat.');
+        if (x.status === 'terisi') gagal('The ' + x.bidang + ' seat is already taken by ' + x.pemilik + '.');
+      }
       var h = resmikanAnggota(k, o, x, sp);
       k.log('jadikanAnggota', namaDepan(o) + ' di kursi ' + x.bidang + ', sponsor ' + sp);
       return { jenis_anggota: h.jenis_anggota, kursi: x.bidang, akses: { kode: teks(h.akses.kode_akses), aktif: benar(h.akses.aktif) }, whatsapp: teks(o.whatsapp_norm) };
+    },
+
+    /* Seat baru dari halaman Seats: hanya untuk member yang sudah join. Member pindah ke seat baru, seat lamanya kosong kembali. */
+    tambahKursi: function (k, b) {
+      wajibLT(k);
+      var o = k.orang(b.id_orang);
+      if (!o || teks(o.tahap) !== 'Anggota' || timPendiri(o)) gagal('A new seat can only be added for a member who has joined.');
+      var x = buatKursi(k, b.kursi_baru);
+      var lama = kursiById(k, o.id_kursi);
+      k.ubah('Master', o, { id_kursi: x.id_kursi, terakhir_diubah: k.now.toISOString() });
+      k.log('tambahKursi', namaDepan(o) + ' pindah ke ' + x.bidang + (lama ? ', seat lama ' + lama.bidang + ' kosong' : ''));
+      return { kursi: x.bidang, seat_lama: lama ? lama.bidang : '' };
     },
 
     /* ---------- pendaftar Form yang perlu diputuskan LT ---------- */
@@ -1210,11 +1255,14 @@ var Inti = (function () {
       };
       var x = null, sp = '';
       if (jenis === 'Anggota') {
-        x = kursiById(k, b.id_kursi);
-        if (!x) gagal('Choose the classification seat.');
-        if (x.status === 'terisi') gagal('The ' + x.bidang + ' seat is already taken by ' + x.pemilik + '.');
         sp = teks(b.id_sponsor) || 'BNI';
         cekSponsor(k, sp);
+        if (b.kursi_baru) x = buatKursi(k, b.kursi_baru);
+        else {
+          x = kursiById(k, b.id_kursi);
+          if (!x) gagal('Choose the classification seat.');
+          if (x.status === 'terisi') gagal('The ' + x.bidang + ' seat is already taken by ' + x.pemilik + '.');
+        }
         if (!o.bisnis) o.bisnis = x.bidang;
       }
       k.tambah('Master', o);
@@ -1253,7 +1301,10 @@ var Inti = (function () {
       if (b.bisnis !== undefined) ubah.bisnis = teks(b.bisnis);
       if (b.perusahaan !== undefined) ubah.perusahaan = teks(b.perusahaan);
       if (b.catatan !== undefined) ubah.catatan = teks(b.catatan);
-      if (b.id_kursi !== undefined && teks(b.id_kursi) !== teks(o.id_kursi)) {
+      if (b.kursi_baru) {
+        if (teks(o.tahap) !== 'Anggota' || timPendiri(o)) gagal('A new seat can only be added for a member who has joined.');
+        ubah.id_kursi = buatKursi(k, b.kursi_baru).id_kursi;
+      } else if (b.id_kursi !== undefined && teks(b.id_kursi) !== teks(o.id_kursi)) {
         if (timPendiri(o)) gagal('Launch team members do not take a seat.');
         var x = kursiById(k, b.id_kursi);
         if (!x) gagal('Seat not found.');

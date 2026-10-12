@@ -141,3 +141,8 @@ Aturan lengkap ada di `KONTRAK.md`, bagian `Undangan`. Ringkasnya, untuk setiap 
 - Naikkan versi Apps Script lagi supaya aksi `gantiKodeSaya` dan `ulangSemuaKode` aktif. Tidak ada perubahan sheet.
 - Setelah naik, jangan mengubah kolom `kode_akses` di sheet tanpa memberi tahu Coach Dedy, karena kode sekarang diatur dari app.
 
+## H. Menyusul: seat baru untuk member dan LT tanpa gamifikasi (12 Oktober 2026)
+
+- Naikkan versi Apps Script lagi: aksi baru `tambahKursi`, parameter `kursi_baru`, dan `kursi.tanpa_kursi`. Tidak ada kolom atau tab baru.
+- App kini menambah baris di tab `Klasifikasi` (kolom `id_kursi`, `baris`, `sphere`, `bidang`, `singkat`, `aktif`). Mohon jangan menghapus atau menyusun ulang baris itu. Jika `Klasifikasi` punya kolom lain yang wajib, kabari agar app mengisinya.
+

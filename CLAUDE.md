@@ -17,6 +17,8 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
   nama**, terikat ke kursi atau "bidang belum pasti".
 - **LDC dan LT adalah pendiri, bukan member BNI Optima.** Mereka tidak punya kursi, tidak masuk daftar member, Misi Chapter, sponsor, atau kandidat driver. LT dan LDC boleh melihat nama, klasifikasi, dan nomor WhatsApp semua member dan calon (More, Contacts).
 - **Menu LDC (Team, More): People, Settings, Data.** Satu app, bukan app terpisah. LDC melihat semua orang sejak awal (Master) beserta riwayat, menambah LT dan member dari luar chapter, membuat dan mengirim kode akses lewat WhatsApp. Kode member dibuat otomatis saat menjadi member, aktif setelah ESM (LDC menghidupkan sekaligus). Data viewer baca saja. Tidak ada editor sel bebas, supaya aturan data tetap dijaga.
+- **LDC dan LT tanpa gamifikasi.** Tidak ada lencana, Gold path, atau menu Board bagi mereka. Daftar "belum mengundang ronde ini" ada di Team, More, Round history. Chapter Mission tetap tampil sebagai kemajuan chapter.
+- **Seat dan klasifikasi.** Calon yang bidangnya belum ada di 64 seat tetap bisa dicatat tanpa seat dengan klasifikasi ditulis bebas. Seat baru hanya dibuat untuk member yang sudah join: lewat "New classification" saat menjadikan member, saat menambah member langsung, atau tombol + seat di halaman Seats (LT dan LDC).
 - **Tanpa poin.** Hanya angka nyata (undangan, tamu hadir, sponsor) dan lencana.
 - Semua anggota melihat nama lengkap dan bidang tamu yang terdaftar hadir Rabu itu, tanpa nomor telepon.
 - Notifikasi hanya di dalam app (sorotan saat app dibuka).

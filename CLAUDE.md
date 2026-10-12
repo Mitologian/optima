@@ -38,6 +38,10 @@ Home hanya memuat satu langkah berikutnya, satu pengumuman, Chapter Mission (den
 Board dua tab (This round, All time). Team empat tab (Interviews, Schedule, Check-in, More). Fitur yang jarang dipakai
 masuk More.
 
+## Kecepatan
+
+Apps Script lambat (3 sampai 5 detik per panggilan). `web/app.js` memakai simpanan bacaan: jawaban terakhir dipakai langsung, diperbarui diam-diam di belakang, layar digambar ulang bila isinya berubah. Aksi tulis mengosongkan simpanan. Daftar aksi bacaan ada di `BACA_CEPAT`; aksi baru yang hanya membaca harus ditambahkan di sana.
+
 ## Aturan bahasa di app dan dokumen
 
 - Bahasa app: Inggris (dipakai di app, termasuk klasifikasi). Dokumen kerja untuk Coach Dedy tetap Bahasa Indonesia.

@@ -115,11 +115,45 @@
   $lembar.addEventListener('click', function (e) { if (e.target.hasAttribute('data-tutup')) tutupLembar(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') tutupLembar(); });
 
+  /* Cepat dibuka: jawaban bacaan terakhir langsung dipakai, lalu diperbarui diam-diam di belakang.
+     Bila isinya berubah, layar yang sedang terbuka digambar ulang. Aksi tulis mengosongkan simpanan. */
+  var BACA_CEPAT = { beranda: 1, kursi: 1, kursiDetail: 1, papan: 1, pengumuman: 1, undanganSaya: 1, calonSaya: 1, usulanSaya: 1, daftarAnggota: 1, riwayatRonde: 1, acara: 1, perluCek: 1, anggota: 1, tamuPekanIni: 1, jadwalCS: 1, slotCS: 1, regroup: 1, kontak: 1, orangSemua: 1, orangDetail: 1, bacaPengaturan: 1, ringkas: 1, kandidatDriver: 1, daftarHadir: 1, lihatTab: 1 };
+  var SEGAR_DETIK = 8, BASI_MENIT = 10;
+  var simpanan = {}, sedangMuat = {};
+  function kosongkanSimpanan() { simpanan = {}; sedangMuat = {}; kosongVersi++; }
+  function layarSibuk() {
+    var a = document.activeElement;
+    return !$lembar.hidden || (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+  }
   async function api(aksi, data) {
+    if (!BACA_CEPAT[aksi]) {
+      var w = await Api.panggil(aksi, data);
+      if (!w.ok && /Access code not recognized/.test(w.pesan || '') && aksi !== 'masuk') keluar();
+      if (w.ok && aksi !== 'masuk') kosongkanSimpanan();
+      return w;
+    }
+    var kunci = aksi + '|' + JSON.stringify(data || {});
+    var c = simpanan[kunci], umur = c ? (Date.now() - c.t) / 1000 : Infinity;
+    if (c && umur < BASI_MENIT * 60) {
+      if (umur > SEGAR_DETIK && !sedangMuat[kunci]) {
+        sedangMuat[kunci] = true;
+        var versi = kosongVersi;
+        Api.panggil(aksi, data).then(function (baru) {
+          delete sedangMuat[kunci];
+          if (versi !== kosongVersi || !baru.ok) return;
+          var beda = JSON.stringify(baru) !== JSON.stringify(c.r);
+          simpanan[kunci] = { r: baru, t: Date.now() };
+          if (beda && S.aktif && !layarSibuk()) S.aktif.fn(S.aktif.isi, S.aktif.sub);
+        });
+      }
+      return JSON.parse(JSON.stringify(c.r));
+    }
     var r = await Api.panggil(aksi, data);
-    if (!r.ok && /Access code not recognized/.test(r.pesan || '') && aksi !== 'masuk') keluar();
+    if (!r.ok && /Access code not recognized/.test(r.pesan || '')) keluar();
+    if (r.ok) simpanan[kunci] = { r: JSON.parse(JSON.stringify(r)), t: Date.now() };
     return r;
   }
+  var kosongVersi = 0;
 
   var isLT = function () { return S.profil && (S.profil.peran === 'LT' || S.profil.peran === 'LDC'); };
   var isLDC = function () { return S.profil && S.profil.peran === 'LDC'; };
@@ -173,7 +207,7 @@
 
   function keluar() {
     simpan('optima_kode', null);
-    S.kode = ''; S.profil = null; S.atur = null;
+    S.kode = ''; S.profil = null; S.atur = null; S.aktif = null; kosongkanSimpanan();
     Api.setKode('');
     location.hash = '';
     layarMasuk();
@@ -210,6 +244,12 @@
     };
   }
 
+  /* Memanaskan simpanan: layar lain yang mungkin dibuka berikutnya dimuat diam-diam. */
+  function panaskan() {
+    if (!S.profil) return;
+    ['kursi', 'pengumuman', 'undanganSaya'].concat(isLT() ? ['calonSaya', 'acara'] : ['papan']).forEach(function (a) { api(a, a === 'calonSaya' ? {} : undefined); });
+  }
+
   async function coba(kode) {
     Api.setKode(kode);
     var r = await Api.panggil('masuk');
@@ -217,6 +257,7 @@
     S.kode = kode; S.profil = r.profil; S.atur = r.pengaturan;
     simpan('optima_kode', kode);
     if (!location.hash) location.hash = '#misi'; else rute();
+    setTimeout(panaskan, 1500);
     return r;
   }
 
@@ -229,7 +270,9 @@
     tutupLembar();
     var isi = kerangka(layar);
     window.scrollTo(0, 0);
-    ({ misi: layarMisi, kursi: layarKursi, undang: layarUndang, minggu: layarMinggu, papan: layarPapan, tim: layarTim })[layar](isi, h[1]);
+    var fn = ({ misi: layarMisi, kursi: layarKursi, undang: layarUndang, minggu: layarMinggu, papan: layarPapan, tim: layarTim })[layar];
+    S.aktif = { fn: fn, isi: isi, sub: h[1] };
+    fn(isi, h[1]);
   }
   window.addEventListener('hashchange', rute);
 

@@ -59,9 +59,17 @@ var Inti = (function () {
     else if (s.indexOf('62') !== 0 && s.charAt(0) === '8') s = '62' + s;
     return s;
   }
-  function namaDepan(o) {
+  function namaPanggil(o) {
     if (!o) return '';
     return teks(o.nama_depan) || teks(o.nama).split(/\s+/)[0] || '';
+  }
+  /* Nama yang tampil di daftar dan papan. Coach Dedy selalu tampil lengkap dengan perannya: "Dedy Dahlan (LDC)". */
+  function namaDepan(o) {
+    if (!o) return '';
+    return teks(o.kategori) === 'LDC' ? teks(o.nama) + ' (LDC)' : namaPanggil(o);
+  }
+  function namaTampil(o) {
+    return teks(o.kategori) === 'LDC' ? teks(o.nama) + ' (LDC)' : teks(o.nama);
   }
   function idBaru(baris, kolom, awalan, lebar) {
     var maks = 0;
@@ -187,7 +195,7 @@ var Inti = (function () {
     k.saya = {
       id_orang: teks(akses.id_orang),
       nama: o ? teks(o.nama) : '',
-      nama_depan: namaDepan(o),
+      nama_depan: namaPanggil(o),
       peran: teks(akses.peran) || 'Anggota',
       akses: akses
     };
@@ -798,7 +806,7 @@ var Inti = (function () {
       var rek = rekomendasiDriver(k);
       var drv = driverAktif(k).map(function (r) {
         var x = kursiById(k, r.id_kursi);
-        return { id_orang: teks(r.id_orang), nama: teks(r.nama), tahap: teks(r.tahap), bidang: x ? x.bidang : (teks(r.bisnis) || '') };
+        return { id_orang: teks(r.id_orang), nama: namaTampil(r), tahap: teks(r.tahap), bidang: x ? x.bidang : (teks(r.bisnis) || '') };
       }).sort(function (x, y) { return x.nama < y.nama ? -1 : 1; });
       return {
         founding: { jumlah: founding, target: a.target_founding },
@@ -830,7 +838,7 @@ var Inti = (function () {
         var kat = teks(r.kategori);
         if (sudah[r.id_orang]) return;
         if (teks(r.tahap) === 'Anggota' || kat === 'LT' || kat === 'LDC') {
-          orang.push({ id_orang: teks(r.id_orang), nama: teks(r.nama), peran: (kat === 'LT' || kat === 'LDC') ? 'LT' : 'Anggota', pengundang: '', hadir: !!hadir[teks(r.id_orang)] });
+          orang.push({ id_orang: teks(r.id_orang), nama: namaTampil(r), peran: kat === 'LDC' ? 'LDC' : kat === 'LT' ? 'LT' : 'Anggota', pengundang: '', hadir: !!hadir[teks(r.id_orang)] });
         }
       });
       return { acara: { id_event: idEv, nama_acara: teks(ev.nama_acara), tanggal: tgl(ev.tanggal) ? isoTanggal(tgl(ev.tanggal)) : '' }, orang: orang };
@@ -860,7 +868,7 @@ var Inti = (function () {
 
     anggota: function (k) {
       wajibLT(k);
-      return { anggota: k.anggota().map(function (r) { return { id_orang: teks(r.id_orang), nama: teks(r.nama) }; }).sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }) };
+      return { anggota: k.anggota().map(function (r) { return { id_orang: teks(r.id_orang), nama: namaTampil(r) }; }).sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }) };
     },
 
     jadikanAnggota: function (k, b) {
@@ -1025,7 +1033,7 @@ var Inti = (function () {
         return (t === 'Anggota' || TAHAP_AKTIF.indexOf(t) >= 0) && teks(r.nama);
       }).map(function (r) {
         var x = kursiById(k, r.id_kursi);
-        return { id_orang: teks(r.id_orang), nama: teks(r.nama), tahap: teks(r.tahap), bidang: x ? x.bidang : (teks(r.bisnis) || ''), driver: benar(r.driver) };
+        return { id_orang: teks(r.id_orang), nama: namaTampil(r), tahap: teks(r.tahap), bidang: x ? x.bidang : (teks(r.bisnis) || ''), driver: benar(r.driver) };
       }).sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
       return { orang: hasil };
     },
@@ -1290,7 +1298,7 @@ var Inti = (function () {
           var u = urut[teks(r.id_kursi)];
           var s = teks(r.id_sponsor);
           return {
-            nama: teks(r.nama), bidang: u ? u.x.bidang : '', sphere: u ? u.x.sphere : '', jenis_anggota: teks(r.jenis_anggota),
+            nama: namaTampil(r), bidang: u ? u.x.bidang : '', sphere: u ? u.x.sphere : '', jenis_anggota: teks(r.jenis_anggota),
             id_orang: lt ? teks(r.id_orang) : undefined, hadir_bod: lt ? (hadirOrang[teks(r.id_orang)] || 0) : undefined, total_bod: lt ? nBod : undefined,
             sponsor: s === 'BNI' ? 'BNI' : namaDepan(k.orang(s)), tanggal_bergabung: tgl(r.tanggal_bergabung) ? tgl(r.tanggal_bergabung).toISOString() : '', _n: u ? u.n : 99999
           };

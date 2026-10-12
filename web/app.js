@@ -24,7 +24,7 @@
   var TAHAP_LABEL = { 'Listed': 'Listed', 'Invited': 'Invited', 'Coffee_Scheduled': 'Coffee scheduled', 'Attended': 'Attended', 'Coffee_Session': 'Coffee session done', 'Applied': 'Applied', 'Anggota': 'Joined', 'Joined_Other': 'Joined other chapter', 'Declined': 'Declined', 'Rejected': 'Rejected' };
   var STATUS_UNDANGAN_LABEL = { 'Diundang': 'Invited', 'Terdaftar': 'Registered', 'Hadir': 'Attended', 'Bergabung': 'Joined', 'Batal': 'Cancelled' };
   var JENIS_ANGGOTA_LABEL = { 'Founding': 'Founding', 'Core Group': 'Core Group', 'Anggota': 'Member' };
-  var PERAN_LABEL = { 'Visitor': 'Visitor', 'Anggota': 'Member', 'LT': 'LT' };
+  var PERAN_LABEL = { 'Visitor': 'Visitor', 'Anggota': 'Member', 'LT': 'LT', 'LDC': 'LDC' };
   function lblTahap(t) { return TAHAP_LABEL[t] || t; }
   function lblStatus(t) { return STATUS_UNDANGAN_LABEL[t] || t; }
   function wib(iso) {

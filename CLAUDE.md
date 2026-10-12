@@ -40,6 +40,7 @@ masuk More.
 - Tampilan: latar putih, merah sebagai warna utama. Judul Helvetica/Arial, isi Plus Jakarta Sans. Satu tema terang.
 - Tanpa em dash. Tanpa kata "kamu". Sapaan ke pengguna memakai nama atau kalimat tanpa kata ganti.
 - Sebut "Coach Dedy", bukan "Dedy" saja, di teks yang dibaca orang lain.
+- Di daftar dan papan nama LDC tampil lengkap: "Dedy Dahlan (LDC)". Sapaan di Home tetap nama depan.
 
 ## Struktur repo
 

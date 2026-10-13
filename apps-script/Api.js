@@ -57,6 +57,8 @@ var KOLOM_BARU_ = {
 var CACHE_DETIK_ = 600;
 var CACHE_VERSI_DETIK_ = 21600;
 var TANPA_CACHE_ = { Log: true, Responses: true };
+/* Kolom yang harus tersimpan sebagai teks (Sheets suka mengubah '07:00' dan '2027-05-24' menjadi waktu atau tanggal). */
+var KOLOM_TEKS_ = { Events: ['tanggal', 'jam_mulai', 'jam_selesai'] };
 var TAB_CACHE_ = ['Pengaturan', 'Klasifikasi', 'Master', 'Undangan', 'Hadir', 'Events', 'Butuh', 'Wawancara', 'Jadwal_CS', 'Akses', 'Lencana', 'Pengumuman'];
 
 function api_kemas_(baris) {
@@ -175,7 +177,12 @@ function api_adaptor_(opsi) {
       var t = siapkan(nama);
       var baris = t.kepala.map(function (h) { return obj[h] === undefined ? '' : obj[h]; });
       t.sheet.appendRow(baris);
-      Object.defineProperty(obj, '_baris', { value: t.sheet.getLastRow(), writable: true, enumerable: false });
+      var nomor = t.sheet.getLastRow();
+      (KOLOM_TEKS_[nama] || []).forEach(function (h) {
+        var j = t.kepala.indexOf(h);
+        if (j >= 0 && obj[h] !== undefined && obj[h] !== '') t.sheet.getRange(nomor, j + 1).setNumberFormat('@').setValue(String(obj[h]));
+      });
+      Object.defineProperty(obj, '_baris', { value: nomor, writable: true, enumerable: false });
       naikkanVersi(nama);
     },
     ubah: function (nama, obj, perubahan) {
@@ -183,7 +190,10 @@ function api_adaptor_(opsi) {
       if (!obj._baris) throw new Error('Baris tidak diketahui di ' + nama);
       Object.keys(perubahan).forEach(function (k) {
         var j = t.kepala.indexOf(k);
-        if (j >= 0) t.sheet.getRange(obj._baris, j + 1).setValue(perubahan[k]);
+        if (j < 0) return;
+        var sel = t.sheet.getRange(obj._baris, j + 1);
+        if ((KOLOM_TEKS_[nama] || []).indexOf(k) >= 0 && perubahan[k] !== '') sel.setNumberFormat('@').setValue(String(perubahan[k]));
+        else sel.setValue(perubahan[k]);
       });
       naikkanVersi(nama);
     },

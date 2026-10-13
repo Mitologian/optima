@@ -98,6 +98,16 @@
   }
   function waLink(nomor, teks) { return 'https://wa.me/' + (nomor || '') + (teks ? '?text=' + encodeURIComponent(teks) : ''); }
 
+  /* Nomor yang bisa diketuk: langsung membuka chat WhatsApp ke nomor itu. */
+  function nomorWa(no) {
+    var n = String(no || '').replace(/\D/g, '');
+    return n ? '<a class="nomor-wa" href="' + esc(waLink(n)) + '" target="_blank" rel="noopener">+' + esc(n) + '</a>' : '<span class="kecil">No number yet</span>';
+  }
+  function ikonWa(no, nama) {
+    var n = String(no || '').replace(/\D/g, '');
+    return n ? '<a class="wa-ikon" href="' + esc(waLink(n)) + '" target="_blank" rel="noopener" aria-label="WhatsApp ' + esc(nama || '') + '">WA</a>' : '';
+  }
+
   function toast(pesan, rayakan) {
     $toast.textContent = pesan;
     $toast.className = 'toast tampil' + (rayakan ? ' rayakan' : '');
@@ -117,7 +127,7 @@
 
   /* Cepat dibuka: jawaban bacaan terakhir langsung dipakai, lalu diperbarui diam-diam di belakang.
      Bila isinya berubah, layar yang sedang terbuka digambar ulang. Aksi tulis mengosongkan simpanan. */
-  var BACA_CEPAT = { beranda: 1, kursi: 1, kursiDetail: 1, papan: 1, pengumuman: 1, undanganSaya: 1, calonSaya: 1, usulanSaya: 1, daftarAnggota: 1, riwayatRonde: 1, acara: 1, perluCek: 1, anggota: 1, tamuPekanIni: 1, jadwalCS: 1, slotCS: 1, regroup: 1, kontak: 1, orangSemua: 1, orangDetail: 1, bacaPengaturan: 1, ringkas: 1, kandidatDriver: 1, daftarHadir: 1, lihatTab: 1 };
+  var BACA_CEPAT = { beranda: 1, kursi: 1, kursiDetail: 1, papan: 1, pengumuman: 1, undanganSaya: 1, calonSaya: 1, usulanSaya: 1, daftarAnggota: 1, riwayatRonde: 1, acara: 1, perluCek: 1, anggota: 1, tamuPekanIni: 1, jadwalCS: 1, slotCS: 1, regroup: 1, kontak: 1, orangSemua: 1, orangDetail: 1, bacaPengaturan: 1, ringkas: 1, kandidatDriver: 1, daftarHadir: 1, lihatTab: 1, acaraCheckin: 1 };
   var SEGAR_DETIK = 8, BASI_MENIT = 10;
   var simpanan = {}, sedangMuat = {};
   function kosongkanSimpanan() { simpanan = {}; sedangMuat = {}; kosongVersi++; }
@@ -845,9 +855,12 @@
           salinTeks(ta.value, ta); toast('Message copied. Paste it in WhatsApp.');
         };
         el.querySelector('#u-wa-buka').onclick = async function () {
-          if (!(await catat())) return;
+          // Jendela dibuka sekarang, saat ketukan masih dihitung. Membuka sesudah menunggu server sering diblokir browser HP.
+          var jendela = window.open('about:blank', '_blank');
+          if (!(await catat())) { if (jendela) jendela.close(); return; }
           var nomor = String(st.wa).replace(/\D/g, '').replace(/^0/, '62');
-          window.open(waLink(nomor, ta.value), '_blank', 'noopener');
+          var url = waLink(nomor, ta.value);
+          if (jendela) jendela.location.href = url; else location.href = url;
         };
       });
   }
@@ -1171,7 +1184,7 @@
       var ketuk = !bisa && ['Invited', 'Attended', 'Coffee_Scheduled'].indexOf(u.tahap) >= 0;
       var info = u.tahap === 'Coffee_Scheduled' && u.jadwal_cs ? ' · Coffee ' + jamCS(u.jadwal_cs).hari + ' ' + jamCS(u.jadwal_cs).jam : (u.tanggal_undangan ? ' · ' + esc(u.acara_undangan) + ', ' + esc(tglPendek(u.tanggal_undangan)) : '');
       var isiBaris = '<div class="utama"><b>' + esc(u.nama) + '</b><span>' + esc(u.bidang) + info + '</span></div>';
-      return '<li>' + (ketuk ? '<button class="ketuk" data-buka="' + esc(u.id_orang) + '" style="flex:1;min-width:0">' + isiBaris + '</button>' : isiBaris) +
+      return '<li>' + (ketuk ? '<button class="ketuk" data-buka="' + esc(u.id_orang) + '" style="flex:1;min-width:0">' + isiBaris + '</button>' : isiBaris) + ikonWa(u.whatsapp, u.nama) +
         (bisa ? '<button class="tombol kecil" data-undang="' + esc(u.id_orang) + '">Invite</button>' : chipUndangan(u)) + '</li>';
     }
     function cariU(id) { return us.usulan.filter(function (u) { return u.id_orang === id; })[0]; }
@@ -1403,7 +1416,7 @@
       '<p class="kecil" style="margin:10px 2px">' + info[segCalon] + '</p>' +
       '<div class="baris-tombol" style="margin:0 0 10px"><button class="tombol kedua" id="b-tambah">Add a prospect</button>' + (isLDC() ? '<button class="tombol kedua" id="b-semua">' + (semuaCalon ? 'Only mine' : 'Show everyone') + '</button>' : '') + '</div>' +
       '<section class="kartu">' + (daftar.length ? '<ul class="daftar">' + daftar.map(function (c) {
-        return '<li><button class="ketuk" data-calon="' + esc(c.id_orang) + '" style="flex:1;min-width:0"><span class="lambang">' + inisial(c.nama) + '</span><div class="utama"><b>' + esc(c.nama) + '</b><span>' + esc(c.bidang) + ' · ' + esc(sub(c)) + '</span></div></button>' + aksi(c) + '</li>';
+        return '<li><button class="ketuk" data-calon="' + esc(c.id_orang) + '" style="flex:1;min-width:0"><span class="lambang">' + inisial(c.nama) + '</span><div class="utama"><b>' + esc(c.nama) + '</b><span>' + esc(c.bidang) + ' · ' + esc(sub(c)) + '</span></div></button>' + ikonWa(c.whatsapp, c.nama) + aksi(c) + '</li>';
       }).join('') + '</ul>' : '<p class="kosong-isi">Nothing here.</p>') + '</section>';
     w.querySelectorAll('[data-seg]').forEach(function (t) { t.onclick = function () { segCalon = t.dataset.seg; subCalon(w); }; });
     var bc = w.querySelector('#b-cek');
@@ -1499,37 +1512,64 @@
       });
   }
 
-  var acaraRabu = '';
+  var acaraRabu = '', saringAbsen = 'semua';
+  function labelAbsen(e) { return (e.jenis === 'BOD' ? 'BOD' : e.jenis === 'Lunch Networking' ? 'Lunch' : e.nama_acara) + ' · ' + tglHari(e.tanggal) + ' ' + e.jam_mulai; }
   async function subRabu(w) {
-    var ac = await api('acara');
-    var daftarAc = (ac.acara || []);
-    if (!daftarAc.length) { w.innerHTML = '<p class="kosong-isi">No open events in the Events tab.</p>'; return; }
-    if (!daftarAc.some(function (e) { return e.id_event === acaraRabu; })) acaraRabu = daftarAc[0].id_event;
+    var ac = await api('acaraCheckin');
+    if (!ac.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(ac.pesan) + '</p>'; return; }
+    var daftarAc = ac.acara || [];
+    if (!daftarAc.length) { w.innerHTML = '<p class="kosong-isi">No events in the last three weeks or the next two. Add them in More, Announcements, Add event.</p>'; return; }
+    if (!daftarAc.some(function (e) { return e.id_event === acaraRabu; })) {
+      // acara hari ini, kalau tidak ada yang terdekat berikutnya, kalau tidak ada yang terakhir
+      var pilihan = daftarAc.filter(function (e) { return e.tanggal === ac.hari_ini; })[0] || daftarAc.filter(function (e) { return e.tanggal > ac.hari_ini; })[0] || daftarAc[daftarAc.length - 1];
+      acaraRabu = pilihan.id_event;
+    }
     var r = await api('daftarHadir', { id_event: acaraRabu });
     if (!r.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
-    var urut = { Visitor: 0, Anggota: 1, LT: 2 };
+    var urut = { Visitor: 0, Anggota: 1, LT: 2, LDC: 2 };
     r.orang.sort(function (a, b) { return urut[a.peran] - urut[b.peran] || (a.nama < b.nama ? -1 : 1); });
-    var jumlah = r.orang.filter(function (o) { return o.hadir; }).length;
-    w.innerHTML = '<label class="isian"><span>Event</span><select id="pil-ev">' + daftarAc.slice(0, 8).map(function (e) {
-        return '<option value="' + esc(e.id_event) + '"' + (e.id_event === acaraRabu ? ' selected' : '') + '>' + esc(e.nama_acara) + ' · ' + esc(tglHari(e.tanggal)) + ' ' + esc(e.jam_mulai) + '</option>';
+    var hadirN = r.orang.filter(function (o) { return o.hadir; }).length;
+    var anggotaOrang = r.orang.filter(function (o) { return o.peran === 'Anggota'; });
+    var anggotaHadir = anggotaOrang.filter(function (o) { return o.hadir; }).length;
+    var lampau = daftarAc.filter(function (e) { return e.id_event === acaraRabu; })[0].tanggal < ac.hari_ini;
+    w.innerHTML = '<label class="isian"><span>Event</span><select id="pil-ev">' + daftarAc.map(function (e) {
+        return '<option value="' + esc(e.id_event) + '"' + (e.id_event === acaraRabu ? ' selected' : '') + '>' + esc(labelAbsen(e)) + (e.tanggal < ac.hari_ini ? ' (past)' : '') + '</option>';
       }).join('') + '</select></label>' +
-      '<div style="display:flex;justify-content:space-between;align-items:baseline;margin:4px 2px 10px"><h2>Attendance</h2><span class="kecil"><b id="jml">' + jumlah + '</b> present</span></div>' +
+      '<div class="ringkas-absen"><span><b id="jml">' + hadirN + '</b> present</span><span><b id="jml-ang">' + anggotaHadir + '</b> of ' + anggotaOrang.length + ' members</span><span><b id="jml-absen">' + (anggotaOrang.length - anggotaHadir) + '</b> members absent</span></div>' +
+      (lampau ? '<p class="kecil" style="margin:0 2px 8px">This event is over. Late entries are still saved.</p>' : '') +
+      '<div class="saring" role="group" aria-label="Filter">' + [['semua', 'Everyone'], ['absen', 'Not present'], ['hadir', 'Present']].map(function (f) {
+        return '<button data-saring-absen="' + f[0] + '" aria-pressed="' + (saringAbsen === f[0]) + '">' + f[1] + '</button>';
+      }).join('') + '</div>' +
       '<input class="cari" id="cari" placeholder="Search name" type="search">' +
       '<section class="kartu"><ul class="daftar">' + r.orang.map(function (o) {
-        return '<li data-cari="' + esc(o.nama.toLowerCase()) + '"><div class="utama"><b>' + esc(o.nama) + '</b><span>' + esc(o.peran === 'Visitor' ? 'Visitor' + (o.pengundang ? ', invited by ' + o.pengundang : '') : (PERAN_LABEL[o.peran] || o.peran)) + '</span></div><button class="hadir-saklar" data-o="' + esc(o.id_orang) + '" aria-pressed="' + o.hadir + '" aria-label="Present: ' + esc(o.nama) + '"></button></li>';
+        return '<li data-cari="' + esc(o.nama.toLowerCase()) + '" data-hadir="' + o.hadir + '" data-peran="' + esc(o.peran) + '"><div class="utama"><b>' + esc(o.nama) + '</b><span>' + esc(o.peran === 'Visitor' ? 'Visitor' + (o.pengundang ? ', invited by ' + o.pengundang : '') : (PERAN_LABEL[o.peran] || o.peran)) + '</span></div><button class="hadir-saklar" data-o="' + esc(o.id_orang) + '" aria-pressed="' + o.hadir + '" aria-label="Present: ' + esc(o.nama) + '"></button></li>';
       }).join('') + '</ul></section>';
+    function terapkan() {
+      var q = w.querySelector('#cari').value.toLowerCase();
+      w.querySelectorAll('[data-cari]').forEach(function (li) {
+        var h = li.dataset.hadir === 'true';
+        li.hidden = (q && li.dataset.cari.indexOf(q) < 0) || (saringAbsen === 'absen' && h) || (saringAbsen === 'hadir' && !h);
+      });
+    }
+    function hitung() {
+      var lis = w.querySelectorAll('[data-cari]');
+      var h = 0, a = 0, ang = 0;
+      lis.forEach(function (li) { var ya = li.dataset.hadir === 'true'; if (ya) h++; if (li.dataset.peran === 'Anggota') { ang++; if (ya) a++; } });
+      w.querySelector('#jml').textContent = h; w.querySelector('#jml-ang').textContent = a; w.querySelector('#jml-absen').textContent = ang - a;
+    }
+    terapkan();
     w.querySelector('#pil-ev').onchange = function (e) { acaraRabu = e.target.value; subRabu(w); };
-    w.querySelector('#cari').oninput = function (e) {
-      var q = e.target.value.toLowerCase();
-      w.querySelectorAll('[data-cari]').forEach(function (li) { li.hidden = q && li.dataset.cari.indexOf(q) < 0; });
-    };
+    w.querySelector('#cari').oninput = terapkan;
+    w.querySelectorAll('[data-saring-absen]').forEach(function (t) {
+      t.onclick = function () { saringAbsen = t.dataset.saringAbsen; w.querySelectorAll('[data-saring-absen]').forEach(function (z) { z.setAttribute('aria-pressed', z === t); }); terapkan(); };
+    });
     w.querySelectorAll('[data-o]').forEach(function (t) {
       t.onclick = async function () {
         var jadi = t.getAttribute('aria-pressed') !== 'true';
-        t.setAttribute('aria-pressed', jadi);
+        var li = t.closest('li');
+        t.setAttribute('aria-pressed', jadi); li.dataset.hadir = String(jadi); hitung();
         var h = await api('checkin', { id_event: acaraRabu, id_orang: t.dataset.o, hadir: jadi });
-        if (!h.ok) { t.setAttribute('aria-pressed', !jadi); return toast(h.pesan); }
-        var j = w.querySelector('#jml'); j.textContent = Number(j.textContent) + (jadi ? 1 : -1);
+        if (!h.ok) { t.setAttribute('aria-pressed', !jadi); li.dataset.hadir = String(!jadi); hitung(); return toast(h.pesan); }
       };
     });
   }
@@ -1539,14 +1579,14 @@
     var h = await Promise.all([api('pengumuman'), api('acara')]);
     var pg = h[0], ac = h[1];
     if (!pg.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(pg.pesan) + '</p>'; return; }
-    var acara = (ac.acara || []).slice(0, 8);
+    var acara = (ac.acara || []).slice(0, 12);
     w.innerHTML =
       '<div class="judul-bagian"><h2>Announcements</h2><button class="tombol kecil" id="p-baru">New</button></div>' +
       '<section class="kartu">' + (pg.pengumuman.length ? '<ul class="daftar">' + pg.pengumuman.map(function (a) {
         return '<li><div class="utama"><b>' + esc(a.judul) + '</b><span>' + esc(lalu(a.tanggal_tayang)) + ' · by ' + esc(a.oleh) + (a.tanggal_berakhir ? ' · until ' + esc(tglPendek(a.tanggal_berakhir)) : '') + '</span></div>' +
           '<button class="tombol kecil kedua" data-ubah="' + esc(a.id_pengumuman) + '">Edit</button><button class="tombol kecil kedua" data-hapus="' + esc(a.id_pengumuman) + '">Remove</button></li>';
       }).join('') + '</ul>' : '<p class="kosong-isi">No active announcements. Members see announcements on Home.</p>') + '</section>' +
-      '<div class="judul-bagian"><h2>Event info</h2><span class="kecil">speaker and poster</span></div>' +
+      '<div class="judul-bagian"><h2>Events</h2><button class="tombol kecil" id="a-baru">Add event</button></div>' +
       '<section class="kartu">' + (acara.length ? '<ul class="daftar">' + acara.map(function (e) {
         return '<li><div class="utama"><b>' + esc(tglHari(e.tanggal)) + ' · ' + esc(e.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + esc(e.jam_mulai) + '</b><span>' + (e.pembicara ? esc(e.pembicara) : 'No speaker yet') + (e.poster ? ' · poster set' : '') + '</span></div>' +
           '<button class="tombol kecil kedua" data-acara="' + esc(e.id_event) + '">Edit</button></li>';
@@ -1554,6 +1594,7 @@
       '<p class="catatan-main">Poster: paste a share link (Google Drive set to "Anyone with the link", or any https image link).</p>';
     var segar = function () { subInfo(w); };
     w.querySelector('#p-baru').onclick = function () { lembarPengumuman(null, segar); };
+    w.querySelector('#a-baru').onclick = function () { lembarTambahAcara(segar); };
     w.querySelectorAll('[data-ubah]').forEach(function (b) { b.onclick = function () { lembarPengumuman(pg.pengumuman.filter(function (a) { return a.id_pengumuman === b.dataset.ubah; })[0], segar); }; });
     w.querySelectorAll('[data-hapus]').forEach(function (b) {
       b.onclick = async function () {
@@ -1586,17 +1627,67 @@
   }
 
   function lembarAcara(e, segarkan) {
-    bukaLembar('<h2>Event info</h2><p class="kecil" style="margin:6px 0 14px">' + esc(tglHari(e.tanggal)) + ' · ' + esc(e.nama_acara) + ' ' + esc(e.jam_mulai) + '</p>' +
-      '<form id="f-a"><label class="isian"><span>Speaker and topic</span><input name="pembicara" maxlength="120" value="' + esc(e.pembicara) + '" placeholder="Name: topic"></label>' +
+    bukaLembar('<h2>' + esc(e.nama_acara) + '</h2><p class="kecil" style="margin:6px 0 14px">' + esc(tglHari(e.tanggal)) + ' · ' + esc(e.jam_mulai) + '</p>' +
+      '<form id="f-a"><label class="isian"><span>Date</span><input name="tanggal" type="date" required value="' + esc(e.tanggal) + '"></label>' +
+      '<div class="dua-kolom"><label class="isian"><span>Start</span><input name="jam_mulai" type="time" required value="' + esc(e.jam_mulai) + '"></label>' +
+      '<label class="isian"><span>End</span><input name="jam_selesai" type="time" value="' + esc(e.jam_selesai) + '"></label></div>' +
+      '<label class="isian"><span>Format</span><select name="mode"><option' + (e.mode !== 'Online' ? ' selected' : '') + '>Onsite</option><option' + (e.mode === 'Online' ? ' selected' : '') + '>Online</option></select></label>' +
+      '<label class="isian"><span>Location or link</span><input name="lokasi" maxlength="120" value="' + esc(e.lokasi) + '" placeholder="Venue name or Zoom"></label>' +
+      '<label class="isian"><span>Speaker and topic</span><input name="pembicara" maxlength="120" value="' + esc(e.pembicara) + '" placeholder="Name: topic"></label>' +
       '<label class="isian"><span>Poster link (optional)</span><input name="poster" type="url" placeholder="https://" value="' + esc(e.poster) + '"></label>' +
-      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save</button></form>',
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save</button></form>' +
+      '<div class="baris-tombol"><button class="tombol kedua" id="a-batal">Cancel this event</button></div>',
       function (el) {
         el.querySelector('#f-a').onsubmit = async function (ev) {
           ev.preventDefault();
           var f = ev.target, sl = el.querySelector('#salah');
-          var r = await api('ubahAcara', { id_event: e.id_event, pembicara: f.pembicara.value, poster: f.poster.value.trim() });
+          var r = await api('ubahAcara', { id_event: e.id_event, tanggal: f.tanggal.value, jam_mulai: f.jam_mulai.value, jam_selesai: f.jam_selesai.value, mode: f.mode.value, lokasi: f.lokasi.value, pembicara: f.pembicara.value, poster: f.poster.value.trim() });
           if (!r.ok) { sl.textContent = r.pesan; sl.hidden = false; return; }
-          tutupLembar(); toast('Event info saved.'); segarkan();
+          tutupLembar(); toast('Event saved.'); segarkan();
+        };
+        el.querySelector('#a-batal').onclick = async function () {
+          if (!confirm('Cancel this event? It disappears for everyone, and registered guests are not notified.')) return;
+          var r = await api('ubahAcara', { id_event: e.id_event, status: 'Batal' });
+          if (!r.ok) return toast(r.pesan);
+          tutupLembar(); toast('Event cancelled.'); segarkan();
+        };
+      });
+  }
+
+  /* Tambah jadwal: BOD, Lunch Networking, ESM, atau lainnya; bisa diulang tiap pekan. */
+  function lembarTambahAcara(segarkan) {
+    var PRESET = { 'BOD': ['07:00', '09:00', 'Online', 'Zoom'], 'Lunch Networking': ['12:00', '14:00', 'Onsite', ''], 'ESM': ['', '', 'Onsite', ''], 'Other': ['', '', 'Onsite', ''] };
+    var jenis = 'BOD';
+    var hariIni = new Date(Date.now() + 7 * 36e5).toISOString().slice(0, 10);
+    bukaLembar('<h2>Add an event</h2><p class="kecil" style="margin:4px 0 12px">Add the BOD and Lunch Networking for the coming weeks in one go. Members can invite guests to any event that appears here.</p>' +
+      '<div class="pilihan" style="margin-bottom:12px">' + Object.keys(PRESET).map(function (j) { return '<button type="button" data-j="' + j + '" aria-pressed="' + (j === jenis) + '">' + (j === 'Other' ? 'Other' : j) + '</button>'; }).join('') + '</div>' +
+      '<form id="f-ta"><label class="isian" id="l-nama" hidden><span>Event name</span><input name="nama_acara" maxlength="80"></label>' +
+      '<label class="isian"><span>First date</span><input name="tanggal" type="date" required min="' + hariIni + '"></label>' +
+      '<div class="dua-kolom"><label class="isian"><span>Start</span><input name="jam_mulai" type="time" required></label><label class="isian"><span>End</span><input name="jam_selesai" type="time"></label></div>' +
+      '<label class="isian"><span>Format</span><select name="mode"><option>Onsite</option><option>Online</option></select></label>' +
+      '<label class="isian"><span>Location or link</span><input name="lokasi" maxlength="120" placeholder="Venue name or Zoom"></label>' +
+      '<label class="isian"><span>Repeat every week for</span><select name="ulang"><option value="1">Just this date</option><option value="4">4 weeks</option><option value="8">8 weeks</option><option value="12">12 weeks</option></select></label>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Add</button></form>',
+      function (el) {
+        var f = el.querySelector('#f-ta');
+        function isiPreset() {
+          var p = PRESET[jenis];
+          f.jam_mulai.value = p[0]; f.jam_selesai.value = p[1]; f.mode.value = p[2]; f.lokasi.value = p[3];
+          el.querySelector('#l-nama').hidden = jenis !== 'Other';
+          f.nama_acara.required = jenis === 'Other';
+        }
+        isiPreset();
+        el.querySelectorAll('[data-j]').forEach(function (b) {
+          b.onclick = function () { jenis = b.dataset.j; el.querySelectorAll('[data-j]').forEach(function (z) { z.setAttribute('aria-pressed', z === b); }); isiPreset(); };
+        });
+        f.onsubmit = async function (e) {
+          e.preventDefault();
+          var sl = el.querySelector('#salah');
+          var r = await api('tambahAcara', { jenis: jenis, nama_acara: f.nama_acara.value, tanggal: f.tanggal.value, jam_mulai: f.jam_mulai.value, jam_selesai: f.jam_selesai.value, mode: f.mode.value, lokasi: f.lokasi.value, ulang: f.ulang.value });
+          if (!r.ok) { sl.textContent = r.pesan; sl.hidden = false; return; }
+          tutupLembar();
+          toast(r.dibuat + ' event' + (r.dibuat === 1 ? '' : 's') + ' added' + (r.dilewati ? ', ' + r.dilewati + ' already existed' : '') + '.', r.dibuat > 0);
+          segarkan();
         };
       });
   }
@@ -1619,7 +1710,7 @@
     function baris(o) {
       var no = o.whatsapp;
       return '<li data-nama="' + esc((o.nama + ' ' + o.bidang).toLowerCase()) + '"><div class="utama"><b>' + esc(o.nama) + '</b><span>' + esc(o.bidang || 'Undecided classification') + (o.jenis === 'Prospect' ? ' · ' + esc(lblTahap(o.tahap)) : '') + '</span>' +
-        '<span>' + (no ? '+' + esc(no) : 'No number yet') + '</span></div>' +
+        '<span>' + nomorWa(no) + '</span></div>' +
         (no ? '<a class="tombol kecil kedua" href="' + esc(waLink(no)) + '" target="_blank" rel="noopener">WhatsApp</a>' : '') + '</li>';
     }
     function bagian(judul, daftar, kosong) {
@@ -1788,6 +1879,7 @@
     if (!S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
     var anggotaR = o.jenis === 'Member' ? await api('anggota') : { anggota: [] };
     function baris(k, v) { return v ? '<li><div class="utama"><b>' + esc(k) + '</b><span>' + esc(v) + '</span></div></li>' : ''; }
+    function barisHtml(k, h) { return '<li><div class="utama"><b>' + esc(k) + '</b><span>' + h + '</span></div></li>'; }
     function jejak(judul, daftar, f) {
       return daftar.length ? '<div class="judul-bagian"><h2>' + judul + '</h2><span class="kecil">' + daftar.length + '</span></div><section class="kartu"><ul class="daftar">' + daftar.map(f).join('') + '</ul></section>' : '';
     }
@@ -1805,10 +1897,12 @@
     bukaLembar(
       '<div class="tajuk"><span class="lambang" style="width:52px;height:52px;font-size:20px">' + inisial(o.nama) + '</span><div><p class="kecil">' + esc(JENIS_ORANG[o.jenis] || o.jenis) + (o.jenis === 'Prospect' ? ' · ' + esc(lblTahap(o.tahap)) : '') + '</p><h2>' + esc(o.nama) + '</h2>' + (o.bidang || o.bisnis ? '<p class="kecil">' + esc(o.bidang || o.bisnis) + '</p>' : '') + '</div></div>' +
       (o.whatsapp ? '<a class="tombol kedua" target="_blank" rel="noopener" href="' + esc(waLink(o.whatsapp)) + '" style="margin-bottom:14px">Chat on WhatsApp</a>' : '') +
-      '<section class="kartu"><ul class="daftar">' + baris('WhatsApp', o.whatsapp ? '+' + o.whatsapp : 'No number') + baris('Source', o.sumber) + baris('Added', o.masuk ? tglPendek(o.masuk) : '') +
+      '<section class="kartu"><ul class="daftar">' + barisHtml('WhatsApp', nomorWa(o.whatsapp)) + baris('Source', o.sumber) + baris('Added', o.masuk ? tglPendek(o.masuk) : '') +
         (o.jenis === 'Member' ? baris('Sponsor', o.sponsor) + baris('Joined', (o.bergabung ? tglPendek(o.bergabung) : '') + (o.jenis_anggota ? ' · ' + o.jenis_anggota : '')) : '') +
         baris('Registered by', o.diajukan) + baris('Handled by', o.pic) + baris('Coffee session', o.jadwal_cs ? tglPendek(o.jadwal_cs) : '') + baris('Notes', o.catatan) + baris('Why not continued', o.alasan) + '</ul></section>' +
       akun +
+      (d.kehadiran ? '<section class="kartu"><p class="kecil">BOD attendance since joining: <b>' + d.kehadiran.bod + ' of ' + d.kehadiran.total_bod + '</b>' + (d.kehadiran.total_lunch ? ' · Lunch Networking: <b>' + d.kehadiran.lunch + ' of ' + d.kehadiran.total_lunch + '</b>' : '') + '</p>' +
+        (d.kehadiran.absen.length ? '<p class="kecil" style="margin-top:6px">Missed BOD: ' + d.kehadiran.absen.map(function (t) { return esc(tglPendek(t)); }).join(', ') + '</p>' : '') + '</section>' : '') +
       (d.mengundang.jumlah ? '<section class="kartu"><p class="kecil">Invited <b>' + d.mengundang.jumlah + '</b> guest' + (d.mengundang.jumlah > 1 ? 's' : '') + ', <b>' + d.mengundang.tamu_hadir + '</b> attended.</p></section>' : '') +
       jejak('Invited to', d.diundang_ke, function (u) { return '<li><div class="utama"><b>' + esc(u.acara) + '</b><span>' + esc(lblStatus(u.status)) + ' · by ' + esc(u.oleh) + '</span></div></li>'; }) +
       jejak('Attended', d.hadir, function (h) { return '<li><div class="utama"><b>' + esc(h.acara) + '</b><span>' + esc(PERAN_LABEL[h.peran] || h.peran) + '</span></div></li>'; }) +

@@ -176,3 +176,11 @@ Hanya `apps-script/Api.js` yang berubah. Simpanan tab kini hidup 10 menit (sebel
 5. Bila ada galat baru, hapus kedua pemicu itu (Triggers di editor) dan kabari Claude. Aplikasi tetap jalan tanpa pemicu,
    hanya simpanannya kembali kedaluwarsa tiap 10 menit.
 
+## K. Menyusul: jadwal acara dikelola dari app (13 Oktober 2026)
+
+- Naikkan versi Apps Script lagi: aksi `tambahAcara`, `acaraCheckin`, dan `ubahAcara` yang diperluas. Perubahan `Api.js`: kolom `tanggal`, `jam_mulai`, `jam_selesai`
+  di tab `Events` kini ditulis sebagai teks supaya Sheets tidak mengubahnya menjadi tanggal atau waktu.
+- App kini menambah baris di tab `Events` dengan `status` = Terbuka dan `tampil_di_form` = TRUE. Mohon pastikan sinkronisasi pilihan acara di Google Form
+  (dropdown "Acara yang diikuti") ikut mengambil baris baru itu, dan beri tahu Claude bila perlu jeda atau pemicu tertentu.
+- Acara yang dibatalkan dari app diberi `status` = Batal. Mohon dropdown Form tidak menampilkan acara yang Batal.
+

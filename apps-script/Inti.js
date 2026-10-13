@@ -315,7 +315,7 @@ var Inti = (function () {
       return t && isoTanggal(t) >= hariIni && st !== 'Batal' && st !== 'Selesai';
     }).map(function (e) {
       return {
-        id_event: teks(e.id_event), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: teks(e.jam_mulai), jam_selesai: teks(e.jam_selesai),
+        id_event: teks(e.id_event), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai), jam_selesai: jamEv(e.jam_selesai),
         nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi),
         pembicara: teks(e.pembicara), poster: teks(e.poster)
       };
@@ -527,6 +527,7 @@ var Inti = (function () {
     return a ? teks(a.peran) : '';
   }
   function daftarPendamping(r) { return teks(r.pendamping).split(',').map(teks).filter(Boolean); }
+  function jamEv(v) { return v instanceof Date ? jamWIB(v) : teks(v).replace(/^(\d):/, '0$1:'); }
   function jamWIB(d) { return new Date(d.getTime() + WIB).toISOString().slice(11, 16); }
   function slotById(k, id) {
     var r = k.tab('Jadwal_CS').filter(function (x) { return teks(x.id_slot) === teks(id); })[0];
@@ -611,6 +612,23 @@ var Inti = (function () {
     k.tambah('Klasifikasi', r);
     k.log('buatKursi', bidang + ' di baris ' + baris);
     return kursiById(k, r.id_kursi);
+  }
+
+  /* Kehadiran member sejak bergabung: BOD dan Lunch Networking yang sudah lewat (yang dibatalkan tidak dihitung). */
+  function kehadiranOrang(k, o) {
+    if (teks(o.tahap) !== 'Anggota' || timPendiri(o)) return null;
+    var mulai = tgl(o.tanggal_bergabung);
+    var hadir = {};
+    k.tab('Hadir').forEach(function (h) { if (teks(h.id_orang) === teks(o.id_orang)) hadir[teks(h.id_event)] = true; });
+    var h = { bod: 0, total_bod: 0, lunch: 0, total_lunch: 0, absen: [] };
+    k.tab('Events').forEach(function (e) {
+      var t = tgl(e.tanggal), jenis = teks(e.jenis);
+      if (!t || t > k.now || teks(e.status) === 'Batal' || (mulai && t < new Date(mulai.getTime() - 7 * HARI))) return;
+      if (jenis === 'BOD') { h.total_bod++; if (hadir[teks(e.id_event)]) h.bod++; else h.absen.push(isoTanggal(t)); }
+      else if (jenis === 'Lunch Networking') { h.total_lunch++; if (hadir[teks(e.id_event)]) h.lunch++; }
+    });
+    h.absen.sort();
+    return h;
   }
 
   function buatUndangan(k, idCalon, idEvent) {
@@ -1002,7 +1020,7 @@ var Inti = (function () {
       function infoAcara(id) {
         var e = acara[teks(id)];
         if (!e) return null;
-        return { id_event: teks(e.id_event), nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: teks(e.jam_mulai) };
+        return { id_event: teks(e.id_event), nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai) };
       }
       var cek = pendaftarPerluCek(k).map(function (r) {
         var c = k.orang(teks(r.id_kandidat));
@@ -1230,7 +1248,8 @@ var Inti = (function () {
         wawancara: k.tab('Wawancara').filter(function (w) { return teks(w.id_orang) === id; }).map(function (w) {
           return { tanggal: teks(w.tanggal), kanal: teks(w.kanal), hasil: teks(w.hasil), pic: namaDepan(k.orang(w.PIC)) };
         }),
-        mengundang: { jumlah: mengundang.length, tamu_hadir: mengundang.filter(function (u) { return hadirVisitor[teks(u.id_orang_calon)]; }).length }
+        mengundang: { jumlah: mengundang.length, tamu_hadir: mengundang.filter(function (u) { return hadirVisitor[teks(u.id_orang_calon)]; }).length },
+        kehadiran: kehadiranOrang(k, o)
       };
     },
 
@@ -1489,12 +1508,88 @@ var Inti = (function () {
       wajibLT(k);
       var e = k.tab('Events').filter(function (x) { return teks(x.id_event) === teks(b.id_event); })[0];
       if (!e) gagal('Event not found.');
-      var pembicara = teks(b.pembicara);
-      if (pembicara.length > 120) gagal('The speaker line is too long (120 characters at most).');
-      var poster = tautanAman(b.poster);
-      k.ubah('Events', e, { pembicara: pembicara, poster: poster });
-      k.log('ubahAcara', teks(e.id_event) + ': ' + (pembicara || 'tanpa pembicara'));
-      return { pembicara: pembicara, poster: poster };
+      var ubah = {};
+      if (b.pembicara !== undefined) {
+        var pembicara = teks(b.pembicara);
+        if (pembicara.length > 120) gagal('The speaker line is too long (120 characters at most).');
+        ubah.pembicara = pembicara;
+      }
+      if (b.poster !== undefined) ubah.poster = tautanAman(b.poster);
+      if (b.tanggal !== undefined) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(teks(b.tanggal)) || !tgl(b.tanggal)) gagal('Enter the date.');
+        ubah.tanggal = teks(b.tanggal);
+      }
+      ['jam_mulai', 'jam_selesai'].forEach(function (f) {
+        if (b[f] === undefined) return;
+        var v = teks(b[f]);
+        if (v && !/^\d{2}:\d{2}$/.test(v)) gagal('Use the time format HH:MM.');
+        ubah[f] = v;
+      });
+      if (b.jam_mulai !== undefined || b.jam_selesai !== undefined) {
+        var m = ubah.jam_mulai !== undefined ? ubah.jam_mulai : jamEv(e.jam_mulai), sl = ubah.jam_selesai !== undefined ? ubah.jam_selesai : jamEv(e.jam_selesai);
+        if (!m) gagal('Enter the start time.');
+        if (sl && sl <= m) gagal('The end time must be after the start time.');
+      }
+      if (b.mode !== undefined) ubah.mode = teks(b.mode) === 'Online' ? 'Online' : 'Onsite';
+      if (b.lokasi !== undefined) ubah.lokasi = teks(b.lokasi).slice(0, 120);
+      if (b.status !== undefined) {
+        if (['Terbuka', 'Batal'].indexOf(teks(b.status)) < 0) gagal('Unknown status.');
+        ubah.status = teks(b.status);
+      }
+      k.ubah('Events', e, ubah);
+      k.log('ubahAcara', teks(e.id_event) + ': ' + Object.keys(ubah).join(', '));
+      return { pembicara: teks(e.pembicara), poster: teks(e.poster), status: teks(e.status) };
+    },
+
+    /* LT dan LDC menambah jadwal: BOD, Lunch Networking, ESM, atau lainnya; bisa diulang tiap pekan (sampai 12 kali). */
+    tambahAcara: function (k, b) {
+      wajibLT(k);
+      var JENIS = ['BOD', 'Lunch Networking', 'ESM', 'Other'];
+      var jenis = teks(b.jenis);
+      if (JENIS.indexOf(jenis) < 0) gagal('Choose the event type.');
+      var tanggal = teks(b.tanggal), awal = /^\d{4}-\d{2}-\d{2}$/.test(tanggal) ? tgl(tanggal) : null;
+      if (!awal) gagal('Enter the date.');
+      if (awal < new Date(k.now.getTime() - 60 * HARI) || awal > new Date(k.now.getTime() + 800 * HARI)) gagal('That date is too far from today. Check the year.');
+      var mulai = teks(b.jam_mulai), selesai = teks(b.jam_selesai);
+      if (!/^\d{2}:\d{2}$/.test(mulai)) gagal('Enter the start time.');
+      if (selesai && !/^\d{2}:\d{2}$/.test(selesai)) gagal('Use the time format HH:MM.');
+      if (selesai && selesai <= mulai) gagal('The end time must be after the start time.');
+      var nama = jenis === 'Other' ? teks(b.nama_acara) : jenis;
+      if (!nama) gagal('Name the event.');
+      if (nama.length > 80) gagal('The event name is too long (80 characters at most).');
+      var mode = teks(b.mode) === 'Online' ? 'Online' : 'Onsite';
+      var lokasi = teks(b.lokasi).slice(0, 120);
+      var kap = parseInt(b.kapasitas, 10);
+      var ulang = Math.min(Math.max(parseInt(b.ulang, 10) || 1, 1), 12);
+      var ada = {};
+      k.tab('Events').forEach(function (e) { if (teks(e.status) !== 'Batal' && tgl(e.tanggal)) ada[teks(e.jenis) + '|' + isoTanggal(tgl(e.tanggal)) + '|' + jamEv(e.jam_mulai)] = true; });
+      var dibuat = [], dilewati = 0;
+      for (var i = 0; i < ulang; i++) {
+        var hari = isoTanggal(new Date(awal.getTime() + 7 * i * HARI));
+        if (ada[jenis + '|' + hari + '|' + mulai]) { dilewati++; continue; }
+        var ev = { id_event: idBaru(k.tab('Events'), 'id_event', 'E', 4), tanggal: hari, jam_mulai: mulai, jam_selesai: selesai, nama_acara: nama, jenis: jenis, mode: mode, lokasi: lokasi, kapasitas: isNaN(kap) ? '' : kap, status: 'Terbuka', tampil_di_form: 'TRUE', pembicara: '', poster: '' };
+        k.tambah('Events', ev);
+        dibuat.push(ev.id_event);
+      }
+      k.log('tambahAcara', nama + ' ' + tanggal + ' x' + dibuat.length + (dilewati ? ', ' + dilewati + ' sudah ada' : ''));
+      return { dibuat: dibuat.length, dilewati: dilewati, id_event: dibuat[0] || '' };
+    },
+
+    /* Acara untuk absen: dua pekan ke depan dan tiga pekan ke belakang, supaya absen yang terlambat tetap bisa dicatat. */
+    acaraCheckin: function (k) {
+      wajibLT(k);
+      var dari = isoTanggal(new Date(k.now.getTime() - 21 * HARI)), sampai = isoTanggal(new Date(k.now.getTime() + 14 * HARI));
+      var jumlah = {};
+      k.tab('Hadir').forEach(function (h) { jumlah[teks(h.id_event)] = (jumlah[teks(h.id_event)] || 0) + 1; });
+      return {
+        hari_ini: isoTanggal(k.now),
+        acara: k.tab('Events').filter(function (e) {
+          var t = tgl(e.tanggal);
+          return t && teks(e.status) !== 'Batal' && isoTanggal(t) >= dari && isoTanggal(t) <= sampai;
+        }).map(function (e) {
+          return { id_event: teks(e.id_event), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai), jam_selesai: jamEv(e.jam_selesai), nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), hadir: jumlah[teks(e.id_event)] || 0 };
+        }).sort(function (a, b) { return (a.tanggal + a.jam_mulai) < (b.tanggal + b.jam_mulai) ? -1 : 1; })
+      };
     },
 
     tamuPekanIni: function (k) {
@@ -1519,13 +1614,13 @@ var Inti = (function () {
         tamu.push({
           nama: teks(o.nama), bidang: x ? x.bidang : (teks(o.bisnis) || 'Undecided classification'), sphere: x ? x.sphere : '',
           pengundang: namaDepan(k.orang(u.id_pengundang)), saya: teks(u.id_pengundang) === k.saya.id_orang, acara: teks(e.nama_acara), jenis: teks(e.jenis),
-          tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: teks(e.jam_mulai), status: st, bergabung: teks(o.tahap) === 'Anggota'
+          tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai), status: st, bergabung: teks(o.tahap) === 'Anggota'
         });
       });
       var r = batasRonde(n);
       var acaraRonde = Object.keys(acara).map(function (id) {
         var e = acara[id];
-        return { id_event: id, tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: teks(e.jam_mulai), jam_selesai: teks(e.jam_selesai), nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi), pembicara: teks(e.pembicara), poster: teks(e.poster) };
+        return { id_event: id, tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai), jam_selesai: jamEv(e.jam_selesai), nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi), pembicara: teks(e.pembicara), poster: teks(e.poster) };
       }).sort(function (a, b) { return (a.tanggal + a.jam_mulai) < (b.tanggal + b.jam_mulai) ? -1 : 1; });
       return { ronde: { mulai: r.mulai.toISOString(), selesai: r.selesai.toISOString() }, acara_ronde: acaraRonde, tamu: tamu.sort(function (a, b) { return (a.tanggal + a.jam_mulai + a.nama) < (b.tanggal + b.jam_mulai + b.nama) ? -1 : 1; }) };
     },
@@ -1730,7 +1825,7 @@ var Inti = (function () {
     }
   };
 
-  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1, orangSemua: 1, orangDetail: 1, bacaPengaturan: 1, lihatTab: 1 };
+  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1, orangSemua: 1, orangDetail: 1, acaraCheckin: 1, bacaPengaturan: 1, lihatTab: 1 };
 
   /* Titik masuk tunggal. db = adaptor; badan = objek dari JSON. */
   function jalankan(db, badan, sekarang) {

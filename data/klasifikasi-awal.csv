@@ -1,12 +1,12 @@
 id_kursi,baris,sphere,bidang,singkat
 K01,1,Property & Construction,Real estate agent,Real Estate
-K02,1,Property & Construction,General contractor,Builder
+K02,1,Property & Construction,General contractor,Contractor
 K03,1,Property & Construction,Architect,Architect
 K04,1,Property & Construction,Interior designer,Interior
 K05,1,Property & Construction,MEP engineering,MEP
 K06,1,Property & Construction,Building materials,Materials
-K07,1,Property & Construction,Custom furniture,Joinery
-K08,1,Property & Construction,Painting & waterproofing,Painting
+K07,1,Property & Construction,Custom furniture,Furniture
+K08,1,Property & Construction,Painting & waterproofing,Artwork
 K09,2,Finance & Legal,Tax consultant,Tax
 K10,2,Finance & Legal,Accountant,Accounts
 K11,2,Finance & Legal,Notary & land deed official,Notary
@@ -34,7 +34,7 @@ K32,4,Events & Hospitality,MC & entertainment,MC
 K33,5,HR & Development,Training & coaching,Training
 K34,5,HR & Development,Recruitment,Recruiter
 K35,5,HR & Development,Manpower outsourcing,Staffing
-K36,5,HR & Development,Management consultant,Advisor
+K36,5,HR & Development,Management consultant,HR Consultant
 K37,5,HR & Development,Psychological assessment,Psych
 K38,5,HR & Development,Language course,Language
 K39,5,HR & Development,Corporate uniforms,Uniforms
@@ -63,3 +63,7 @@ K61,8,"Automotive, Logistics & Trade",Freight forwarding,Freight
 K62,8,"Automotive, Logistics & Trade",Importer & distributor,Importer
 K63,8,"Automotive, Logistics & Trade",F&B supplier,F&B Supply
 K64,8,"Automotive, Logistics & Trade",Packaging,Packing
+K65,9,Retail & Home Services,Bakery,Bakery
+K66,9,Retail & Home Services,Bedding,Bedding
+K67,9,Retail & Home Services,Sportswear,Sportswear
+K68,9,Retail & Home Services,Fashion,Fashion

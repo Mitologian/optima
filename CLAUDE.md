@@ -18,16 +18,16 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
 - **LDC dan LT adalah pendiri, bukan member BNI Optima.** Mereka tidak punya kursi, tidak masuk daftar member, Misi Chapter, sponsor, atau kandidat driver. LT dan LDC boleh melihat nama, klasifikasi, dan nomor WhatsApp semua member dan calon (More, Contacts).
 - **Menu LDC (Team, More): People, Settings, Data.** Satu app, bukan app terpisah. LDC melihat semua orang sejak awal (Master) beserta riwayat, menambah LT dan member dari luar chapter, membuat dan mengirim kode akses lewat WhatsApp. Kode member dibuat otomatis saat menjadi member, aktif setelah ESM (LDC menghidupkan sekaligus). Data viewer baca saja. Tidak ada editor sel bebas, supaya aturan data tetap dijaga.
 - **LDC dan LT tanpa gamifikasi.** Tidak ada lencana, Gold path, atau menu Board bagi mereka. Daftar "belum mengundang ronde ini" ada di Team, More, Round history. Chapter Mission tetap tampil sebagai kemajuan chapter.
-- **Seat dan klasifikasi.** Calon yang bidangnya belum ada di 64 seat tetap bisa dicatat tanpa seat dengan klasifikasi ditulis bebas. Seat baru hanya dibuat untuk member yang sudah join: lewat "New classification" saat menjadikan member, saat menambah member langsung, atau tombol + seat di halaman Seats (LT dan LDC).
+- **Seat dan klasifikasi.** Calon yang bidangnya belum ada di daftar seat tetap bisa dicatat tanpa seat dengan klasifikasi ditulis bebas. Seat baru hanya dibuat untuk member yang sudah join: lewat "New classification" saat menjadikan member, saat menambah member langsung, atau tombol + seat di halaman Seats (LT dan LDC).
 - **Tanpa poin.** Hanya angka nyata (undangan, tamu hadir, sponsor) dan lencana.
 - Semua anggota melihat nama lengkap dan bidang tamu yang terdaftar hadir Rabu itu, tanpa nomor telepon.
 - Notifikasi hanya di dalam app (sorotan saat app dibuka).
-- Gamifikasi: Misi Chapter (gerbang 20, 37, 52, dengan grafik garis), Papan 64 Kursi (8 baris contact sphere x 8 kursi),
+- Gamifikasi: Misi Chapter (gerbang 20, 37, 52, dengan grafik garis), Papan Kursi (9 baris contact sphere: 8 baris x 8 kursi dan baris 9 Retail & Home Services dengan 4 kursi, total 68),
   Ronde Rabu (satu undangan per pekan), 5 lencana, papan pengundang ronde ini, dinding sponsor.
 - Jalur Gold (6 member baru) kembali sebagai angka nyata, bukan poin (keputusan Coach Dedy, 11 Oktober). Pengumuman dan info acara (pembicara, poster) ada di app, ditulis LT.
 - Dibuang dari app Ventura: poin, tim dan bonus tim, persentase konversi, member
   mengundang ke coffee session, PIN bersama, halaman terpisah. Brain jolter dan permintaan klasifikasi
-  dilebur ke Papan 64 Kursi.
+  dilebur ke Papan Kursi.
 - Referral (istilah BNI untuk potensi bisnis antar member) tidak dipakai di app. Yang dipakai: undangan
   dan sponsor.
 
@@ -63,7 +63,7 @@ Apps Script lambat (3 sampai 5 detik per panggilan). `web/app.js` memakai simpan
   pembersih untuk perangkat yang masih menyimpan cangkang lama, lalu mencabut dirinya.
 - `lama/index.html` · cangkang lama (iframe ke app lama), disimpan sebagai jalan kembali selama `Main.html` masih
   ada di proyek Apps Script. Hapus setelah app lama dipensiunkan.
-- `data/klasifikasi-awal.csv` · draf 64 kursi.
+- `data/klasifikasi-awal.csv` · draf 68 kursi.
 - Skrip `.sh` di akar milik Lapis.
 
 ## Menguji

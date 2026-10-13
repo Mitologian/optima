@@ -275,7 +275,7 @@ var Inti = (function () {
     });
     var baris = {};
     k.tab('Klasifikasi').filter(function (r) { return benar(r.aktif) || teks(r.aktif) === ''; }).forEach(function (r) {
-      var no = Number(r.baris) || 9;
+      var no = Number(r.baris) || 99;
       if (!baris[no]) baris[no] = { nomor: no, sphere: teks(r.sphere), kursi: [] };
       var id = teks(r.id_kursi);
       var p = dipakai[id];
@@ -296,7 +296,7 @@ var Inti = (function () {
       var b = baris[no];
       b.kursi.sort(function (x, y) { return x.id_kursi < y.id_kursi ? -1 : 1; });
       b.terisi = b.kursi.filter(function (x) { return x.status === 'terisi'; }).length;
-      b.lengkap = b.nomor <= 8 && b.kursi.length >= 8 && b.terisi === b.kursi.length;
+      b.lengkap = b.kursi.length >= (b.nomor <= 8 ? 8 : 1) && b.terisi === b.kursi.length;
       return b;
     });
   }
@@ -510,7 +510,7 @@ var Inti = (function () {
         var t = tgl(r.tanggal_bergabung);
         if (x && x.sphere === b.sphere && t && (!akhir || t > akhir)) akhir = t;
       });
-      if (akhir) hasil.push({ jenis: 'baris', waktu: akhir.toISOString(), teks: 'Row ' + b.sphere + ' complete, 8 of 8 seats filled' });
+      if (akhir) hasil.push({ jenis: 'baris', waktu: akhir.toISOString(), teks: 'Row ' + b.sphere + ' complete, ' + b.kursi.length + ' of ' + b.kursi.length + ' seats filled' });
     });
     return hasil.sort(function (a, b) { return a.waktu < b.waktu ? 1 : -1; }).slice(0, 12);
   }

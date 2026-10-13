@@ -96,6 +96,6 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Launch Team, Check-in | Team, Check-in |
 | Launch Team, Wanted | Seats, titik emas di kursi yang dicari, tombol "I need this" |
 | Leaderboard (poin) | Board: jumlah undangan ronde ini dan dinding sponsor |
-| Classification (locked, wanted, post) | Seats (Papan 64 Kursi dan Member list) |
+| Classification (locked, wanted, post) | Seats (Papan Kursi dan Member list) |
 | PIN admin bersama | Kode akses per orang |
 | Tidak ada: tamu minggu ini | This week |

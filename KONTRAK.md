@@ -96,11 +96,12 @@ Dua kolom: `kunci` · `nilai`.
 ### `Klasifikasi`
 `id_kursi` · `baris` · `sphere` · `bidang` · `singkat` · `aktif`
 
-- 64 kursi utama: `K01` sampai `K64`, baris 1 sampai 8, satu baris satu contact sphere.
-  Isi awal: `data/klasifikasi-awal.csv`.
-- Kursi tambahan untuk member dari bidang di luar 64: `L01`, `L02`, dan seterusnya, `baris` = 9,
-  `sphere` = `Lainnya`. Ditambah Coach Dedy secara manual.
-- `singkat`: paling banyak 14 huruf, tampil di kotak kursi.
+- 64 kursi awal: `K01` sampai `K64`, baris 1 sampai 8, satu baris satu contact sphere. Baris 9 (Retail & Home Services) ditambah 13 Oktober 2026
+  dengan `K65` Bakery, `K66` Bedding, `K67` Sportswear, `K68` Fashion, jadi total 68 kursi. Isi awal: `data/klasifikasi-awal.csv`.
+- Kursi baru untuk member dari bidang di luar daftar dibuat oleh app (`tambahKursi`, `kursi_baru`) dengan id berikutnya (`K69` dan seterusnya),
+  di baris 1 sampai 9 sesuai pilihan LT atau LDC. Baris dengan nomor di atas 9 atau tanpa nomor tampil sebagai "+".
+- Baris 1 sampai 8 lengkap bila 8 kursinya terisi. Baris 9 lengkap bila semua kursinya terisi.
+- `singkat`: paling banyak 16 huruf, tampil di kotak kursi.
 - `aktif`: TRUE atau FALSE.
 
 ### `Master`
@@ -249,7 +250,7 @@ tamu hadir, sponsor) dan lencana.
 **Sorotan.** Saat app dibuka, pengundang melihat kabar bila tamunya hadir atau bergabung. Notifikasi hanya
 di dalam app.
 
-**Papan 64 Kursi.** Setiap kursi punya satu keadaan:
+**Papan Kursi (68 kursi).** Setiap kursi punya satu keadaan:
 - `terisi` · ada anggota dengan `id_kursi` ini
 - `ada_calon` · ada calon aktif (tahap `Listed` sampai `Applied`; kategori `Calon`)
 - `kosong`
@@ -394,4 +395,5 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-12 | `Api.js`: simpanan sementara 45 detik per tab (`CacheService`), versi per tab dinaikkan oleh tulisan app, `api_bersihkanCache_()` untuk kode Lapis yang menulis ke sheet. Tidak ada perubahan API atau sheet | Coach Dedy, 12 Oktober 2026 |
 | 2026-10-12 | `Api.js`: simpanan tab 10 menit, `api_panaskan_` (pemicu 5 menit), `api_saatEdit_` (onEdit), `api_pasangPemicu_()` untuk memasang keduanya. Tidak ada perubahan API atau sheet | Coach Dedy, 12 Oktober 2026 |
 | 2026-10-13 | LT dan LDC menambah dan mengubah jadwal dari app (`tambahAcara`, `ubahAcara` untuk tanggal, jam, format, lokasi, batal), absen untuk acara tiga pekan terakhir (`acaraCheckin`), kehadiran per member di `orangDetail.kehadiran`. Nomor WhatsApp bisa diketuk di semua daftar | Coach Dedy, 13 Oktober 2026 |
+| 2026-10-13 | Baris 9 Retail & Home Services (`K65` sampai `K68`); nama kotak diganti: Builder jadi Contractor, Joinery jadi Furniture, Painting jadi Artwork, Advisor jadi HR Consultant | Coach Dedy, 13 Oktober 2026 |
 

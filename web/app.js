@@ -55,7 +55,7 @@
   }
   /* Isian seat baru: dipakai saat menjadikan member, menambah member langsung, mengubah seat member, dan tombol + seat. */
   function barisSeat() {
-    return (S.cache.kursi || []).filter(function (b) { return b.nomor <= 8; });
+    return (S.cache.kursi || []).filter(function (b) { return b.nomor <= 9; });
   }
   function isianKursiBaru(opsi) {
     opsi = opsi || {};
@@ -234,7 +234,7 @@
       '<div class="masuk">' +
         '<div class="merek-besar"><small>BNI CHAPTER</small><span>OPTIMA</span></div>' +
         '<p class="tagline-masuk">Optimal Network, Optimal Profits</p>' +
-        '<p class="kecil" style="margin-top:6px">64 seats. One classification per seat. Fill them together.</p>' +
+        '<p class="kecil" style="margin-top:6px">One classification per seat. Fill them together.</p>' +
         '<div class="kisi-hias">' + hias + '</div>' +
         '<form id="f-masuk">' +
           '<label class="isian"><span>Access code</span><input class="kode" name="kode" maxlength="8" autocomplete="one-time-code" autocapitalize="characters" required></label>' +
@@ -497,7 +497,7 @@
     if (saringKursi !== 'kosong') saringKursi = 'semua';
     function lolos(x) { return saringKursi === 'semua' || x.status === 'kosong'; }
     isi.innerHTML = tabs +
-      '<div class="sapa" style="margin-top:4px"><h1>64 Seat Board</h1><p class="kecil">Tap a seat, then add a prospect from that classification.</p></div>' +
+      '<div class="sapa" style="margin-top:4px"><h1>' + r.baris.reduce(function (a, b) { return a + b.kursi.length; }, 0) + ' Seat Board</h1><p class="kecil">Tap a seat, then add a prospect from that classification.</p></div>' +
       '<div class="ringkas-kursi">' +
         '<span><i style="background:var(--merah)"></i>' + n.terisi + ' filled</span>' +
         '<span><i style="background:var(--merah-muda);border:1.5px solid var(--merah)"></i>' + n.ada_calon + ' with prospects</span>' +
@@ -509,7 +509,7 @@
       }).join('') + '</div>' +
       '<div class="papan-kursi">' + r.baris.map(function (b) {
         return '<section class="baris-kursi' + (b.lengkap ? ' lengkap' : '') + '">' +
-          '<header><span class="no">' + (b.nomor > 8 ? '+' : b.nomor) + '</span><h3>' + esc(b.sphere) + '</h3><span class="hitung">' + b.terisi + '/' + b.kursi.length + '</span>' + (isLT() && b.nomor <= 8 ? '<button type="button" class="chip tambah-kursi" data-tambah-baris="' + b.nomor + '" aria-label="Add a seat to ' + esc(b.sphere) + '">+ seat</button>' : '') + '</header>' +
+          '<header><span class="no">' + (b.nomor > 9 ? '+' : b.nomor) + '</span><h3>' + esc(b.sphere) + '</h3><span class="hitung">' + b.terisi + '/' + b.kursi.length + '</span>' + (isLT() && b.nomor <= 9 ? '<button type="button" class="chip tambah-kursi" data-tambah-baris="' + b.nomor + '" aria-label="Add a seat to ' + esc(b.sphere) + '">+ seat</button>' : '') + '</header>' +
           [b.kursi.slice(0, 4), b.kursi.slice(4)].map(function (sep) { return '<div class="kisi">' + sep.map(function (x) {
             var redam = !lolos(x);
             return '<button class="kursi ' + x.status + (redam ? ' redam' : '') + (x.saya_calon ? ' milik' : '') + '" data-kursi="' + esc(x.id_kursi) + '" aria-label="' + esc(x.bidang) + ', ' + (x.status === 'terisi' ? 'filled by ' + x.pemilik : x.status === 'ada_calon' ? x.jumlah_calon + ' prospects' : 'empty') + (x.saya_calon ? ', ' + x.saya_calon + ' from my list' : '') + '">' +

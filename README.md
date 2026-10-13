@@ -9,11 +9,11 @@ Mulai dari `KONTRAK.md` (sheet, API, fase, aturan permainan) dan `CLAUDE.md` (ke
 
 | Folder atau berkas | Isi | Pemilik |
 |---|---|---|
-| `web/` | PWA baru: Misi Chapter, Papan 64 Kursi, Undang, Papan, layar launch team dan LDC | Claude |
+| `web/` | PWA baru: Misi Chapter, Papan Kursi, Undang, Papan, layar launch team dan LDC | Claude |
 | `apps-script/Inti.js` | Logika permainan dan aturan data, dipakai server dan mode tiruan | Claude |
 | `apps-script/Api.js` | Endpoint `doPost` untuk PWA | Claude |
 | `apps-script/` lainnya | App lama turunan Ventura, masih jalan sampai app baru dipakai | Lapis |
-| `data/klasifikasi-awal.csv` | Draf 64 kursi, 8 contact sphere | Coach Dedy |
+| `data/klasifikasi-awal.csv` | Draf 68 kursi, 9 contact sphere | Coach Dedy |
 | `index.html`, `manifest.json`, `sw.js` di akar | Pengalih ke `web/`. `sw.js` hanya membersihkan cache cangkang lama | Claude |
 | `lama/index.html` | Cangkang lama (iframe ke app lama), jalan kembali | Lapis |
 | Skrip `.sh` di akar | Alat kerja Lapis | Lapis |

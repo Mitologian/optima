@@ -570,7 +570,8 @@
 
     if (x.status === 'terisi') {
       html += '<section class="kartu" style="box-shadow:none"><p>This seat belongs to <b>' + esc(x.pemilik) + '</b>.</p><p class="kecil" style="margin-top:6px">Per BNI rules, one classification is for one member only. Prospects from this classification cannot join the chapter.</p></section>';
-      bukaLembar(html);
+      if (isLDC() && id) html += '<p class="edit-seat"><button type="button" id="b-edit-seat">Edit seat</button></p>';
+      bukaLembar(html, function (el) { var be = el.querySelector('#b-edit-seat'); if (be) be.onclick = function () { lembarEditKursi(x, segarkan); }; });
       return;
     }
 
@@ -608,6 +609,7 @@
     if (id) {
       html += '<div class="baris-tombol"><button class="tombol kedua" id="b-butuh" aria-pressed="' + x.saya_butuh + '">' + (x.saya_butuh ? 'Remove "I need this" mark' : 'I need this classification in the chapter') + '</button></div>';
     }
+    if (isLDC() && id) html += '<p class="edit-seat"><button type="button" id="b-edit-seat">Edit seat</button></p>';
 
     bukaLembar(html, function (el) {
       var f = el.querySelector('#f-calon');
@@ -639,6 +641,8 @@
         }
         if (segarkan) segarkan();
       };
+      var be2 = el.querySelector('#b-edit-seat');
+      if (be2) be2.onclick = function () { lembarEditKursi(x, segarkan); };
       var bb = el.querySelector('#b-butuh');
       if (bb) bb.onclick = async function () {
         var r = await api('butuh', { id_kursi: x.id_kursi });
@@ -1743,6 +1747,36 @@
       b.onclick = function () { salinTeks(b.dataset.salinKode); toast('Code copied.'); };
     });
   }
+  /* Edit seat (LDC): nama klasifikasi, nama kotak, baris. Tombolnya hanya ada di dalam lembar seat, bukan di papan. */
+  async function lembarEditKursi(x, segarkan) {
+    if (!S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
+    var baris = (S.cache.kursi || []).filter(function (b) { return b.nomor <= 9; });
+    var asal = baris.filter(function (b) { return b.kursi.some(function (z) { return z.id_kursi === x.id_kursi; }); })[0];
+    var kosong = x.status === 'kosong';
+    bukaLembar('<h2>Edit seat</h2><p class="kecil" style="margin:4px 0 12px">The name changes everywhere right away. Members and prospects keep their seat.</p>' +
+      '<form id="f-eks"><label class="isian"><span>Classification</span><input name="bidang" maxlength="60" required value="' + esc(x.bidang) + '"></label>' +
+      '<label class="isian"><span>Name on the seat tile (up to 16 characters)</span><input name="singkat" maxlength="16" value="' + esc(x.singkat) + '"></label>' +
+      '<label class="isian"><span>Contact sphere (row)</span><select name="baris">' + baris.map(function (b) { return '<option value="' + b.nomor + '"' + (asal && asal.nomor === b.nomor ? ' selected' : '') + '>' + b.nomor + '. ' + esc(b.sphere) + '</option>'; }).join('') + '</select></label>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save</button></form>' +
+      (kosong ? '<p class="edit-seat"><button type="button" id="b-hapus-seat">Remove this seat</button></p>' : ''),
+      function (el) {
+        el.querySelector('#f-eks').onsubmit = async function (e) {
+          e.preventDefault();
+          var f = e.target, s = el.querySelector('#salah');
+          var h = await api('ubahKursi', { id_kursi: x.id_kursi, bidang: f.bidang.value, singkat: f.singkat.value, baris: f.baris.value });
+          if (!h.ok) { s.textContent = h.pesan; s.hidden = false; return; }
+          S.cache.kursi = null; tutupLembar(); toast('Seat saved.'); if (segarkan) segarkan();
+        };
+        var bh = el.querySelector('#b-hapus-seat');
+        if (bh) bh.onclick = async function () {
+          if (!confirm('Remove the ' + x.bidang + ' seat from the board? Only an empty seat without prospects can be removed.')) return;
+          var h = await api('ubahKursi', { id_kursi: x.id_kursi, matikan: true });
+          if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
+          S.cache.kursi = null; tutupLembar(); toast('Seat removed.'); if (segarkan) segarkan();
+        };
+      });
+  }
+
   /* Tombol + seat di halaman Seats: hanya untuk member yang sudah join. Member pindah ke seat baru. */
   async function lembarTambahKursi(baris, segarkan) {
     bukaLembar('<div class="muat"></div>');

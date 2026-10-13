@@ -72,6 +72,7 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Lihat rekomendasi driver otomatis dan tandai driver (minimal 5) | Team, More, Regroup, kartu Drivers |
 | Lihat nama, klasifikasi, dan nomor member dan calon | Team, More, Contacts |
 | Lihat semua orang sejak awal beserta riwayatnya (LDC) | Team, More, People |
+| Mengubah nama seat, memindahkannya ke baris lain, atau menghapus seat kosong (LDC) | Seats, ketuk seat, Edit seat |
 | Menambah BOD dan Lunch Networking (bisa diulang tiap pekan), mengubah atau membatalkan | Team, More, Announcements, Events |
 | Absen member per acara, termasuk acara pekan lalu, dan melihat yang tidak hadir | Team, Check-in |
 | Menambah LT baru, atau member yang masuk dari luar chapter (LDC) | Team, More, People, Add |

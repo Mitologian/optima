@@ -192,3 +192,9 @@ Hanya `apps-script/Api.js` yang berubah. Simpanan tab kini hidup 10 menit (sebel
   (dipanggil saat LT menekan Add event, jadi waktunya terasa oleh LT).
 - Naikkan versi lagi, lalu uji dari app: Team, More, Announcements, Add event, buka Form, dan acara baru seharusnya langsung ada di dropdown.
 
+## M. Menyusul: Edit seat dari app (13 Oktober 2026)
+
+- Naikkan versi Apps Script lagi: aksi baru `ubahKursi`. Tidak ada kolom atau tab baru.
+- App kini mengubah baris di tab `Klasifikasi` (kolom `bidang`, `singkat`, `baris`, `sphere`, `aktif`). Mohon jangan menyusun ulang atau menghapus baris di tab itu.
+- Bila ada otomasi Lapis yang membaca nama seat dari `Klasifikasi` (misalnya pilihan di Form), pastikan ia membaca nilai terbaru dan tidak menyimpan salinan nama lama.
+

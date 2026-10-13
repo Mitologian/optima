@@ -1000,6 +1000,44 @@ var Inti = (function () {
       return { jenis_anggota: h.jenis_anggota, kursi: x.bidang, akses: { kode: teks(h.akses.kode_akses), aktif: benar(h.akses.aktif) }, whatsapp: teks(o.whatsapp_norm) };
     },
 
+    /* LDC mengubah nama seat, memindahkannya ke baris lain, atau mematikannya (hanya bila kosong dan tanpa calon). */
+    ubahKursi: function (k, b) {
+      wajibLDC(k);
+      var r = k.tab('Klasifikasi').filter(function (x) { return teks(x.id_kursi) === teks(b.id_kursi); })[0];
+      if (!r) gagal('Seat not found.');
+      var aktifBaris = k.tab('Klasifikasi').filter(function (x) { return benar(x.aktif) || teks(x.aktif) === ''; });
+      var ubah = {};
+      if (b.matikan === true || b.matikan === 'true') {
+        var x = kursiById(k, r.id_kursi);
+        if (x && x.status === 'terisi') gagal('The ' + x.bidang + ' seat belongs to ' + x.pemilik + '. A seat with a member cannot be removed.');
+        if (x && x.jumlah_calon) gagal('The ' + x.bidang + ' seat still has ' + x.jumlah_calon + ' prospect' + (x.jumlah_calon > 1 ? 's' : '') + '. Move them first.');
+        k.ubah('Klasifikasi', r, { aktif: 'FALSE' });
+        k.log('ubahKursi', teks(r.bidang) + ' dihapus');
+        return { dihapus: true };
+      }
+      if (b.bidang !== undefined) {
+        var bidang = teks(b.bidang);
+        if (bidang.length < 3 || bidang.length > 60) gagal('The classification name must be 3 to 60 characters.');
+        if (aktifBaris.some(function (x) { return x !== r && sama(x.bidang, bidang); })) gagal('That classification is already on another seat.');
+        ubah.bidang = bidang;
+      }
+      if (b.singkat !== undefined) {
+        var singkat = teks(b.singkat);
+        if (singkat.length > 16) gagal('The short name is too long (16 characters at most).');
+        ubah.singkat = singkat || (ubah.bidang || teks(r.bidang));
+      }
+      if (b.baris !== undefined && Number(b.baris) !== Number(r.baris)) {
+        var contoh = aktifBaris.filter(function (x) { return Number(x.baris) === Number(b.baris) && x !== r; })[0];
+        if (!contoh) gagal('Choose a row (contact sphere) from the list.');
+        ubah.baris = Number(b.baris);
+        ubah.sphere = teks(contoh.sphere);
+      }
+      if (!Object.keys(ubah).length) return { id_kursi: teks(r.id_kursi) };
+      k.ubah('Klasifikasi', r, ubah);
+      k.log('ubahKursi', teks(r.id_kursi) + ': ' + Object.keys(ubah).join(', '));
+      return { id_kursi: teks(r.id_kursi) };
+    },
+
     /* Seat baru dari halaman Seats: hanya untuk member yang sudah join. Member pindah ke seat baru, seat lamanya kosong kembali. */
     tambahKursi: function (k, b) {
       wajibLT(k);

@@ -128,9 +128,25 @@
   /* Cepat dibuka: jawaban bacaan terakhir langsung dipakai, lalu diperbarui diam-diam di belakang.
      Bila isinya berubah, layar yang sedang terbuka digambar ulang. Aksi tulis mengosongkan simpanan. */
   var BACA_CEPAT = { beranda: 1, kursi: 1, kursiDetail: 1, papan: 1, pengumuman: 1, undanganSaya: 1, calonSaya: 1, usulanSaya: 1, daftarAnggota: 1, riwayatRonde: 1, acara: 1, perluCek: 1, anggota: 1, tamuPekanIni: 1, jadwalCS: 1, slotCS: 1, regroup: 1, kontak: 1, orangSemua: 1, orangDetail: 1, bacaPengaturan: 1, ringkas: 1, kandidatDriver: 1, daftarHadir: 1, lihatTab: 1, acaraCheckin: 1, timPapan: 1, timDaftar: 1 };
-  var SEGAR_DETIK = 8, BASI_MENIT = 10;
-  var simpanan = {}, sedangMuat = {};
-  function kosongkanSimpanan() { simpanan = {}; sedangMuat = {}; kosongVersi++; }
+  var SEGAR_DETIK = 8, BASI_MENIT = 720;
+  var simpanan = {}, sedangMuat = {}, tundaSimpan = 0;
+  /* Simpanan juga disimpan di HP supaya app yang dibuka ulang langsung menampilkan data terakhir, lalu diperbarui di belakang. */
+  function simpanSimpanan() {
+    clearTimeout(tundaSimpan);
+    tundaSimpan = setTimeout(function () {
+      if (!S.kode) return;
+      var teksSimpan = JSON.stringify({ kode: S.kode, data: simpanan });
+      if (teksSimpan.length < 1500000) simpan('optima_cache', teksSimpan);
+    }, 600);
+  }
+  function muatSimpanan(kode) {
+    try {
+      var c = JSON.parse(ambil('optima_cache') || 'null');
+      if (c && c.kode === kode && c.data) simpanan = c.data;
+    } catch (e) {}
+  }
+  function bersihkanLokal() { simpan('optima_cache', null); simpan('optima_awal', null); }
+  function kosongkanSimpanan() { simpanan = {}; sedangMuat = {}; kosongVersi++; simpan('optima_cache', null); }
   function layarSibuk() {
     var a = document.activeElement;
     return !$lembar.hidden || (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
@@ -153,6 +169,7 @@
           if (versi !== kosongVersi || !baru.ok) return;
           var beda = JSON.stringify(baru) !== JSON.stringify(c.r);
           simpanan[kunci] = { r: baru, t: Date.now() };
+          simpanSimpanan();
           if (beda && S.aktif && !layarSibuk()) S.aktif.fn(S.aktif.isi, S.aktif.sub);
         });
       }
@@ -160,7 +177,7 @@
     }
     var r = await Api.panggil(aksi, data);
     if (!r.ok && /Access code not recognized/.test(r.pesan || '')) keluar();
-    if (r.ok) simpanan[kunci] = { r: JSON.parse(JSON.stringify(r)), t: Date.now() };
+    if (r.ok) { simpanan[kunci] = { r: JSON.parse(JSON.stringify(r)), t: Date.now() }; simpanSimpanan(); }
     return r;
   }
   var kosongVersi = 0;
@@ -216,7 +233,7 @@
   }
 
   function keluar() {
-    simpan('optima_kode', null);
+    simpan('optima_kode', null); bersihkanLokal();
     S.kode = ''; S.profil = null; S.atur = null; S.aktif = null; kosongkanSimpanan();
     Api.setKode('');
     location.hash = '';
@@ -266,6 +283,7 @@
     if (!r.ok) { Api.setKode(''); return r; }
     S.kode = kode; S.profil = r.profil; S.atur = r.pengaturan;
     simpan('optima_kode', kode);
+    simpan('optima_awal', JSON.stringify({ kode: kode, profil: r.profil, atur: r.pengaturan }));
     if (!location.hash) location.hash = '#misi'; else rute();
     setTimeout(panaskan, 1500);
     return r;
@@ -1913,7 +1931,7 @@
           if (baru !== f.ulang.value.trim().toUpperCase()) { s.textContent = 'The two new codes do not match.'; s.hidden = false; return; }
           var r = await api('gantiKodeSaya', { kode_lama: f.lama.value.trim(), kode_baru: baru });
           if (!r.ok) { s.textContent = r.pesan; s.hidden = false; return; }
-          Api.setKode(baru); S.kode = baru; simpan('optima_kode', baru);
+          Api.setKode(baru); S.kode = baru; simpan('optima_kode', baru); bersihkanLokal();
           tutupLembar(); toast('Your code was changed.');
         };
       });
@@ -2275,7 +2293,23 @@
   /* ---------- mulai ---------- */
   (async function mulai() {
     var k = ambil('optima_kode');
-    if (k) {
+    var awal = null;
+    try { awal = JSON.parse(ambil('optima_awal') || 'null'); } catch (e) {}
+    if (k && awal && awal.kode === k && awal.profil) {
+      // Buka langsung dengan data terakhir. Kode dicek di belakang.
+      Api.setKode(k); S.kode = k; S.profil = awal.profil; S.atur = awal.atur;
+      muatSimpanan(k);
+      if (!location.hash) location.hash = '#misi'; else rute();
+      setTimeout(panaskan, 1500);
+      Api.panggil('masuk').then(function (r) {
+        if (r.ok) {
+          var beda = JSON.stringify(r.profil) !== JSON.stringify(S.profil);
+          S.profil = r.profil; S.atur = r.pengaturan;
+          simpan('optima_awal', JSON.stringify({ kode: k, profil: r.profil, atur: r.pengaturan }));
+          if (beda && S.aktif && !layarSibuk()) S.aktif.fn(S.aktif.isi, S.aktif.sub);
+        } else if (/Access code not recognized/.test(r.pesan || '')) keluar();
+      });
+    } else if (k) {
       $app.innerHTML = '<div class="splash"><b>BNI OPTIMA</b><p>Optimal Network, Optimal Profits</p><i></i></div>';
       var r = await coba(k);
       if (!r.ok) { simpan('optima_kode', null); layarMasuk(); }

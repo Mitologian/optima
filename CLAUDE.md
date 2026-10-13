@@ -41,7 +41,7 @@ masuk More.
 
 ## Kecepatan
 
-Apps Script lambat (3 sampai 5 detik per panggilan). `web/app.js` memakai simpanan bacaan: jawaban terakhir dipakai langsung, diperbarui diam-diam di belakang, layar digambar ulang bila isinya berubah. Aksi tulis mengosongkan simpanan. Daftar aksi bacaan ada di `BACA_CEPAT`; aksi baru yang hanya membaca harus ditambahkan di sana.
+Apps Script lambat (3 sampai 5 detik per panggilan). `web/app.js` memakai simpanan bacaan: jawaban terakhir dipakai langsung, diperbarui diam-diam di belakang, layar digambar ulang bila isinya berubah. Simpanan dan profil login juga disimpan di HP (`optima_cache`, `optima_awal`), jadi app yang dibuka ulang langsung menampilkan data terakhir sementara kode dicek di belakang. Keduanya dihapus saat keluar atau ganti kode. Aksi tulis mengosongkan simpanan. Daftar aksi bacaan ada di `BACA_CEPAT`; aksi baru yang hanya membaca harus ditambahkan di sana.
 
 ## Aturan bahasa di app dan dokumen
 

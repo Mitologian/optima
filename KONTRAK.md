@@ -369,7 +369,7 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 
 1. Tidak pernah mengirim WhatsApp, email, atau catatan orang lain ke peran `Anggota`. LT dan LDC boleh melihat nama,
    klasifikasi, dan nomor WhatsApp semua member dan calon aktif (aksi `kontak`), tetap tanpa email dan catatan.
-2. Papan dan kursi hanya memuat nama depan. Pengecualian: LDC tampil lengkap dengan perannya, "Dedy Dahlan (LDC)", di semua daftar dan papan. Pengecualian: `tamuPekanIni` dan `daftarAnggota` memuat nama
+2. Papan dan kursi hanya memuat nama depan. Pengecualian: LDC tampil dengan nama lengkap, "Dedy Dahlan", di semua daftar dan papan (tanpa akhiran "(LDC)", sejak 13 Oktober 2026). Pengecualian: `tamuPekanIni` dan `daftarAnggota` memuat nama
    lengkap dan bidang untuk semua anggota (keputusan Coach Dedy), tetap tanpa nomor telepon.
 3. Kode salah: setelah 20 kali gagal dalam 10 menit dari semua sumber, semua `masuk` dikunci 10 menit
    dan Coach Dedy diberi tahu. (Kode yang salah tidak bisa dikaitkan ke orang tertentu.)

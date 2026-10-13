@@ -72,13 +72,13 @@ var Inti = (function () {
     if (!o) return '';
     return teks(o.nama_depan) || teks(o.nama).split(/\s+/)[0] || '';
   }
-  /* Nama yang tampil di daftar dan papan. Coach Dedy selalu tampil lengkap dengan perannya: "Dedy Dahlan (LDC)". */
+  /* Nama yang tampil di daftar dan papan. Coach Dedy selalu tampil dengan nama lengkap: "Dedy Dahlan". Perannya sudah ada di label peran. */
   function namaDepan(o) {
     if (!o) return '';
-    return teks(o.kategori) === 'LDC' ? teks(o.nama) + ' (LDC)' : namaPanggil(o);
+    return teks(o.kategori) === 'LDC' ? teks(o.nama) : namaPanggil(o);
   }
   function namaTampil(o) {
-    return teks(o.kategori) === 'LDC' ? teks(o.nama) + ' (LDC)' : teks(o.nama);
+    return teks(o.nama);
   }
   function idBaru(baris, kolom, awalan, lebar) {
     var maks = 0;

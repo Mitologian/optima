@@ -354,7 +354,7 @@ var Inti = (function () {
     var undanganPer = {};
     k.undanganAktif().forEach(function (u) { var id = teks(u.id_pengundang); if (id) (undanganPer[id] = undanganPer[id] || []).push(u); });
     var sponsorPer = {};
-    k.anggota().forEach(function (r) { var sp = teks(r.id_sponsor); if (sp && sp !== 'BNI') sponsorPer[sp] = (sponsorPer[sp] || 0) + 1; });
+    k.anggota().forEach(function (r) { var sp = teks(r.id_sponsor); if (sponsorPerson(k, sp)) sponsorPer[sp] = (sponsorPer[sp] || 0) + 1; });
     var aktifRonde = {};
     k.tab('Log').forEach(function (l) {
       var t = tgl(l.waktu), id = teks(l.id_orang);
@@ -491,7 +491,7 @@ var Inti = (function () {
     k.anggota().forEach(function (r) {
       var t = tgl(r.tanggal_bergabung);
       if (!t) return;
-      var s = teks(r.id_sponsor) && teks(r.id_sponsor) !== 'BNI' ? k.orang(r.id_sponsor) : null;
+      var s = sponsorPerson(k, r.id_sponsor);
       var kursi = kursiById(k, r.id_kursi);
       hasil.push({ jenis: 'anggota', waktu: t.toISOString(), teks: namaDepan(r) + ' took the ' + (kursi ? kursi.bidang : 'new') + ' seat' + (s ? ', sponsored by ' + namaDepan(s) : '') });
     });
@@ -594,13 +594,33 @@ var Inti = (function () {
     tetapkanTim(k, o);
     return { jenis_anggota: jenis, akses: a };
   }
+  /* Sponsor boleh: member chapter, LDC atau LT, BNI Indonesia ('BNI'), atau nama bebas ("Luar: nama") untuk orang di luar daftar.
+     Mengembalikan nilai yang disimpan. */
+  var AWALAN_LUAR = 'Luar: ';
   function cekSponsor(k, sp) {
-    if (!sp) gagal('Choose a sponsor. If no member is known personally, choose BNI.');
-    if (sp !== 'BNI') {
-      var so = k.orang(sp);
-      if (!so || teks(so.tahap) !== 'Anggota' || timPendiri(so)) gagal('The sponsor must be a chapter member, or BNI.');
+    sp = teks(sp);
+    if (!sp) gagal('Choose a sponsor. If no one is known personally, choose BNI Indonesia.');
+    if (sp === 'BNI') return sp;
+    if (sp.toLowerCase().indexOf('luar:') === 0) {
+      var nama = sp.slice(5).replace(/\s+/g, ' ').trim();
+      if (nama.length < 2) gagal('Type the sponsor name.');
+      if (nama.length > 60) gagal('The sponsor name is too long.');
+      return AWALAN_LUAR + nama;
     }
+    var so = k.orang(sp);
+    if (!so || !(timPendiri(so) || teks(so.tahap) === 'Anggota')) gagal('The sponsor must be a chapter member, the LDC or launch team, BNI Indonesia, or a typed name.');
+    return sp;
   }
+  /* Nama sponsor untuk ditampilkan. */
+  function namaSponsor(k, sp) {
+    sp = teks(sp);
+    if (!sp) return '';
+    if (sp === 'BNI') return 'BNI Indonesia';
+    var so = k.orang(sp);
+    if (so) return timPendiri(so) ? namaTampil(so) : namaDepan(so);
+    return sp.indexOf(AWALAN_LUAR) === 0 ? sp.slice(AWALAN_LUAR.length) : sp;
+  }
+  function sponsorPerson(k, sp) { var so = teks(sp) ? k.orang(sp) : null; return so && teks(so.tahap) === 'Anggota' && !timPendiri(so) ? so : null; }
 
   /* Seat baru untuk member yang bisnisnya belum ada di daftar. Hanya dipanggil saat ada member yang langsung menempatinya. */
   function buatKursi(k, kb) {
@@ -929,7 +949,7 @@ var Inti = (function () {
       var sp = {};
       k.anggota().forEach(function (r) {
         var s = teks(r.id_sponsor);
-        if (s && s !== 'BNI') sp[s] = (sp[s] || 0) + 1;
+        if (sponsorPerson(k, s)) sp[s] = (sp[s] || 0) + 1;
       });
       function urut(peta) {
         return Object.keys(peta).map(function (id) { return { nama_depan: namaDepan(k.orang(id)), jumlah: peta[id], saya: id === k.saya.id_orang }; })
@@ -1086,7 +1106,11 @@ var Inti = (function () {
 
     anggota: function (k) {
       wajibLT(k);
-      return { anggota: k.anggota().map(function (r) { return { id_orang: teks(r.id_orang), nama: namaTampil(r) }; }).sort(function (a, b) { return a.nama < b.nama ? -1 : 1; }) };
+      var urutNama = function (a, b) { return a.nama < b.nama ? -1 : 1; };
+      return {
+        anggota: k.anggota().map(function (r) { return { id_orang: teks(r.id_orang), nama: namaTampil(r) }; }).sort(urutNama),
+        pendiri: k.tab('Master').filter(function (r) { return timPendiri(r) && teks(r.nama); }).map(function (r) { return { id_orang: teks(r.id_orang), nama: namaTampil(r), peran: teks(r.kategori) }; }).sort(urutNama)
+      };
     },
 
     jadikanAnggota: function (k, b) {
@@ -1095,8 +1119,7 @@ var Inti = (function () {
       if (!o) gagal('Person not found.');
       if (teks(o.tahap) === 'Anggota') gagal(namaDepan(o) + ' is already a member.');
       if (timPendiri(o)) gagal('Launch team members are founders, not chapter members.');
-      var sp = teks(b.id_sponsor);
-      cekSponsor(k, sp);
+      var sp = cekSponsor(k, b.id_sponsor);
       var x;
       if (b.kursi_baru) x = buatKursi(k, b.kursi_baru);
       else {
@@ -1437,7 +1460,7 @@ var Inti = (function () {
         return {
           id_orang: teks(r.id_orang), nama: namaTampil(r), jenis: jenis, tahap: t, bidang: x ? x.bidang : (teks(r.bisnis) || ''),
           whatsapp: teks(r.whatsapp_norm), sumber: teks(r.sumber),
-          sponsor: sp === 'BNI' ? 'BNI' : namaDepan(k.orang(sp)), diajukan: namaDepan(k.orang(r.diajukan_oleh)), pic: namaDepan(k.orang(r.PIC)),
+          sponsor: namaSponsor(k, sp), diajukan: namaDepan(k.orang(r.diajukan_oleh)), pic: namaDepan(k.orang(r.PIC)),
           masuk: teks(r.tanggal_masuk), bergabung: teks(r.tanggal_bergabung),
           undangan: diundang[teks(r.id_orang)] || 0, hadir: hadir[teks(r.id_orang)] || 0,
           kode: a ? (benar(a.aktif) ? 'aktif' : 'nonaktif') : (peranUntuk(r) ? 'belum' : '')
@@ -1467,7 +1490,7 @@ var Inti = (function () {
           id_orang: id, nama: namaTampil(o), nama_depan: namaPanggil(o), jenis: timPendiri(o) ? teks(o.kategori) : (teks(o.tahap) === 'Anggota' ? 'Member' : 'Prospect'),
           tahap: teks(o.tahap), id_kursi: teks(o.id_kursi), bidang: x ? x.bidang : '', bisnis: teks(o.bisnis), perusahaan: teks(o.perusahaan),
           whatsapp: teks(o.whatsapp_norm), sumber: teks(o.sumber), jenis_anggota: teks(o.jenis_anggota),
-          id_sponsor: sp, sponsor: sp === 'BNI' ? 'BNI' : namaDepan(k.orang(sp)), diajukan: namaDepan(k.orang(o.diajukan_oleh)), pic: namaDepan(k.orang(o.PIC)),
+          id_sponsor: sp, sponsor: namaSponsor(k, sp), diajukan: namaDepan(k.orang(o.diajukan_oleh)), pic: namaDepan(k.orang(o.PIC)),
           masuk: teks(o.tanggal_masuk), bergabung: teks(o.tanggal_bergabung), jadwal_cs: teks(o.jadwal_cs), catatan: teks(o.catatan), alasan: teks(o.alasan_tidak_lanjut),
           driver: benar(o.driver)
         },
@@ -1509,8 +1532,7 @@ var Inti = (function () {
       };
       var x = null, sp = '';
       if (jenis === 'Anggota') {
-        sp = teks(b.id_sponsor) || 'BNI';
-        cekSponsor(k, sp);
+        sp = cekSponsor(k, teks(b.id_sponsor) || 'BNI');
         if (b.kursi_baru) x = buatKursi(k, b.kursi_baru);
         else {
           x = kursiById(k, b.id_kursi);
@@ -1568,8 +1590,7 @@ var Inti = (function () {
       if (b.id_sponsor !== undefined && teks(b.id_sponsor) !== teks(o.id_sponsor)) {
         if (teks(o.tahap) !== 'Anggota') gagal('Only members have a sponsor.');
         if (teks(b.id_sponsor) === teks(o.id_orang)) gagal('A member cannot sponsor themselves.');
-        cekSponsor(k, teks(b.id_sponsor));
-        ubah.id_sponsor = teks(b.id_sponsor);
+        ubah.id_sponsor = cekSponsor(k, b.id_sponsor);
       }
       ubah.terakhir_diubah = k.now.toISOString();
       k.ubah('Master', o, ubah);
@@ -2015,7 +2036,7 @@ var Inti = (function () {
           return {
             nama: namaTampil(r), bidang: u ? u.x.bidang : '', sphere: u ? u.x.sphere : '', jenis_anggota: teks(r.jenis_anggota),
             id_orang: lt ? teks(r.id_orang) : undefined, hadir_bod: lt ? (hadirOrang[teks(r.id_orang)] || 0) : undefined, total_bod: lt ? nBod : undefined,
-            sponsor: s === 'BNI' ? 'BNI' : namaDepan(k.orang(s)), tanggal_bergabung: tgl(r.tanggal_bergabung) ? tgl(r.tanggal_bergabung).toISOString() : '', _n: u ? u.n : 99999
+            sponsor: namaSponsor(k, s), tanggal_bergabung: tgl(r.tanggal_bergabung) ? tgl(r.tanggal_bergabung).toISOString() : '', _n: u ? u.n : 99999
           };
         }).sort(function (a, b) { return a._n - b._n; }).map(function (a) { delete a._n; return a; })
       };

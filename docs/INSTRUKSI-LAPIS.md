@@ -207,3 +207,9 @@ Hanya `apps-script/Api.js` yang berubah. Simpanan tab kini hidup 10 menit (sebel
 - Tim belum aktif sampai LDC menekan Set up teams. Sebelum itu app tidak menampilkan apa pun soal tim.
 - Tim dibagi rata menurut urutan bergabung. Anggota baru otomatis masuk tim terkecil, dan tim baru dibuka bila semua tim sudah `tim_maks`. Bila otomasi Lapis meresmikan anggota lewat script sendiri (bukan lewat `Inti.js`), kolom `tim` perlu diisi dengan cara yang sama, atau biarkan kosong lalu LDC menekan Rebalance.
 - Tidak ada tab baru dan tidak ada pemicu baru.
+
+## O. Menyusul: pilihan sponsor lebih luas (13 Oktober 2026)
+
+- Naikkan versi Apps Script lagi. Tidak ada kolom, tab, atau pemicu baru, dan aksi lama tidak berubah nama. Aksi `anggota` kini juga mengembalikan daftar `pendiri` (LDC dan LT).
+- Kolom `Master.id_sponsor` kini bisa berisi: id member (seperti sebelumnya), id LDC atau LT, `BNI` (tampil di app sebagai "BNI Indonesia"), atau teks bebas berawalan `Luar: ` (misalnya `Luar: Pak Andi, BNI Bandung`) untuk sponsor di luar daftar.
+- Bila ada otomasi atau laporan Lapis yang membaca `id_sponsor`, anggap nilai yang tidak cocok dengan id orang sebagai teks nama. Sponsor LDC, LT, BNI, dan teks bebas tidak dihitung ke Jalur Gold, Board, atau skor tim (hanya sponsor member yang dihitung).

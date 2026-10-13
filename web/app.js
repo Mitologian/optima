@@ -1526,22 +1526,48 @@
   }
   var TAHAP_VALID = ['Listed', 'Invited', 'Coffee_Scheduled', 'Attended', 'Coffee_Session', 'Applied', 'Joined_Other', 'Declined', 'Rejected'];
 
+  /* ---------- pilihan sponsor: member, LDC dan LT, BNI Indonesia, atau nama bebas ---------- */
+  function pilihSponsor(r, nilai, opsi) {
+    opsi = opsi || {};
+    var manual = /^Luar: /.test(nilai || '');
+    function o(v, t) { return '<option value="' + esc(v) + '"' + (v === (manual ? '__manual' : nilai) ? ' selected' : '') + '>' + esc(t) + '</option>'; }
+    var anggota = (r.anggota || []).filter(function (m) { return m.id_orang !== opsi.kecuali; });
+    return '<label class="isian"><span>Sponsor</span><select name="id_sponsor" data-sponsor>' +
+      (opsi.kosong ? '<option value="">' + esc(opsi.kosong) + '</option>' : '') +
+      (anggota.length ? '<optgroup label="Members">' + anggota.map(function (m) { return o(m.id_orang, m.nama); }).join('') + '</optgroup>' : '') +
+      ((r.pendiri || []).length ? '<optgroup label="LDC and launch team">' + r.pendiri.filter(function (m) { return m.id_orang !== opsi.kecuali; }).map(function (m) { return o(m.id_orang, m.nama); }).join('') + '</optgroup>' : '') +
+      '<optgroup label="Other">' + o('BNI', 'BNI Indonesia (no one known personally)') + o('__manual', 'Someone else (type the name)') + '</optgroup>' +
+      '</select></label>' +
+      '<label class="isian" data-sponsor-manual' + (manual ? '' : ' hidden') + '><span>Sponsor name</span><input name="sponsor_manual" maxlength="60" autocomplete="off" placeholder="Name, and chapter if known" value="' + esc(manual ? nilai.replace(/^Luar: /, '') : '') + '"></label>';
+  }
+  function pasangSponsor(el) {
+    var sel = el.querySelector('[data-sponsor]'), box = el.querySelector('[data-sponsor-manual]');
+    if (!sel) return;
+    sel.onchange = function () { box.hidden = sel.value !== '__manual'; if (!box.hidden) box.querySelector('input').focus(); };
+  }
+  /* Nilai yang dikirim ke server, atau null bila nama bebas masih kosong. */
+  function ambilSponsor(f) {
+    if (f.id_sponsor.value !== '__manual') return f.id_sponsor.value;
+    var t = f.sponsor_manual.value.trim();
+    return t.length >= 2 ? 'Luar: ' + t : null;
+  }
+
   async function lembarAnggota(c, segarkan) {
     bukaLembar('<div class="muat"></div>');
     var r = await api('anggota');
     if (!S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
-    var opsi = '<option value="">Choose a sponsor</option><option value="BNI">BNI (no member known personally)</option>' +
-      (r.anggota || []).map(function (a) { return '<option value="' + esc(a.id_orang) + '">' + esc(a.nama) + '</option>'; }).join('');
     bukaLembar(
       '<h2>' + esc(c.nama.split(/\s+/)[0]) + ' joined</h2><p class="kecil" style="margin:4px 0 0">Confirm once the membership payment is in.</p><p class="kecil" style="margin:6px 0 14px">Seat: <b>' + esc(c.bidang) + '</b>. Type: ' + (S.atur.fase === 'Pembentukan' ? 'Founding' : 'Core Group') + '.</p>' +
-      '<form id="f-ang">' + pilihKursiAnggota('id_kursi', c.id_kursi, c.bisnis) + '<label class="isian"><span>Sponsor</span><select name="sponsor" required>' + opsi + '</select></label>' +
-      '<p class="kecil" style="margin:-4px 0 14px">BNI rule: the sponsor is the member who invited the prospect and is known to them personally. If there is none, choose BNI, unless the prospect names a specific member.</p>' +
+      '<form id="f-ang">' + pilihKursiAnggota('id_kursi', c.id_kursi, c.bisnis) + '' + pilihSponsor(r, '', { kosong: 'Choose a sponsor' }) +
+      '<p class="kecil" style="margin:-4px 0 14px">BNI rule: the sponsor is the member who invited the prospect and is known to them personally. If there is none, choose BNI Indonesia, unless the prospect names a specific person. Someone outside the list can be typed in.</p>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Confirm</button></form>',
       function (el) {
-        pasangKursiBaru(el);
+        pasangKursiBaru(el); pasangSponsor(el);
         el.querySelector('#f-ang').onsubmit = async function (e) {
           e.preventDefault();
-          var h = await api('jadikanAnggota', Object.assign({ id_orang: c.id_orang, id_sponsor: e.target.sponsor.value }, dataSeat(e.target, 'id_kursi')));
+          var sp = ambilSponsor(e.target);
+          if (!sp) { var s1 = el.querySelector('#salah'); s1.textContent = 'Choose the sponsor, or type a name.'; s1.hidden = false; return; }
+          var h = await api('jadikanAnggota', Object.assign({ id_orang: c.id_orang, id_sponsor: sp }, dataSeat(e.target, 'id_kursi')));
           if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
           S.cache.kursi = null; segarkan();
           var nd = c.nama.split(/\s+/)[0];
@@ -2025,8 +2051,6 @@
     }
     var kursiOpsi = '';
     (S.cache.kursi || []).forEach(function (b) { b.kursi.forEach(function (x) { if (x.status !== 'terisi' || x.id_kursi === o.id_kursi) kursiOpsi += '<option value="' + esc(x.id_kursi) + '"' + (x.id_kursi === o.id_kursi ? ' selected' : '') + '>' + esc(x.bidang) + '</option>'; }); });
-    var sponsorOpsi = '<option value="BNI"' + (o.id_sponsor === 'BNI' ? ' selected' : '') + '>BNI (no member known personally)</option>' +
-      (anggotaR.anggota || []).filter(function (m) { return m.id_orang !== o.id_orang; }).map(function (m) { return '<option value="' + esc(m.id_orang) + '"' + (m.id_orang === o.id_sponsor ? ' selected' : '') + '>' + esc(m.nama) + '</option>'; }).join('');
     var akun = '';
     if (d.bisa_akses && !saya) {
       akun = a.ada
@@ -2051,7 +2075,7 @@
       '<form id="f-edit"><label class="isian"><span>Name</span><input name="nama" value="' + esc(o.nama.replace(/ \(LDC\)$/, '')) + '" required></label>' +
       '<label class="isian"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" value="' + esc(o.whatsapp) + '"></label>' +
       '<label class="isian"><span>Business</span><input name="bisnis" value="' + esc(o.bisnis) + '"></label>' +
-      (o.jenis === 'Member' ? '<label class="isian"><span>Classification seat</span><select name="id_kursi" data-pilih-seat>' + kursiOpsi + '<option value="__baru">+ New classification (not on the list)</option></select></label>' + isianKursiBaru({}) + '<label class="isian"><span>Sponsor</span><select name="id_sponsor">' + sponsorOpsi + '</select></label>' : '') +
+      (o.jenis === 'Member' ? '<label class="isian"><span>Classification seat</span><select name="id_kursi" data-pilih-seat>' + kursiOpsi + '<option value="__baru">+ New classification (not on the list)</option></select></label>' + isianKursiBaru({}) + pilihSponsor(anggotaR, o.id_sponsor, { kecuali: o.id_orang }) : '') +
       '<label class="isian"><span>Notes</span><textarea name="catatan">' + esc(o.catatan) + '</textarea></label>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save changes</button></form>' +
       (o.jenis === 'Prospect' || o.jenis === 'Closed' ? '<div class="baris-tombol"><button class="tombol kedua" id="o-tahap">Update stage or make a member</button></div>' : ''),
@@ -2071,7 +2095,11 @@
           e.preventDefault();
           var f = e.target;
           var data = { id_orang: o.id_orang, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value, catatan: f.catatan.value };
-          if (f.id_kursi) { Object.assign(data, dataSeat(f, 'id_kursi')); data.id_sponsor = f.id_sponsor.value; }
+          if (f.id_kursi) {
+            Object.assign(data, dataSeat(f, 'id_kursi'));
+            data.id_sponsor = ambilSponsor(f);
+            if (!data.id_sponsor) { var s2 = el.querySelector('#salah'); s2.textContent = 'Choose the sponsor, or type a name.'; s2.hidden = false; return; }
+          }
           var h = await api('ubahOrang', data);
           if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
           S.cache.kursi = null; toast('Saved.'); segarkan(); lembarOrang(id, segarkan);
@@ -2087,18 +2115,17 @@
     bukaLembar('<div class="muat"></div>');
     var h = await Promise.all([api('anggota'), S.cache.kursi ? { ok: true, baris: S.cache.kursi } : api('kursi')]);
     if (h[1].ok) S.cache.kursi = h[1].baris;
-    var sponsor = '<option value="BNI">BNI (no member known personally)</option>' + (h[0].anggota || []).map(function (m) { return '<option value="' + esc(m.id_orang) + '">' + esc(m.nama) + '</option>'; }).join('');
     var jenis = 'Anggota';
     bukaLembar(
       '<h2>Add a person</h2><p class="kecil" style="margin:4px 0 12px">For people who did not come through an interview: new launch team members, or a member joining from outside the chapter.</p>' +
       '<div class="pilihan" style="margin-bottom:14px"><button type="button" data-j="Anggota" aria-pressed="true">Member</button><button type="button" data-j="LT" aria-pressed="false">Launch team</button></div>' +
       '<form id="f-tambah"><label class="isian"><span>Full name</span><input name="nama" required></label><label class="isian"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" required placeholder="0812..."></label>' +
       '<label class="isian"><span>Business</span><input name="bisnis"></label>' +
-      '<div id="bag-member">' + pilihKursiAnggota('id_kursi', '', '') + '<label class="isian"><span>Sponsor</span><select name="id_sponsor">' + sponsor + '</select></label>' +
-      '<p class="kecil" style="margin:-4px 0 14px">A member from outside the chapter has no inviter here. Keep BNI unless a member brought them in.</p></div>' +
+      '<div id="bag-member">' + pilihKursiAnggota('id_kursi', '', '') + pilihSponsor(h[0], 'BNI') +
+      '<p class="kecil" style="margin:-4px 0 14px">A member from outside the chapter has no inviter here. Keep BNI Indonesia unless someone brought them in: pick a member, the LDC or a launch team member, or type a name.</p></div>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Add and create code</button></form>',
       function (el) {
-        pasangKursiBaru(el);
+        pasangKursiBaru(el); pasangSponsor(el);
         el.querySelectorAll('[data-j]').forEach(function (b) {
           b.onclick = function () {
             jenis = b.dataset.j;
@@ -2111,7 +2138,9 @@
           e.preventDefault();
           var f = e.target;
           if (jenis === 'Anggota' && !f.id_kursi.value) { var s0 = el.querySelector('#salah'); s0.textContent = 'Choose the classification seat.'; s0.hidden = false; return; }
-          var r = await api('tambahOrang', Object.assign({ jenis: jenis, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value, id_sponsor: jenis === 'Anggota' ? f.id_sponsor.value : '' }, jenis === 'Anggota' ? dataSeat(f, 'id_kursi') : {}));
+          var sp = jenis === 'Anggota' ? ambilSponsor(f) : '';
+          if (jenis === 'Anggota' && !sp) { var s3 = el.querySelector('#salah'); s3.textContent = 'Choose the sponsor, or type a name.'; s3.hidden = false; return; }
+          var r = await api('tambahOrang', Object.assign({ jenis: jenis, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value, id_sponsor: sp }, jenis === 'Anggota' ? dataSeat(f, 'id_kursi') : {}));
           if (!r.ok) { var s = el.querySelector('#salah'); s.textContent = r.pesan; s.hidden = false; return; }
           S.cache.kursi = null; segarkan();
           bukaLembar('<h2>' + esc(r.nama_depan) + ' added</h2><p class="kecil" style="margin:4px 0 12px">' + (jenis === 'LT' ? 'Launch team member.' : 'Member from outside the chapter.') + '</p>' +

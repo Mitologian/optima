@@ -63,7 +63,8 @@ var Inti = (function () {
   function normWa(v) {
     var s = teks(v).replace(/\D/g, '');
     if (!s) return '';
-    if (s.charAt(0) === '0') s = '62' + s.slice(1);
+    if (s.indexOf('620') === 0) s = '62' + s.slice(3);
+    else if (s.charAt(0) === '0') s = '62' + s.slice(1);
     else if (s.indexOf('62') !== 0 && s.charAt(0) === '8') s = '62' + s;
     return s;
   }

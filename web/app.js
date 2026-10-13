@@ -881,7 +881,7 @@
           // Jendela dibuka sekarang, saat ketukan masih dihitung. Membuka sesudah menunggu server sering diblokir browser HP.
           var jendela = window.open('about:blank', '_blank');
           if (!(await catat())) { if (jendela) jendela.close(); return; }
-          var nomor = String(st.wa).replace(/\D/g, '').replace(/^0/, '62');
+          var nomor = String(st.wa).replace(/\D/g, '').replace(/^620/, '62').replace(/^0/, '62');
           var url = waLink(nomor, ta.value);
           if (jendela) jendela.location.href = url; else location.href = url;
         };
@@ -1038,7 +1038,7 @@
         function nomor() { var k = el.querySelector('#k-wa'); return k ? k.value : st.wa; }
         el.querySelector('#k-salin').onclick = function () { salinTeks(ta.value, ta); toast('Message copied. Paste it in WhatsApp.'); };
         el.querySelector('#k-wa-buka').onclick = function () {
-          var n = String(nomor()).replace(/\D/g, '').replace(/^0/, '62');
+          var n = String(nomor()).replace(/\D/g, '').replace(/^620/, '62').replace(/^0/, '62');
           if (!n) return salah('Enter the WhatsApp number first.');
           window.open(waLink(n, ta.value), '_blank', 'noopener');
         };

@@ -37,6 +37,25 @@ code, .tombol { font-family: inherit; font-weight: 700; background: var(--kertas
 .kecil { font-size: 13px; color: var(--abu); }
 footer { margin-top: 32px; font-size: 13px; color: var(--abu); border-top: 1px solid var(--garis); padding-top: 14px; }
 a.buka { display: block; text-align: center; background: var(--merah); color: #fff; font-weight: 700; text-decoration: none; padding: 13px; border-radius: 12px; margin: 14px 0 0; }
+
+details.cara { border: 1px solid var(--garis); border-radius: 14px; margin: 0 0 8px; background: #fff; }
+details.cara > summary { cursor: pointer; list-style: none; padding: 13px 40px 13px 14px; font-weight: 700; position: relative; }
+details.cara > summary::-webkit-details-marker { display: none; }
+details.cara > summary::after { content: '+'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 500; color: var(--merah); }
+details.cara[open] > summary::after { content: '\2212'; }
+details.cara[open] { border-color: #E5B8BF; }
+details.cara .isi { padding: 0 14px 12px; }
+.untuk { list-style: none; padding: 0; margin: 0 0 10px; }
+.untuk li { display: flex; gap: 10px; padding: 10px 0; border-top: 1px solid var(--garis); margin: 0; }
+.untuk li:first-child { border-top: 0; }
+.untuk b { flex: 0 0 96px; color: var(--merah); }
+.langkah { counter-reset: n; list-style: none; padding: 0; margin: 0 0 8px; }
+.langkah li { counter-increment: n; position: relative; padding-left: 32px; margin: 0 0 8px; }
+.langkah li::before { content: counter(n); position: absolute; left: 0; top: 1px; width: 22px; height: 22px; border-radius: 50%; background: var(--merah); color: #fff; font: 700 12px/22px Helvetica, Arial, sans-serif; text-align: center; }
+.tip { font-size: 14px; background: var(--kertas-2); border-radius: 10px; padding: 9px 12px; margin: 0 0 8px; }
+dl { margin: 0 0 10px; }
+dt { font-weight: 700; margin-top: 8px; }
+dd { margin: 0 0 4px; color: var(--abu); }
 </style>
 </head>
 <body>
@@ -44,166 +63,59 @@ a.buka { display: block; text-align: center; background: var(--merah); color: #f
 <header>
   <div class="merek">BNI CHAPTER</div>
   <h1>Panduan Optima</h1>
-  <p class="sub">Optimal Network, Optimal Profits. Pilih peran Anda.</p>
+  <p class="sub">Optimal Network, Optimal Profits. Pilih peran Anda, lalu ketuk pertanyaan yang ingin dijawab.</p>
   <a class="buka" href="../web/">Buka app BNI Optima</a>
 </header>
-
 <nav class="tab" aria-label="Peran">
   <a href="#anggota" data-p="anggota">Anggota</a>
   <a href="#lt" data-p="lt">Launch Team</a>
-  <a href="#ldc" data-p="ldc">LDC</a>
+  <a href="#ldc">LDC</a>
 </nav>
-
 <section class="peran" id="anggota">
-  <h2>Mulai</h2>
-  <div class="kartu">
-    <ol>
-      <li>Buka alamat app di HP, masukkan <b>kode akses 6 karakter</b> dari Coach Dedy (dikirim lewat WhatsApp).</li>
-      <li>Pasang ke layar utama. Android (Chrome): menu titik tiga, <code>Install app</code>. iPhone (Safari): tombol Share, <code>Add to Home Screen</code>.</li>
-    </ol>
-    <p class="kecil">Kode bersifat pribadi, jangan dibagikan. Lupa atau ingin ganti kode: minta Coach Dedy.</p>
-  </div>
-  <p>Menu bawah:</p>
-  <div class="menu"><span>Home</span><span>My list</span><span>This week</span><span>Seats</span><span>Board</span></div>
-
-  <h2>Home</h2>
-  <p>Satu langkah berikutnya, pengumuman terbaru, kemajuan chapter (20, 37, 52), lencana, dan berita. Ada satu baris tim Anda, misalnya "You are in Team 2, 1st of 3 this round".</p>
-
-  <h2>My list: daftar nama calon</h2>
-  <p>Targetnya 20 sampai 40 nama. Setiap nama terikat ke seat bidang usaha.</p>
-  <div class="kartu">
-    <ol>
-      <li><code>Add a name</code>: isi nama, nomor WhatsApp, bidang usaha. Bila bidangnya belum ada di daftar seat, tulis bebas.</li>
-      <li>Ketuk nama, tekan <code>Invite</code>.</li>
-      <li>Pilih <b>Visit a Wednesday meeting</b> (4 pesan berurutan) atau <b>Coffee session straight away</b>.</li>
-      <li>Pilih kedekatan (Close friend, Friend, Acquaintance) supaya bahasa pesan pas.</li>
-      <li>Tekan tombol WhatsApp. WhatsApp terbuka dengan pesan siap kirim, tanpa salin tempel.</li>
-    </ol>
-  </div>
-  <p class="kecil">Satu undangan per pekan sudah cukup untuk menjaga ronde Anda aktif. Ronde berjalan Kamis 00:00 sampai Rabu 23:59.</p>
-
-  <h2>This week</h2>
-  <p>Tamu yang terdaftar hadir Rabu ini (nama lengkap dan bidang, tanpa nomor), program BOD, pembicara, dan poster.</p>
-  <p>Tamu mendaftar lewat Google Form, bukan lewat app. App mencocokkan lewat nomor WhatsApp, lalu statusnya berubah Terdaftar dan Hadir. Anda tidak perlu mengisi apa pun.</p>
-
-  <h2>Seats</h2>
-  <p>Peta 68 seat klasifikasi: terisi, terundang, atau kosong. Ketuk seat untuk melihat siapa yang mengisi atau didaftarkan.</p>
-
-  <h2>Board</h2>
-  <div class="kartu">
-    <h3>This round</h3>
-    <p>Klasemen tim, lalu siapa yang paling banyak mengundang ronde ini. Mulai dari nol tiap Kamis.</p>
-    <h3>All time</h3>
-    <p>Klasemen tim sepanjang waktu, lalu undangan, tamu hadir, dan sponsor per orang.</p>
-  </div>
-
-  <h2>Tim</h2>
-  <div class="kartu merah">
-    <p>Anggota dibagi ke tim saat ESM. Tim bersaing dalam tiga hal: <b>tamu yang hadir</b>, <b>anggota yang bergabung</b>, dan <b>kehadiran BOD</b> anggota sendiri.</p>
-    <p>Angka dibandingkan per anggota, jadi tim besar tidak otomatis menang. Warna <b class="m">merah</b> berarti tim itu unggul di ukuran tersebut. Hanya Coach Dedy yang memindahkan anggota antar tim.</p>
-  </div>
-
-  <h2>Lencana</h2>
-  <p>Ada 5 lencana. Semuanya terbuka otomatis dari angka nyata (undangan, tamu hadir, sponsor).</p>
-</section>
-
+<h2>Yang perlu dilakukan anggota</h2><div class="kartu merah"><ol class="langkah"><li><b>Isi daftar nama calon</b> (20 sampai 40 nama): orang yang Anda kenal dan punya usaha.</li><li><b>Undang satu orang tiap pekan</b> ke pertemuan Rabu, lewat WhatsApp langsung dari app.</li><li><b>Hadir di BOD Rabu pagi.</b> Kehadiran Anda ikut menentukan skor tim.</li></ol></div><h2>Menu ini untuk apa?</h2><ul class="untuk"><li><b>Home</b><span>Satu langkah berikutnya, pengumuman, kemajuan chapter (20, 37, 52), lencana, dan berita. Mulai dari sini.</span></li><li><b>My list</b><span>Daftar nama calon Anda. Tempat menambah nama dan mengirim undangan.</span></li><li><b>This week</b><span>Siapa saja tamu yang terdaftar hadir Rabu ini, dan program acaranya.</span></li><li><b>Seats</b><span>Peta bidang usaha chapter. Satu bidang satu anggota, jadi terlihat bidang mana yang masih kosong dan dicari.</span></li><li><b>Board</b><span>Papan permainan: klasemen tim dan siapa yang paling aktif mengundang.</span></li></ul><h2>Cara melakukan</h2><details class="cara" id="x75993"><summary>Bagaimana masuk dan memasang app?</summary><div class="isi"><ol class="langkah"><li>Buka alamat app di HP, masukkan <b>kode akses 6 karakter</b> dari Coach Dedy (dikirim lewat WhatsApp).</li><li>Pasang ke layar utama. Android (Chrome): menu titik tiga lalu <code>Install app</code>. iPhone (Safari): tombol Share lalu <code>Add to Home Screen</code>.</li></ol><p class="tip">Kode bersifat pribadi, jangan dibagikan. Lupa kode atau ingin menggantinya: minta Coach Dedy. Kode anggota aktif setelah ESM.</p></div></details>
+<details class="cara" open id="x30629"><summary>Bagaimana menambah calon member?</summary><div class="isi"><p>Dua jalan, hasilnya sama.</p><ol class="langkah"><li>Buka <b>My list</b> lalu <code>Add a name</code>. (Atau buka <b>Seats</b>, ketuk seat bidangnya, lalu tambah dari sana.)</li><li>Isi <b>Full name</b>.</li><li>Isi <b>Classification</b>, yaitu jenis usahanya. Bila bidangnya tidak ada di daftar seat, ketik bebas. Atau pilih seat kosong yang cocok.</li><li>Isi <b>WhatsApp</b>. Boleh menyusul, tetapi wajib sebelum mengundang.</li><li>Tekan <code>Add name</code>. Nama muncul di <b>Ready to invite</b>.</li></ol><p class="tip">Bila nama itu sudah didaftarkan orang lain, app memberi tahu dan menolak, supaya satu calon tidak dikejar dua orang.</p></div></details>
+<details class="cara" open id="x72030"><summary>Bagaimana mengundang visitor ke pertemuan Rabu?</summary><div class="isi"><ol class="langkah"><li><b>My list</b>, di bagian <b>Ready to invite</b> tekan <code>Invite</code> di samping nama.</li><li>Pilih <code>Visit a Wednesday meeting</code>.</li><li>Pilih Rabu yang dituju (BOD atau Lunch Networking).</li><li>Pilih kedekatan: <b>Close friend</b>, <b>Friend</b>, atau <b>Acquaintance</b>. Bahasa pesan menyesuaikan. Tombol <code>ID | EN</code> mengganti bahasa.</li><li>Kirim <b>4 pesan berurutan</b>, satu per satu: <b>1 Opener</b> (tunggu balasan), <b>2 Invite</b> (detail acara), <b>3 Register</b> (tautan Form, minta calon memilih nama Anda di "Invited by"), <b>4 After sign-up</b> (setelah calon daftar).</li><li>Tekan <code>Open WhatsApp</code>. WhatsApp terbuka ke nomor calon dengan pesan siap kirim. Atau <code>Copy message</code>.</li></ol><p class="tip">Undangan tercatat otomatis saat pesan dibuka atau disalin. Calon ragu atau bertanya? Buka "If they hesitate or ask" di bagian bawah, ada balasan siap pakai.</p></div></details>
+<details class="cara" id="x1097"><summary>Bagaimana mengundang calon langsung ke coffee session?</summary><div class="isi"><p>Tanpa datang ke Rabu dulu. Coffee session adalah obrolan 30 menit dengan Coach Dedy.</p><ol class="langkah"><li><b>My list</b>, tekan <code>Invite</code>, pilih <code>Coffee session straight away</code>.</li><li>Pilih jam dari <b>Open times</b>. Bila belum ada jam terbuka, minta Coach Dedy atau LT membukanya.</li><li>Kirim pesan <b>1 Opener</b>, lalu <b>2 Ask a time</b>.</li><li>Setelah calon setuju, tekan <code>They said yes: book this time</code>.</li><li>Kirim pesan <b>3 Confirm</b>.</li></ol></div></details>
+<details class="cara" id="x54734"><summary>Bagaimana tahu calon saya sudah daftar atau hadir?</summary><div class="isi"><p>Calon mendaftar lewat Google Form (bukan lewat app). App mencocokkan lewat nomor WhatsApp, jadi Anda tidak perlu mengisi apa pun.</p><p>Lihat di <b>My list</b>, bagian <b>Invited</b>. Label di samping nama:</p><dl><dt>Invited</dt><dd>Undangan terkirim, belum daftar.</dd><dt>Registered</dt><dd>Sudah mengisi Form.</dd><dt>Attended</dt><dd>Hadir di acara.</dd><dt>Coffee booked</dt><dd>Jam coffee session sudah dipesan. Ketuk nama untuk melihat atau mengubah.</dd><dt>Joined</dt><dd>Sudah resmi menjadi member.</dd></dl><p class="tip">Belum daftar menjelang Rabu? Ketuk ikon WhatsApp di samping nama untuk mengingatkan.</p></div></details>
+<details class="cara" id="x75092"><summary>Bagaimana melihat siapa yang datang Rabu ini?</summary><div class="isi"><p>Buka <b>This week</b>. Ada tiga bagian: <b>Wednesday program</b> (jam, tempat, pembicara, poster), <b>Invited by me</b> (tamu Anda), dan <b>Other Visitors</b> (tamu orang lain).</p><p class="tip">Nama lengkap dan bidang usaha tampil, nomor telepon tidak. Kenali bidang mereka sebelum Rabu supaya bisa menyapa dan menghubungkan.</p></div></details>
+<details class="cara" id="x41969"><summary>Bagaimana menandai bidang usaha yang dibutuhkan chapter?</summary><div class="isi"><ol class="langkah"><li>Buka <b>Seats</b> lalu ketuk seat yang masih kosong.</li><li>Tekan <code>I need this classification in the chapter</code>.</li></ol><p>Seat itu mendapat titik emas, dan member lain tahu bidang itu sedang dicari. Tekan lagi untuk menghapus tanda.</p></div></details>
+<details class="cara" id="x95493"><summary>Bagaimana membaca Seats?</summary><div class="isi"><p>Setiap kotak adalah satu bidang usaha. Satu bidang hanya boleh dipegang satu anggota.</p><dl><dt>Merah penuh</dt><dd>Sudah ada anggotanya.</dd><dt>Merah muda berbingkai</dt><dd>Belum ada anggota, tetapi ada calon. Angkanya jumlah calon.</dd><dt>Garis putus</dt><dd>Kosong.</dd><dt>Titik emas</dt><dd>Ada anggota yang menandai bidang ini dibutuhkan.</dd><dt>Cincin</dt><dd>Ada calon dari daftar Anda.</dd></dl><p>Tombol <code>Empty</code> menyaring seat kosong. Tab <b>Members</b> menampilkan semua anggota beserta bidang, sponsor, dan kehadiran BOD.</p></div></details>
+<details class="cara" id="x7891"><summary>Bagaimana membaca Board dan skor tim?</summary><div class="isi"><p><b>This round</b>: ronde berjalan (Kamis sampai Rabu), mulai dari nol tiap Kamis. <b>All time</b>: sejak awal.</p><p>Di dalamnya ada <b>Teams</b> dan daftar perorangan. Tim dibandingkan dalam tiga hal:</p><dl><dt>Guests</dt><dd>Tamu undangan anggota tim yang benar-benar hadir.</dd><dt>Joined</dt><dd>Anggota baru yang disponsori anggota tim.</dd><dt>Present</dt><dd>Kehadiran BOD anggota tim sendiri.</dd></dl><p class="tip">Angka dihitung per anggota, jadi tim besar tidak otomatis menang. Warna merah berarti tim itu unggul di ukuran tersebut. Hanya Coach Dedy yang memindahkan anggota antar tim.</p></div></details>
+<h2>Istilah</h2><dl><dt>Seat</dt><dd>Satu bidang usaha di chapter. Ada 68 seat dalam 9 baris (contact sphere).</dd><dt>Ronde</dt><dd>Satu pekan, Kamis 00:00 sampai Rabu 23:59.</dd><dt>Visitor</dt><dd>Tamu yang diundang ke pertemuan Rabu.</dd><dt>Sponsor</dt><dd>Member yang mengundang dan mengenal calon secara pribadi.</dd><dt>Coffee session</dt><dd>Obrolan 30 menit calon dengan Coach Dedy, sebelum bergabung.</dd></dl></section>
 <section class="peran" id="lt">
-  <h2>Mulai</h2>
-  <div class="kartu">
-    <ol>
-      <li>Masuk dengan kode akses dari Coach Dedy, lalu pasang ke layar utama (Android: <code>Install app</code>, iPhone: <code>Add to Home Screen</code>).</li>
-      <li>LT adalah pendiri, bukan member: tidak punya seat, Board, lencana, atau tim.</li>
-    </ol>
-  </div>
-  <div class="menu"><span>Home</span><span>My list</span><span>This week</span><span>Seats</span><span>Team</span></div>
-  <p>Home, My list, This week, dan Seats dipakai seperti anggota. Pekerjaan LT ada di <b>Team</b>.</p>
-
-  <h2>Team: Interviews</h2>
-  <p>Daftar calon menurut tahap: Listed, To schedule, Coffee set, Interviewed, Applied, Joined.</p>
-  <ul>
-    <li><code>Add a prospect</code> mencatat calon baru (juga bisa dari Seats, ketuk kursi). Calon yang bidangnya belum ada di daftar seat tetap bisa dicatat, klasifikasi ditulis bebas.</li>
-    <li><code>Set coffee</code>: pilih jam, kirim 3 pesan, lalu book.</li>
-    <li><code>Done</code> setelah interview. <code>Applied</code> saat calon setuju bergabung.</li>
-    <li><code>Joined</code> saat pembayaran masuk: pilih sponsor, dan bila perlu <code>New classification</code> untuk seat baru.</li>
-    <li>Calon keluar: ketuk nama, pilih Joined other chapter, Declined, atau Rejected, isi alasan.</li>
-    <li><b>Form sign-ups</b> muncul bila ada pendaftar Form yang perlu dicocokkan ke undangan.</li>
-  </ul>
-
-  <h2>Team: Schedule</h2>
-  <p>Jam coffee session. Coach Dedy membuka jam kosong. LT menekan <code>Join</code> untuk mendampingi, atau <code>Open an LT pair time</code> untuk interview berdua tanpa Coach Dedy.</p>
-  <p>Setelah jam lewat, nama muncul di <b>Needs an outcome</b>: <code>Done</code> atau <code>No show</code>.</p>
-
-  <h2>Team: Check-in</h2>
-  <p>Dipakai saat BOD dan Lunch Networking. Pilih acara, tandai siapa yang hadir (anggota dan tamu).</p>
-  <p class="kecil">Kehadiran anggota dicatat tiap Rabu dan dipakai untuk rekomendasi driver dan ukuran tim. Lunch Networking tidak wajib.</p>
-
-  <h2>Team: More</h2>
-  <div class="kartu">
-    <h3>Contacts</h3>
-    <p>Nama, klasifikasi, dan nomor semua member dan calon. Ketuk nomor untuk membuka WhatsApp. Gunakan hanya untuk urusan chapter.</p>
-    <h3>Announcements</h3>
-    <p>Tulis pengumuman, atur pembicara dan poster. Bagian <b>Events</b> di sana untuk <code>Add event</code> dan <code>Edit</code> jadwal BOD atau Lunch Networking.</p>
-    <h3>Insights</h3>
-    <p><b>Regroup</b>: nama per LT, seat tanpa calon, dan penanda driver. <b>Rounds</b>: perbandingan pekan ke pekan, dan daftar anggota yang belum mengundang ronde ini.</p>
-  </div>
+<h2>Peran LT</h2><div class="kartu merah"><p>LT adalah pendiri, bukan member: tidak punya seat, Board, lencana, atau tim. LT mencatat calon, menjadwalkan dan mencatat hasil coffee session, mencatat kehadiran BOD, serta menulis pengumuman.</p></div><h2>Menu ini untuk apa?</h2><ul class="untuk"><li><b>Home, My list, This week, Seats</b><span>Dipakai seperti anggota (lihat panduan Anggota).</span></li><li><b>Team: Interviews</b><span>Perjalanan tiap calon dari Listed sampai Joined.</span></li><li><b>Team: Schedule</b><span>Jam coffee session: membuka, mendampingi, mencatat hasil.</span></li><li><b>Team: Check-in</b><span>Mencatat siapa hadir di BOD dan Lunch Networking.</span></li><li><b>Team: More</b><span>Contacts, Announcements (termasuk jadwal acara), dan Insights.</span></li></ul><h2>Cara melakukan</h2><details class="cara" open id="x76677"><summary>Bagaimana mencatat calon baru?</summary><div class="isi"><ol class="langkah"><li><b>Team</b>, <b>Interviews</b>, tekan <code>Add a prospect</code>. (Atau dari <b>Seats</b>: ketuk seat lalu tambah.)</li><li>Isi nama, jenis usaha, dan nomor WhatsApp (wajib untuk LT).</li><li>Tekan <code>Add name</code>.</li></ol><p class="tip">Calon yang bidangnya belum ada di daftar seat tetap bisa dicatat, klasifikasi ditulis bebas. Seat baru dibuat nanti saat dia menjadi member.</p></div></details>
+<details class="cara" open id="x10463"><summary>Bagaimana menjadwalkan coffee session?</summary><div class="isi"><ol class="langkah"><li><b>Interviews</b>, tab <b>To schedule</b>, tekan <code>Set coffee</code> di samping nama.</li><li>Pilih jam dari Open times (atau <code>Other time</code> di luar jam terbuka).</li><li>Kirim pesan 1 dan 2 lewat WhatsApp.</li><li>Calon setuju: tekan <code>They said yes: book this time</code>, lalu kirim pesan 3 (konfirmasi dengan tautan Zoom).</li></ol><p class="tip">Nama berpindah ke tab <b>Coffee set</b>.</p></div></details>
+<details class="cara" id="x73976"><summary>Bagaimana membuka jam coffee session atau mendampingi interview?</summary><div class="isi"><ol class="langkah"><li><b>Team</b>, <b>Schedule</b>.</li><li>Coach Dedy membuka jam kosong. LT menekan <code>Join</code> pada jam mana pun untuk mendampingi.</li><li>Interview berdua tanpa Coach Dedy: tekan <code>Open an LT pair time</code> dan pilih rekan.</li></ol></div></details>
+<details class="cara" id="x788"><summary>Bagaimana mencatat hasil interview sampai calon bergabung?</summary><div class="isi"><ol class="langkah"><li>Sesudah jamnya lewat: <b>Interviews</b>, tab <b>Coffee set</b>, tekan <code>Done</code>. (Atau <b>Schedule</b>, <b>Needs an outcome</b>: <code>Done</code> atau <code>No show</code>. No show kembali ke antrean.)</li><li>Tab <b>Interviewed</b>: calon setuju bergabung, tekan <code>Applied</code>.</li><li>Pembayaran masuk: tekan <code>Joined</code>. Pilih <b>sponsor</b> dan seat, lalu <code>Confirm</code>.</li><li>App menampilkan <b>kode akses</b> member. Kirim lewat <code>Send code on WhatsApp</code>. Kode aktif setelah ESM.</li></ol><p class="tip">Sponsor adalah member yang mengundang dan mengenal calon secara pribadi. Tidak ada: pilih BNI. Bidang calon belum ada di daftar seat? Pilih <code>New classification</code> di langkah ini.</p></div></details>
+<details class="cara" id="x17839"><summary>Bagaimana bila calon menolak atau tidak cocok?</summary><div class="isi"><ol class="langkah"><li>Ketuk nama calon.</li><li>Pilih <b>Declined</b> (calon menolak), <b>Rejected</b> (chapter menolak), atau <b>Joined other chapter</b>.</li><li>Isi alasan singkat, tekan <code>Save follow-up</code>.</li></ol><p>Nama pindah ke tab <b>Closed</b>. Tekan <code>Reopen</code> bila nanti siap lagi.</p></div></details>
+<details class="cara" id="x72030"><summary>Bagaimana mengundang visitor ke pertemuan Rabu?</summary><div class="isi"><p>Sama dengan anggota: <b>My list</b>, <code>Invite</code>, 4 pesan WhatsApp berurutan. Bedanya, nomor WhatsApp wajib diisi saat mencatat nama.</p></div></details>
+<details class="cara" id="x94566"><summary>Bagaimana mencocokkan pendaftar Form?</summary><div class="isi"><ol class="langkah"><li>Bila ada pendaftar Form yang perlu diputuskan, muncul kartu <b>Form sign-ups</b> di Home dan Interviews.</li><li>Tekan <code>Review</code>.</li><li><b>Is it the same person?</b> App menunjukkan kemungkinan kecocokan di daftar. Tekan <code>Same person</code> bila benar (nomor baru tersimpan dan orangnya terdaftar), atau <code>Different person</code> untuk menambahkannya sebagai calon baru.</li><li><b>No inviter:</b> pendaftar yang memilih "No one" sebagai pengundang. Pilih siapa yang mengundang lalu <code>Set inviter</code>, atau <code>Walk-in, no inviter</code> bila memang datang sendiri.</li></ol><p class="tip">Ini memastikan tamu tercatat atas nama pengundang yang benar, karena skor tim dan lencana dihitung dari sini.</p></div></details>
+<details class="cara" id="x40530"><summary>Bagaimana mencatat kehadiran BOD dan Lunch Networking?</summary><div class="isi"><ol class="langkah"><li><b>Team</b>, <b>Check-in</b>.</li><li>Pilih <b>Event</b> (BOD atau Lunch hari ini sudah terpilih otomatis).</li><li>Ketuk nama yang hadir, anggota maupun tamu. Ketuk lagi untuk membatalkan.</li><li>Gunakan filter <b>Everyone / Not present / Present</b> dan kolom cari bila daftar panjang.</li></ol><p class="tip">Kehadiran BOD anggota dipakai untuk skor tim dan rekomendasi driver. Lunch Networking tidak wajib. Check-in terlambat tetap tersimpan.</p></div></details>
+<details class="cara" id="x9929"><summary>Bagaimana menambah acara, pengumuman, pembicara, dan poster?</summary><div class="isi"><ol class="langkah"><li><b>Team</b>, <b>More</b>, <b>Announcements</b>.</li><li><code>Add event</code> untuk BOD atau Lunch Networking baru. <code>Edit</code> untuk mengubah atau membatalkan, mengisi pembicara dan poster.</li><li>Pengumuman baru: tombol <code>New</code> di bagian Announcements, di halaman yang sama. Pengumuman tampil di Home semua orang.</li></ol><p class="tip">Poster: tempel tautan gambar https, misalnya tautan Google Drive yang dibagikan ke "Anyone with the link".</p></div></details>
+<details class="cara" id="x26020"><summary>Bagaimana melihat kontak member dan calon?</summary><div class="isi"><p><b>More</b>, <b>Contacts</b>: nama, klasifikasi, dan nomor semua member dan calon. Ketuk nomor untuk membuka WhatsApp, atau cari lewat kolom pencarian.</p><p class="tip">Hanya terlihat oleh LT. Gunakan untuk urusan chapter saja.</p></div></details>
+<details class="cara" id="x69787"><summary>Bagaimana memantau perkembangan chapter?</summary><div class="isi"><p><b>More</b>, <b>Insights</b>:</p><dl><dt>Regroup</dt><dd>Nama per LT, seat tanpa calon, dan penanda driver.</dd><dt>Rounds</dt><dd>Perbandingan pekan ke pekan (diundang, terdaftar, hadir, bergabung) dan daftar anggota yang belum mengundang ronde ini, untuk diingatkan dengan ramah sebelum Rabu.</dd></dl></div></details>
 </section>
-
 <section class="peran" id="ldc">
-  <h2>Mulai</h2>
-  <p>Satu app yang sama dengan LT, ditambah menu admin. Di <b>Team</b>, <b>More</b>:</p>
-  <div class="menu"><span>People</span><span>Announcements</span><span>Insights</span><span>Settings</span></div>
-  <p>Semua yang ada di panduan LT berlaku juga untuk LDC.</p>
-
-  <h2>People</h2>
-  <p>Semua orang sejak awal, termasuk yang pernah diwawancarai, dengan riwayat. Filter: All, Members, Prospects, Launch team, Closed.</p>
-  <ul>
-    <li><code>Add</code> menambah <b>LT</b> atau <b>Member</b> langsung, termasuk member dari luar chapter (sponsor bisa "BNI"). Seat baru bisa dibuat saat itu.</li>
-    <li>Ketuk nama: profil, riwayat, kehadiran, dan kode akses. Dari sana <code>Send code on WhatsApp</code>, <code>Copy code</code>, mematikan atau membuat ulang kode.</li>
-    <li>Kode member dibuat otomatis saat menjadi member, tetapi <b>aktif setelah ESM</b>. Setelah fase diubah di Settings, tekan <code>Turn on member codes</code> sekali untuk semuanya.</li>
-    <li>Ganti kode LDC sendiri lewat tombol di People.</li>
-  </ul>
-
-  <h2>Teams: dibentuk saat ESM</h2>
-  <div class="kartu merah">
-    <ol>
-      <li>People, kartu Teams, <code>Set up teams</code>. Member dibagi rata ke minimal 3 tim menurut urutan bergabung.</li>
-      <li>Tukar anggota dengan menu di samping nama (<code>Manage teams</code>).</li>
-      <li>Member baru otomatis masuk tim terkecil. Tim baru dibuka bila semua tim sudah penuh (bawaan 10 per tim, bisa diubah di Settings).</li>
-      <li><code>Rebalance everyone</code> membagi ulang dan menghapus semua pertukaran.</li>
-    </ol>
-  </div>
-
-  <h2>Seats</h2>
-  <p>Di halaman Seats, ketuk seat lalu <code>Edit seat</code> untuk mengubah nama klasifikasi, nama di kotak, atau barisnya. Tombol <code>+ seat</code> menambah seat baru untuk member yang sudah join.</p>
-
-  <h2>Insights</h2>
-  <p>Tambahan <b>Summary</b>: angka chapter dan lampu peringatan. <b>Regroup</b> juga memuat rekomendasi driver.</p>
-
-  <h2>Settings</h2>
-  <p>Fase, tanggal ESM dan Grand Launch, tautan Zoom dan Form, target (20, 37, 52, Gold, driver), aturan driver, dan ukuran maksimum tim. Mengubah fase mengubah target Misi Chapter dan label Founding atau Core Group untuk member baru.</p>
-  <p>Di bawahnya ada tautan <b>Data</b> (baca saja, isi tab sheet).</p>
-
-  <h2>Urutan kerja</h2>
-  <ol>
-    <li><b>Sekarang:</b> tambah LT lewat People, kirim kode lewat WhatsApp.</li>
-    <li><b>Pembentukan:</b> LDC dan LT mencatat calon, menjadwalkan coffee session, sampai Joined (jenis Founding).</li>
-    <li><b>Sebelum ESM:</b> pilot di HP 2 sampai 3 LT, catat yang membingungkan.</li>
-    <li><b>ESM (24 Mei 2027):</b> ubah fase di Settings, <code>Set up teams</code>, <code>Turn on member codes</code>, kirim kode.</li>
-    <li><b>Tiap Rabu:</b> Check-in BOD dan Lunch, cek pengumuman dan program.</li>
-    <li><b>Tiap pekan:</b> lihat Insights, Rounds, dan Regroup.</li>
-  </ol>
-</section>
-
-<footer>Panduan ini untuk anggota dan pendiri chapter. Teks di app berbahasa Inggris. Ada yang membingungkan? Sampaikan ke Coach Dedy.</footer>
+<h2>Peran LDC</h2><div class="kartu merah"><p>Satu app yang sama dengan LT, ditambah menu admin. Semua cara kerja di tab Launch Team berlaku juga untuk LDC. Tambahannya ada di <b>Team</b>, <b>More</b>.</p></div><h2>Menu ini untuk apa?</h2><ul class="untuk"><li><b>People</b><span>Pusat data orang: semua yang pernah masuk, riwayat, kode akses, tim, tambah LT dan member.</span></li><li><b>Announcements</b><span>Pengumuman dan jadwal acara.</span></li><li><b>Insights</b><span>Summary (angka chapter dan lampu peringatan), Regroup, Rounds.</span></li><li><b>Settings</b><span>Fase, tanggal, target, aturan driver, ukuran tim. Di bawahnya tautan Data (baca saja).</span></li></ul><h2>Cara melakukan</h2><details class="cara" open id="x20881"><summary>Bagaimana menambah LT baru?</summary><div class="isi"><ol class="langkah"><li><b>Team</b>, <b>More</b>, <b>People</b>, tekan <code>Add</code>.</li><li>Pilih <b>LT</b>, isi nama dan WhatsApp.</li><li>Kode akses muncul. Tekan <code>Send code on WhatsApp</code>.</li></ol><p class="tip">Kode LT aktif langsung.</p></div></details>
+<details class="cara" id="x78683"><summary>Bagaimana menambah member langsung (dari luar chapter)?</summary><div class="isi"><ol class="langkah"><li><b>People</b>, <code>Add</code>, pilih <b>Member</b>.</li><li>Isi nama, WhatsApp, pilih seat (atau <code>New classification</code> bila bidangnya belum ada), dan sponsor (bawaan BNI).</li><li>Konfirmasi. Kode akses dibuat otomatis.</li></ol><p class="tip">Untuk calon yang lewat proses interview, cukup tekan <code>Joined</code> di Interviews. Hasilnya sama.</p></div></details>
+<details class="cara" id="x31479"><summary>Bagaimana membagikan dan mengaktifkan kode akses?</summary><div class="isi"><ol class="langkah"><li>Buka <b>People</b>, ketuk nama orangnya.</li><li>Tekan <code>Send code on WhatsApp</code> atau <code>Copy code</code>. Di sana juga bisa mematikan atau membuat ulang kode.</li><li>Kode member baru aktif <b>setelah ESM</b>. Setelah mengubah fase di Settings, tekan <code>Turn on member codes</code> di People, sekali untuk semuanya.</li></ol><p class="tip">Ganti kode LDC sendiri lewat tombol di People.</p></div></details>
+<details class="cara" id="x72743"><summary>Bagaimana melihat semua orang dan riwayatnya?</summary><div class="isi"><p><b>People</b> menampilkan semua orang sejak awal, termasuk yang pernah diwawancarai. Filter: <b>All, Members, Prospects, Launch team, Closed</b>. Ketuk nama untuk profil, riwayat tahap, kehadiran, dan kode akses. Nomor WhatsApp bisa diketuk.</p></div></details>
+<details class="cara" open id="x70489"><summary>Bagaimana membentuk tim saat ESM?</summary><div class="isi"><ol class="langkah"><li><b>People</b>, kartu <b>Teams</b>, tekan <code>Set up teams</code>.</li><li>Member dibagi rata ke minimal 3 tim menurut urutan bergabung.</li><li>Selesai. Tim muncul di Board dan di Home tiap anggota.</li></ol><p class="tip">Member baru otomatis masuk tim terkecil. Tim baru dibuka bila semua tim sudah penuh (bawaan 10 per tim).</p></div></details>
+<details class="cara" id="x12788"><summary>Bagaimana menukar anggota antar tim?</summary><div class="isi"><ol class="langkah"><li><b>People</b>, kartu Teams, <code>Manage teams</code>.</li><li>Pada nama anggota, ganti menu tim di sebelah kanan.</li><li>Tim baru dibuat dengan memilih "Team N (new)".</li></ol><p class="tip"><code>Rebalance everyone</code> membagi ulang semua anggota dan menghapus semua pertukaran. Pakai hanya bila perlu.</p></div></details>
+<details class="cara" id="x87109"><summary>Bagaimana mengubah atau menambah seat?</summary><div class="isi"><ol class="langkah"><li><b>Seats</b>, ketuk seat.</li><li><code>Edit seat</code>: ubah nama klasifikasi, nama di kotak, atau barisnya. Nama berubah di mana-mana, member dan calon tetap di seatnya.</li><li>Seat baru untuk member yang sudah join: tombol <code>+ seat</code> di baris yang dituju.</li></ol></div></details>
+<details class="cara" id="x71181"><summary>Bagaimana mengubah fase, tanggal, dan target?</summary><div class="isi"><ol class="langkah"><li><b>More</b>, <b>Settings</b>.</li><li>Ubah nilai, tekan <code>Save</code> di barisnya.</li></ol><p>Fase mengubah target Misi Chapter (20, 37, 52) dan label Founding atau Core Group untuk member baru. Di sini juga tanggal ESM dan Grand Launch, tautan Zoom dan Form, target Gold dan driver, aturan driver, dan ukuran maksimum tim.</p></div></details>
+<details class="cara" id="x39421"><summary>Bagaimana melihat angka chapter dan data mentah?</summary><div class="isi"><p><b>More</b>, <b>Insights</b>, tab <b>Summary</b>: angka chapter dan lampu peringatan. Data tabel sheet (baca saja) lewat tautan <b>View sheet data</b> di bawah Settings. Mengubah data dilakukan lewat app atau Lapis, bukan di sini.</p></div></details>
+<h2>Urutan kerja</h2><ol class="langkah"><li><b>Sekarang:</b> tambah LT, kirim kode lewat WhatsApp.</li><li><b>Pembentukan:</b> LDC dan LT mencatat calon, menjadwalkan coffee session, sampai Joined (jenis Founding).</li><li><b>Sebelum ESM:</b> pilot di HP 2 sampai 3 LT, catat yang membingungkan.</li><li><b>ESM (24 Mei 2027):</b> ubah fase di Settings, <code>Set up teams</code>, <code>Turn on member codes</code>, kirim kode.</li><li><b>Tiap Rabu:</b> Check-in BOD dan Lunch, cek pengumuman dan program.</li><li><b>Tiap pekan:</b> lihat Insights, Rounds, dan Regroup.</li></ol></section>
+<footer>Teks di app berbahasa Inggris, jadi nama tombol di panduan ini ditulis seperti di app. Ada yang masih membingungkan? Sampaikan ke Coach Dedy.</footer>
 </div>
 <script>
 (function () {
   var tab = document.querySelectorAll('.tab a'), bagian = document.querySelectorAll('section.peran');
   function tampil() {
     var h = (location.hash || '#anggota').slice(1);
-    if (!document.getElementById(h) || !/^(anggota|lt|ldc)$/.test(h)) h = 'anggota';
+    if (!/^(anggota|lt|ldc)$/.test(h)) h = 'anggota';
     bagian.forEach(function (s) { s.classList.toggle('aktif', s.id === h); });
-    tab.forEach(function (a) { a.setAttribute('aria-current', a.dataset.p === h ? 'true' : 'false'); });
+    tab.forEach(function (a) { a.setAttribute('aria-current', a.getAttribute('href') === '#' + h ? 'true' : 'false'); });
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', tampil);

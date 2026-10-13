@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#C8102E">
+<title>Panduan LDC Optima</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --kertas:#fff; --kertas-2:#F5F3F3; --tinta:#1A1718; --abu:#6F6768; --garis:#E8E2E2; --merah:#C8102E; --merah-muda:#FCE8EB; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--kertas); color: var(--tinta); font: 16px/1.55 'Plus Jakarta Sans', system-ui, sans-serif; }
+.bungkus { max-width: 640px; margin: 0 auto; padding: 0 16px 56px; }
+header { padding: 22px 0 6px; }
+.merek { font: 800 13px Helvetica, Arial, sans-serif; letter-spacing: .06em; color: var(--merah); }
+h1 { font: 800 28px/1.15 Helvetica, Arial, sans-serif; margin: 4px 0 6px; }
+.sub { color: var(--abu); margin: 0 0 14px; font-size: 14px; }
+.tab { position: sticky; top: 0; z-index: 5; display: flex; gap: 2px; background: var(--kertas-2); border-radius: 12px; padding: 4px; margin: 12px 0 18px; }
+.tab a { flex: 1; text-align: center; padding: 10px 4px; border-radius: 9px; font-size: 14px; font-weight: 700; color: var(--abu); text-decoration: none; }
+.tab a[aria-current="true"] { background: #fff; color: var(--tinta); box-shadow: 0 1px 3px rgba(0,0,0,.14); }
+section.peran { display: none; }
+section.peran.aktif { display: block; }
+h2 { font: 800 20px/1.25 Helvetica, Arial, sans-serif; margin: 28px 0 8px; }
+h3 { font: 700 16px/1.3 Helvetica, Arial, sans-serif; margin: 0 0 6px; }
+p { margin: 0 0 10px; }
+.kartu { border: 1px solid var(--garis); border-radius: 16px; padding: 14px 16px; margin: 0 0 12px; }
+.kartu.merah { background: var(--merah-muda); border-color: #F3C4CB; }
+ol, ul { margin: 0 0 10px; padding-left: 22px; }
+li { margin: 0 0 4px; }
+b.m { color: var(--merah); }
+code, .tombol { font-family: inherit; font-weight: 700; background: var(--kertas-2); border-radius: 6px; padding: 1px 6px; font-size: .92em; white-space: nowrap; }
+.menu { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.menu span { font-size: 13px; font-weight: 700; background: var(--merah); color: #fff; border-radius: 99px; padding: 4px 11px; }
+.kecil { font-size: 13px; color: var(--abu); }
+footer { margin-top: 32px; font-size: 13px; color: var(--abu); border-top: 1px solid var(--garis); padding-top: 14px; }
+a.buka { display: block; text-align: center; background: var(--merah); color: #fff; font-weight: 700; text-decoration: none; padding: 13px; border-radius: 12px; margin: 14px 0 0; }
+
+details.cara { border: 1px solid var(--garis); border-radius: 14px; margin: 0 0 8px; background: #fff; }
+details.cara > summary { cursor: pointer; list-style: none; padding: 13px 40px 13px 14px; font-weight: 700; position: relative; }
+details.cara > summary::-webkit-details-marker { display: none; }
+details.cara > summary::after { content: '+'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 500; color: var(--merah); }
+details.cara[open] > summary::after { content: '\2212'; }
+details.cara[open] { border-color: #E5B8BF; }
+details.cara .isi { padding: 0 14px 12px; }
+.untuk { list-style: none; padding: 0; margin: 0 0 10px; }
+.untuk li { display: flex; gap: 10px; padding: 10px 0; border-top: 1px solid var(--garis); margin: 0; }
+.untuk li:first-child { border-top: 0; }
+.untuk b { flex: 0 0 96px; color: var(--merah); }
+.langkah { counter-reset: n; list-style: none; padding: 0; margin: 0 0 8px; }
+.langkah li { counter-increment: n; position: relative; padding-left: 32px; margin: 0 0 8px; }
+.langkah li::before { content: counter(n); position: absolute; left: 0; top: 1px; width: 22px; height: 22px; border-radius: 50%; background: var(--merah); color: #fff; font: 700 12px/22px Helvetica, Arial, sans-serif; text-align: center; }
+.tip { font-size: 14px; background: var(--kertas-2); border-radius: 10px; padding: 9px 12px; margin: 0 0 8px; }
+dl { margin: 0 0 10px; }
+dt { font-weight: 700; margin-top: 8px; }
+dd { margin: 0 0 4px; color: var(--abu); }
+</style>
+</head>
+<body>
+<div class="bungkus">
+<header>
+  <div class="merek">BNI CHAPTER</div>
+  <h1>Panduan LDC</h1>
+  <p class="sub">Untuk Coach Dedy sebagai LDC. Ketuk pertanyaan yang ingin dijawab.</p>
+  <a class="buka" href="../../web/">Buka app BNI Optima</a>
+</header>
+<section class="peran aktif">
+<h2>Peran LDC</h2><div class="kartu merah"><p>Satu app yang sama dengan LT, ditambah menu admin. Semua cara kerja di <a href="../lt/">panduan Launch Team</a> berlaku juga untuk LDC. Tambahannya ada di <b>Team</b>, <b>More</b>.</p></div><h2>Menu ini untuk apa?</h2><ul class="untuk"><li><b>People</b><span>Pusat data orang: semua yang pernah masuk, riwayat, kode akses, tim, tambah LT dan member.</span></li><li><b>Announcements</b><span>Pengumuman dan jadwal acara.</span></li><li><b>Insights</b><span>Summary (angka chapter dan lampu peringatan), Regroup, Rounds.</span></li><li><b>Settings</b><span>Fase, tanggal, target, aturan driver, ukuran tim. Di bawahnya tautan Data (baca saja).</span></li></ul><h2>Cara melakukan</h2><details class="cara" open id="x20881"><summary>Bagaimana menambah LT baru?</summary><div class="isi"><ol class="langkah"><li><b>Team</b>, <b>More</b>, <b>People</b>, tekan <code>Add</code>.</li><li>Pilih <b>LT</b>, isi nama dan WhatsApp.</li><li>Kode akses muncul. Tekan <code>Send code on WhatsApp</code>.</li></ol><p class="tip">Kode LT aktif langsung.</p></div></details>
+<details class="cara" id="x78683"><summary>Bagaimana menambah member langsung (dari luar chapter)?</summary><div class="isi"><ol class="langkah"><li><b>People</b>, <code>Add</code>, pilih <b>Member</b>.</li><li>Isi nama, WhatsApp, pilih seat (atau <code>New classification</code> bila bidangnya belum ada), dan sponsor (bawaan BNI).</li><li>Konfirmasi. Kode akses dibuat otomatis.</li></ol><p class="tip">Untuk calon yang lewat proses interview, cukup tekan <code>Joined</code> di Interviews. Hasilnya sama.</p></div></details>
+<details class="cara" id="x31479"><summary>Bagaimana membagikan dan mengaktifkan kode akses?</summary><div class="isi"><ol class="langkah"><li>Buka <b>People</b>, ketuk nama orangnya.</li><li>Tekan <code>Send code on WhatsApp</code> atau <code>Copy code</code>. Di sana juga bisa mematikan atau membuat ulang kode.</li><li>Kode member baru aktif <b>setelah ESM</b>. Setelah mengubah fase di Settings, tekan <code>Turn on member codes</code> di People, sekali untuk semuanya.</li></ol><p class="tip">Ganti kode LDC sendiri lewat tombol di People.</p></div></details>
+<details class="cara" id="x72743"><summary>Bagaimana melihat semua orang dan riwayatnya?</summary><div class="isi"><p><b>People</b> menampilkan semua orang sejak awal, termasuk yang pernah diwawancarai. Filter: <b>All, Members, Prospects, Launch team, Closed</b>. Ketuk nama untuk profil, riwayat tahap, kehadiran, dan kode akses. Nomor WhatsApp bisa diketuk.</p></div></details>
+<details class="cara" open id="x70489"><summary>Bagaimana membentuk tim saat ESM?</summary><div class="isi"><ol class="langkah"><li><b>People</b>, kartu <b>Teams</b>, tekan <code>Set up teams</code>.</li><li>Member dibagi rata ke minimal 3 tim menurut urutan bergabung.</li><li>Selesai. Tim muncul di Board dan di Home tiap anggota.</li></ol><p class="tip">Member baru otomatis masuk tim terkecil. Tim baru dibuka bila semua tim sudah penuh (bawaan 10 per tim).</p></div></details>
+<details class="cara" id="x12788"><summary>Bagaimana menukar anggota antar tim?</summary><div class="isi"><ol class="langkah"><li><b>People</b>, kartu Teams, <code>Manage teams</code>.</li><li>Pada nama anggota, ganti menu tim di sebelah kanan.</li><li>Tim baru dibuat dengan memilih "Team N (new)".</li></ol><p class="tip"><code>Rebalance everyone</code> membagi ulang semua anggota dan menghapus semua pertukaran. Pakai hanya bila perlu.</p></div></details>
+<details class="cara" id="x87109"><summary>Bagaimana mengubah atau menambah seat?</summary><div class="isi"><ol class="langkah"><li><b>Seats</b>, ketuk seat.</li><li><code>Edit seat</code>: ubah nama klasifikasi, nama di kotak, atau barisnya. Nama berubah di mana-mana, member dan calon tetap di seatnya.</li><li>Seat baru untuk member yang sudah join: tombol <code>+ seat</code> di baris yang dituju.</li></ol></div></details>
+<details class="cara" id="x71181"><summary>Bagaimana mengubah fase, tanggal, dan target?</summary><div class="isi"><ol class="langkah"><li><b>More</b>, <b>Settings</b>.</li><li>Ubah nilai, tekan <code>Save</code> di barisnya.</li></ol><p>Fase mengubah target Misi Chapter (20, 37, 52) dan label Founding atau Core Group untuk member baru. Di sini juga tanggal ESM dan Grand Launch, tautan Zoom dan Form, target Gold dan driver, aturan driver, dan ukuran maksimum tim.</p></div></details>
+<details class="cara" id="x39421"><summary>Bagaimana melihat angka chapter dan data mentah?</summary><div class="isi"><p><b>More</b>, <b>Insights</b>, tab <b>Summary</b>: angka chapter dan lampu peringatan. Data tabel sheet (baca saja) lewat tautan <b>View sheet data</b> di bawah Settings. Mengubah data dilakukan lewat app atau Lapis, bukan di sini.</p></div></details>
+<h2>Urutan kerja</h2><ol class="langkah"><li><b>Sekarang:</b> tambah LT, kirim kode lewat WhatsApp.</li><li><b>Pembentukan:</b> LDC dan LT mencatat calon, menjadwalkan coffee session, sampai Joined (jenis Founding).</li><li><b>Sebelum ESM:</b> pilot di HP 2 sampai 3 LT, catat yang membingungkan.</li><li><b>ESM (24 Mei 2027):</b> ubah fase di Settings, <code>Set up teams</code>, <code>Turn on member codes</code>, kirim kode.</li><li><b>Tiap Rabu:</b> Check-in BOD dan Lunch, cek pengumuman dan program.</li><li><b>Tiap pekan:</b> lihat Insights, Rounds, dan Regroup.</li></ol></section>
+<footer>Teks di app berbahasa Inggris, jadi nama tombol di panduan ini ditulis seperti di app. Ada yang masih membingungkan? Sampaikan ke Coach Dedy.</footer>
+</div>
+</body>
+</html>

@@ -5,7 +5,7 @@ Teks di app berbahasa Inggris, panduan ini Indonesia.
 
 ## Untuk semua orang
 
-**Masuk.** Buka alamat app, masukkan kode akses 6 karakter dari Coach Dedy (dikirim lewat WhatsApp). Setelah itu app mengingat Anda di perangkat itu. Kode bersifat pribadi, jangan dibagikan. Lupa atau ganti kode: minta Coach Dedy, atau ganti sendiri lewat Home (ganti kode).
+**Masuk.** Buka alamat app, masukkan kode akses 6 karakter dari Coach Dedy (dikirim lewat WhatsApp). Setelah itu app mengingat Anda di perangkat itu. Kode bersifat pribadi, jangan dibagikan. Lupa atau ingin ganti kode: minta Coach Dedy.
 
 **Pasang ke layar utama.** Android (Chrome): menu titik tiga, Install app. iPhone (Safari): tombol Share, Add to Home Screen.
 
@@ -79,6 +79,7 @@ Satu app yang sama dengan LT, ditambah menu admin di **Team, More**: **People, A
 - Ketuk nama: profil, riwayat, kehadiran, kode akses. Dari sana **Send code on WhatsApp**, **Copy code**, matikan atau buat ulang kode.
 - Filter: All, Members, Prospects, Launch team, Closed.
 - Kode member dibuat otomatis saat jadi member, tetapi **aktif setelah ESM**. Sesudah fase diubah di Settings, tekan **Turn on member codes** sekali untuk semuanya.
+- Ganti kode LDC sendiri lewat tombol di People.
 - Kartu **Teams:** lihat bagian di bawah.
 
 **Teams (saat ESM).**
@@ -93,7 +94,7 @@ Satu app yang sama dengan LT, ditambah menu admin di **Team, More**: **People, A
 
 **Settings.** Fase (Pembentukan, BOD, dan seterusnya), tanggal ESM dan Grand Launch, tautan Zoom dan Form, target (20, 37, 52, Gold, driver), aturan driver, dan ukuran maksimum tim. Mengubah fase mengubah target Misi Chapter dan label Founding atau Core Group untuk member baru. Di bawahnya ada tautan **Data** (baca saja, isi tab sheet).
 
-**Jadwal acara.** Di Check-in atau Info, LDC dan LT bisa menambah, mengubah, atau membatalkan acara BOD dan Lunch Networking.
+**Jadwal acara.** Di More, Announcements, bagian Events: **Add event** untuk BOD atau Lunch Networking, **Edit** untuk mengubah atau membatalkan. LT juga bisa.
 
 ---
 

@@ -274,7 +274,7 @@
   /* Memanaskan simpanan: layar lain yang mungkin dibuka berikutnya dimuat diam-diam. */
   function panaskan() {
     if (!S.profil) return;
-    ['kursi', 'pengumuman', 'undanganSaya'].concat(isLT() ? ['calonSaya', 'acara'] : ['papan']).forEach(function (a) { api(a, a === 'calonSaya' ? {} : undefined); });
+    ['kursi', 'pengumuman', 'undanganSaya'].concat(isLT() ? ['calonSaya', 'acara'].concat(isLDC() ? ['orangSemua', 'timDaftar', 'anggota'] : []) : ['papan', 'timPapan']).forEach(function (a) { api(a, a === 'calonSaya' ? {} : undefined); });
   }
 
   async function coba(kode) {
@@ -1986,7 +1986,8 @@
 
   async function subOrang(w) {
     w.innerHTML = '<div class="muat"></div>';
-    var r = await api('orangSemua');
+    var dua = await Promise.all([api('orangSemua'), api('timDaftar')]);
+    var r = dua[0], tmk = dua[1];
     if (!r.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
     var orang = r.orang;
     var saring = [['all', 'All'], ['Member', 'Members'], ['Prospect', 'Prospects'], ['team', 'Launch team'], ['Closed', 'Closed']];
@@ -2007,7 +2008,6 @@
       w.querySelectorAll('[data-o]').forEach(function (li) { li.onclick = function () { lembarOrang(li.dataset.o, function () { subOrang(w); }); }; });
       w.querySelector('#jml-orang').textContent = tampil.length;
     }
-    var tmk = await api('timDaftar');
     w.innerHTML = '<div class="judul-bagian"><h2>People</h2><span class="kecil"><b id="jml-orang"></b> of ' + orang.length + '</span><button class="tombol kecil" id="o-baru">Add</button></div>' +
       (r.setelah_esm && tanpaKode ? '<section class="kartu sorotan"><h3>' + tanpaKode + ' member' + (tanpaKode > 1 ? 's' : '') + ' cannot log in yet</h3><p class="kecil">Turn on every member code, then send the codes from each profile.</p><div class="baris-tombol"><button class="tombol" id="o-aktif">Turn on member codes</button></div></section>'
         : (!r.setelah_esm && tanpaKode ? '<p class="catatan-main">Member codes stay off until ESM is done. After the phase changes in Settings, turn them on here.</p>' : '')) +

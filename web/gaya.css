@@ -490,3 +490,8 @@ li.ketuk[data-o] { cursor: pointer; }
 
 .edit-seat { margin: 10px 0 0; text-align: center; }
 .edit-seat button { background: none; border: 0; color: var(--abu); font-size: 13px; text-decoration: underline; cursor: pointer; font-family: inherit; padding: 6px 10px; }
+
+.dampak-baris .tengah { text-align: center; }
+.dampak-baris b.unggul { color: var(--merah); }
+.dampak-nama .sub { display: block; font-size: 11px; font-weight: 500; color: var(--abu); }
+.pilih-tim { font: inherit; font-size: 13px; padding: 6px 8px; border: 1px solid var(--garis); border-radius: 8px; background: var(--kartu); max-width: 112px; }

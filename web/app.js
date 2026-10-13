@@ -127,7 +127,7 @@
 
   /* Cepat dibuka: jawaban bacaan terakhir langsung dipakai, lalu diperbarui diam-diam di belakang.
      Bila isinya berubah, layar yang sedang terbuka digambar ulang. Aksi tulis mengosongkan simpanan. */
-  var BACA_CEPAT = { beranda: 1, kursi: 1, kursiDetail: 1, papan: 1, pengumuman: 1, undanganSaya: 1, calonSaya: 1, usulanSaya: 1, daftarAnggota: 1, riwayatRonde: 1, acara: 1, perluCek: 1, anggota: 1, tamuPekanIni: 1, jadwalCS: 1, slotCS: 1, regroup: 1, kontak: 1, orangSemua: 1, orangDetail: 1, bacaPengaturan: 1, ringkas: 1, kandidatDriver: 1, daftarHadir: 1, lihatTab: 1, acaraCheckin: 1 };
+  var BACA_CEPAT = { beranda: 1, kursi: 1, kursiDetail: 1, papan: 1, pengumuman: 1, undanganSaya: 1, calonSaya: 1, usulanSaya: 1, daftarAnggota: 1, riwayatRonde: 1, acara: 1, perluCek: 1, anggota: 1, tamuPekanIni: 1, jadwalCS: 1, slotCS: 1, regroup: 1, kontak: 1, orangSemua: 1, orangDetail: 1, bacaPengaturan: 1, ringkas: 1, kandidatDriver: 1, daftarHadir: 1, lihatTab: 1, acaraCheckin: 1, timPapan: 1, timDaftar: 1 };
   var SEGAR_DETIK = 8, BASI_MENIT = 10;
   var simpanan = {}, sedangMuat = {};
   function kosongkanSimpanan() { simpanan = {}; sedangMuat = {}; kosongVersi++; }
@@ -444,11 +444,12 @@
   }
 
   async function layarMisi(isi) {
-    var tugas = [api('beranda'), isLT() ? api('calonSaya', {}) : Promise.resolve(null), api('pengumuman'), api('undanganSaya'), isLT() ? api('perluCek') : Promise.resolve(null)];
+    var tugas = [api('beranda'), isLT() ? api('calonSaya', {}) : Promise.resolve(null), api('pengumuman'), api('undanganSaya'), isLT() ? api('perluCek') : Promise.resolve(null), isLT() ? Promise.resolve(null) : api('timPapan')];
     var h = await Promise.all(tugas);
-    var b = h[0], pipa = h[1] && h[1].ok ? h[1].calon : null, pg = h[2], ud = h[3], pcek = h[4] && h[4].ok ? h[4].jumlah : 0;
+    var b = h[0], pipa = h[1] && h[1].ok ? h[1].calon : null, pg = h[2], ud = h[3], pcek = h[4] && h[4].ok ? h[4].jumlah : 0, tm = h[5];
     if (!b.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(b.pesan) + '</p>'; return; }
     var html = '<div class="sapa"><h1>Hello, ' + esc(S.profil.nama_depan) + '</h1>' +
+      (tm && tm.ok && tm.aktif && tm.saya ? '<p class="kecil">You are in ' + esc(tm.saya.nama) + ', ' + urutan(tm.saya.peringkat) + ' of ' + tm.saya.dari + ' this round.</p>' : '') +
       '</div>';
 
     var sorot = ud && ud.ok ? sorotan(ud.undangan) : [];
@@ -1235,6 +1236,24 @@
   var tabPapan = 'pengundang';
   var urutDampak = 'bergabung';
   /* ---------- Impact Board: undangan, hadir, bergabung per orang ---------- */
+  /* ---------- Tim: satu kartu di Board (ronde ini dan sepanjang waktu) ---------- */
+  function urutan(n) { return n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'); }
+  function kartuTim(t, semua) {
+    if (!t || !t.ok || !t.aktif) return '';
+    var rows = semua ? t.total : t.ronde.tim;
+    function sel(x, kunci, nilai) { return '<b class="' + (x.unggul.indexOf(kunci) >= 0 ? 'unggul' : '') + '">' + nilai + '</b>'; }
+    var ada = rows.some(function (x) { return x.tamu || x.gabung || x.hadir; });
+    return '<div class="judul-bagian"><h2>Teams</h2><span class="kecil">' + (semua ? 'since ' + esc(tglPendek(t.mulai)) : 'this round') + '</span></div>' +
+      '<section class="kartu"><div class="dampak"><div class="dampak-baris dampak-judul"><span>Team</span><span class="tengah">Guests</span><span class="tengah">Joined</span><span class="tengah">Present</span></div>' +
+      rows.map(function (x) {
+        var sub = x.anggota + ' members' + (semua && x.menang ? ' · won ' + x.menang + (x.menang > 1 ? ' rounds' : ' round') : '');
+        return '<div class="dampak-baris' + (t.saya && t.saya.tim === x.tim ? ' saya' : '') + '"><span class="dampak-nama">' + esc(x.nama) + '<small class="sub">' + esc(sub) + '</small></span>' +
+          sel(x, 'tamu', x.tamu) + sel(x, 'gabung', x.gabung) + sel(x, 'hadir', x.jatah ? x.persen + '%' : '-') + '</div>';
+      }).join('') + '</div></section>' +
+      '<p class="catatan-main">' + (ada ? 'Red means the team leads that measure. ' : '') + 'Guests who came and members who joined are compared per member, so team size does not decide. Present is BOD attendance.' +
+      (!semua && t.riwayat.length && t.riwayat[0].juara ? ' Last round: ' + esc(t.riwayat[0].nama) + '.' : '') + '</p>';
+  }
+
   function tabelDampak(rows) {
     if (!rows || !rows.length) return '<section class="kartu"><p class="kosong-isi">No invitations yet. The first invitation starts the board.</p></section>';
     var urut = rows.slice().sort(function (a, b) {
@@ -1278,8 +1297,8 @@
   }
 
   async function layarPapan(isi) {
-    var h = await Promise.all([api('papan'), api('beranda')]);
-    var p = h[0], b = h[1];
+    var h = await Promise.all([api('papan'), api('beranda'), api('timPapan')]);
+    var p = h[0], b = h[1], tm = h[2];
     if (!p.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(p.pesan) + '</p>'; return; }
     function daftar(rows, satuan, kosong) {
       if (!rows.length) return '<p class="kosong-isi">' + kosong + '</p>';
@@ -1290,8 +1309,8 @@
     isi.innerHTML = '<div class="sapa"><h1>Board</h1><p class="kecil">A game, not a ranking.</p></div>' +
       '<div class="tab" role="tablist"><button role="tab" data-tab="pengundang" aria-selected="' + (tabPapan !== 'dampak') + '">This round</button><button role="tab" data-tab="dampak" aria-selected="' + (tabPapan === 'dampak') + '">All time</button></div>' +
       (tabPapan === 'pengundang'
-        ? '<section class="kartu">' + daftar(p.pengundang, 'invitations', 'No invitations this round yet. Be the first.') + '</section><p class="catatan-main">Round ends ' + esc(tglHari(b.ronde.selesai)) + ' at 23:59. The board resets every Thursday.</p>' + kartuBelum(p.belum_ronde)
-        : tabelDampak(p.dampak));
+        ? kartuTim(tm, false) + '<div class="judul-bagian"><h2>Invitations</h2></div><section class="kartu">' + daftar(p.pengundang, 'invitations', 'No invitations this round yet. Be the first.') + '</section><p class="catatan-main">Round ends ' + esc(tglHari(b.ronde.selesai)) + ' at 23:59. The board resets every Thursday.</p>' + kartuBelum(p.belum_ronde)
+        : kartuTim(tm, true) + '<div class="judul-bagian"><h2>Individuals</h2></div>' + tabelDampak(p.dampak));
     isi.querySelectorAll('[data-tab]').forEach(function (t) { t.onclick = function () { tabPapan = t.dataset.tab; layarPapan(isi); }; });
     isi.querySelectorAll('[data-urut]').forEach(function (t) { t.onclick = function () { urutDampak = t.dataset.urut; layarPapan(isi); }; });
   }
@@ -1299,8 +1318,8 @@
   /* ---------- TIM (LT dan LDC) ---------- */
   function layarTim(isi, sub) {
     var tabs = [['calon', 'Interviews'], ['jadwal', 'Schedule'], ['rabu', 'Check-in'], ['lainnya', 'More']];
-    var dalamMore = ['info', 'regroup', 'ringkas', 'riwayat', 'kontak', 'orang', 'atur', 'data'];
-    var subAktif = ['calon', 'jadwal', 'rabu', 'lainnya'].concat(dalamMore).indexOf(sub) >= 0 && (['ringkas', 'orang', 'atur', 'data'].indexOf(sub) < 0 || isLDC()) ? sub : 'calon';
+    var dalamMore = ['info', 'wawasan', 'kontak', 'orang', 'atur', 'data'];
+    var subAktif = ['calon', 'jadwal', 'rabu', 'lainnya'].concat(dalamMore).indexOf(sub) >= 0 && (['orang', 'atur', 'data'].indexOf(sub) < 0 || isLDC()) ? sub : 'calon';
     var aktif = dalamMore.indexOf(subAktif) >= 0 ? 'lainnya' : subAktif;
     isi.innerHTML = '<div class="tab" role="tablist">' + tabs.map(function (t) {
       return '<button role="tab" data-sub="' + t[0] + '" aria-selected="' + (t[0] === aktif) + '">' + t[1] + '</button>';
@@ -1308,7 +1327,7 @@
     isi.querySelectorAll('[data-sub]').forEach(function (t) { t.onclick = function () { location.hash = '#tim-' + t.dataset.sub; }; });
     var wadah = isi.querySelector('#sub');
     if (dalamMore.indexOf(subAktif) >= 0) wadah.insertAdjacentHTML('beforebegin', '<a class="kembali" href="#tim-lainnya">&#8249; More</a>');
-    ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, lainnya: subLainnya, info: subInfo, regroup: subRegroup, ringkas: subRingkas, riwayat: subRiwayat, kontak: subKontak, orang: subOrang, atur: subAtur, data: subData })[subAktif](wadah);
+    ({ calon: subCalon, jadwal: subJadwal, rabu: subRabu, lainnya: subLainnya, info: subInfo, wawasan: subWawasan, kontak: subKontak, orang: subOrang, atur: subAtur, data: subData })[subAktif](wadah);
   }
 
   /* ---------- pendaftar Form yang perlu diputuskan ---------- */
@@ -1697,15 +1716,26 @@
   }
 
   function subLainnya(w) {
-    var item = [['kontak', 'Contacts', 'Name, classification and phone of members and prospects'], ['info', 'Announcements', 'Write announcements, set speaker and poster'], ['regroup', 'Regroup', 'Names per launch team member, seats without prospects'], ['riwayat', 'Round history', 'Invited, registered, attended and joined per week']];
-    if (isLDC()) {
-      item.unshift(['orang', 'People', 'Everyone since the start: history, codes, add launch team or a member']);
-      item.push(['ringkas', 'Summary', 'Chapter numbers and warning lights'], ['atur', 'Settings', 'Phase, dates, targets, driver rules'], ['data', 'Data', 'Read-only view of the sheet tables']);
-    }
+    var item = [['info', 'Announcements', 'Write announcements, set speaker and poster'], ['wawasan', 'Insights', isLDC() ? 'Summary, regroup, round history' : 'Regroup and round history']];
+    if (isLDC()) item.unshift(['orang', 'People', 'Everyone since the start, teams, codes, add launch team or a member']);
+    else item.unshift(['kontak', 'Contacts', 'Name, classification and phone of members and prospects']);
+    if (isLDC()) item.push(['atur', 'Settings', 'Phase, dates, targets, teams, driver rules']);
     w.innerHTML = '<section class="kartu"><ul class="daftar">' + item.map(function (x) {
       return '<li><a class="ketuk" href="#tim-' + x[0] + '" style="flex:1;min-width:0;display:block"><div class="utama"><b>' + x[1] + '</b><span>' + x[2] + '</span></div></a></li>';
     }).join('') + '</ul></section>';
   }
+  /* ---------- Insights: Summary (LDC), Regroup, Rounds dalam satu tempat ---------- */
+  var tabWawasan = 'regroup';
+  function subWawasan(w) {
+    var tabs = (isLDC() ? [['ringkas', 'Summary']] : []).concat([['regroup', 'Regroup'], ['riwayat', 'Rounds']]);
+    if (!tabs.some(function (t) { return t[0] === tabWawasan; })) tabWawasan = tabs[0][0];
+    w.innerHTML = '<div class="tab" role="tablist" style="margin-top:0">' + tabs.map(function (t) {
+      return '<button role="tab" data-w="' + t[0] + '" aria-selected="' + (t[0] === tabWawasan) + '">' + t[1] + '</button>';
+    }).join('') + '</div><div id="isi-wawasan"><div class="muat"></div></div>';
+    w.querySelectorAll('[data-w]').forEach(function (t) { t.onclick = function () { tabWawasan = t.dataset.w; subWawasan(w); }; });
+    ({ ringkas: subRingkas, regroup: subRegroup, riwayat: subRiwayat })[tabWawasan](w.querySelector('#isi-wawasan'));
+  }
+
   /* ---------- Contacts: nama, klasifikasi, nomor (hanya LT dan LDC) ---------- */
   async function subKontak(w) {
     w.innerHTML = '<div class="muat"></div>';
@@ -1729,6 +1759,60 @@
       var q = cari.value.trim().toLowerCase();
       w.querySelectorAll('li[data-nama]').forEach(function (li) { li.hidden = q && li.dataset.nama.indexOf(q) < 0; });
     };
+  }
+
+  /* ---------- Tim (LDC): mulai, seimbangkan, tukar anggota ---------- */
+  function kartuKelolaTim(t) {
+    if (!t || !t.ok) return '';
+    var ukuran = t.tim.map(function (x) { return x.anggota.length; });
+    var ket = t.aktif ? t.tim.length + ' teams: ' + ukuran.join(', ') + ' members' + (t.belum.length ? '. ' + t.belum.length + ' without a team' : '') : (t.jumlah_anggota ? t.jumlah_anggota + ' members can be split into teams' : 'Teams start once there are members');
+    return '<section class="kartu" style="margin-bottom:10px"><div class="langkah-atas"><span class="chip merah">Teams</span></div><p class="kecil">' + esc(ket) + '</p>' +
+      '<div class="baris-tombol"><button class="tombol kecil' + (t.aktif ? ' kedua' : '') + '" id="b-tim" type="button">' + (t.aktif ? 'Manage teams' : 'Set up teams') + '</button></div></section>';
+  }
+  async function lembarTim(segarkan) {
+    bukaLembar('<div class="muat"></div>');
+    var t = await api('timDaftar');
+    if (!t.ok) { $lembarIsi.innerHTML = '<p class="kosong-isi">' + esc(t.pesan) + '</p>'; return; }
+    var banyak = t.tim.length;
+    var depan = Math.max(3, Math.ceil(t.jumlah_anggota / t.tim_maks));
+    function opsi(pilih) {
+      var o = '';
+      for (var i = 1; i <= banyak + 1; i++) o += '<option value="' + i + '"' + (i === pilih ? ' selected' : '') + '>Team ' + i + (i > banyak ? ' (new)' : '') + '</option>';
+      return o;
+    }
+    function barisAnggota(a, tim) {
+      return '<li><div class="utama"><b>' + esc(a.nama) + '</b><span>' + esc(a.bidang || '') + '</span></div><select class="pilih-tim" data-id="' + esc(a.id_orang) + '" aria-label="Team for ' + esc(a.nama) + '">' + opsi(tim) + '</select></li>';
+    }
+    var html = '<h2>Teams</h2>';
+    if (!t.aktif) {
+      html += '<p class="kecil" style="margin:4px 0 12px">' + (t.jumlah_anggota
+        ? 'Splits the ' + t.jumlah_anggota + ' members who have joined into ' + depan + ' teams of equal size, in joining order. New members join the smallest team. A new team opens when every team has ' + t.tim_maks + ' members.'
+        : 'No member has joined yet. Teams are formed from members, not from the launch team.') + '</p>' +
+        (t.jumlah_anggota ? '<button class="tombol" id="t-mulai" type="button">Split into ' + depan + ' teams</button>' : '');
+    } else {
+      html += '<p class="kecil" style="margin:4px 0 12px">Teams started ' + esc(tglPendek(t.mulai)) + '. New members join the smallest team automatically. Move someone with the menu next to the name.</p>' +
+        t.tim.map(function (x) {
+          return '<div class="judul-bagian"><h2>' + esc(x.nama) + '</h2><span class="kecil">' + x.anggota.length + ' members</span></div><section class="kartu">' +
+            (x.anggota.length ? '<ul class="daftar">' + x.anggota.map(function (a) { return barisAnggota(a, x.tim); }).join('') + '</ul>' : '<p class="kosong-isi">Empty.</p>') + '</section>';
+        }).join('') +
+        (t.belum.length ? '<div class="judul-bagian"><h2>No team yet</h2></div><section class="kartu"><ul class="daftar">' + t.belum.map(function (a) { return barisAnggota(a, 0); }).join('') + '</ul></section>' : '') +
+        '<div class="baris-tombol" style="margin-top:14px"><button class="tombol kedua" id="t-ulang" type="button">Rebalance everyone</button></div><p class="catatan-main">Rebalancing resets all swaps and splits members evenly again.</p>';
+    }
+    $lembarIsi.innerHTML = html + '<button class="tombol kedua" data-tutup type="button" style="margin-top:12px">Close</button>';
+    async function atur(data, pesan) {
+      var h = await api('timAtur', data);
+      if (!h.ok) return toast(h.pesan);
+      toast(pesan);
+      lembarTim(segarkan);
+      if (segarkan) segarkan();
+    }
+    var mulai = $lembarIsi.querySelector('#t-mulai');
+    if (mulai) mulai.onclick = function () { atur({ tindakan: 'seimbangkan' }, 'Teams are set.'); };
+    var ulang = $lembarIsi.querySelector('#t-ulang');
+    if (ulang) ulang.onclick = function () { if (confirm('Rebalance all teams? Every swap you made is reset.')) atur({ tindakan: 'seimbangkan' }, 'Teams rebalanced.'); };
+    $lembarIsi.querySelectorAll('.pilih-tim').forEach(function (sl) {
+      sl.onchange = function () { atur({ tindakan: 'pindah', id_orang: sl.dataset.id, tim: sl.value }, 'Moved.'); };
+    });
   }
 
   /* ---------- People, Settings, Data (hanya LDC) ---------- */
@@ -1879,9 +1963,11 @@
       w.querySelectorAll('[data-o]').forEach(function (li) { li.onclick = function () { lembarOrang(li.dataset.o, function () { subOrang(w); }); }; });
       w.querySelector('#jml-orang').textContent = tampil.length;
     }
+    var tmk = await api('timDaftar');
     w.innerHTML = '<div class="judul-bagian"><h2>People</h2><span class="kecil"><b id="jml-orang"></b> of ' + orang.length + '</span><button class="tombol kecil" id="o-baru">Add</button></div>' +
       (r.setelah_esm && tanpaKode ? '<section class="kartu sorotan"><h3>' + tanpaKode + ' member' + (tanpaKode > 1 ? 's' : '') + ' cannot log in yet</h3><p class="kecil">Turn on every member code, then send the codes from each profile.</p><div class="baris-tombol"><button class="tombol" id="o-aktif">Turn on member codes</button></div></section>'
         : (!r.setelah_esm && tanpaKode ? '<p class="catatan-main">Member codes stay off until ESM is done. After the phase changes in Settings, turn them on here.</p>' : '')) +
+      kartuKelolaTim(tmk) +
       '<div class="pilihan" style="margin-bottom:10px">' + saring.map(function (f) { return '<button type="button" data-f="' + f[0] + '" aria-pressed="' + (f[0] === saringOrang) + '">' + f[1] + '</button>'; }).join('') + '</div>' +
       '<input class="cari" id="cari-orang" placeholder="Search name, classification or number" type="search" value="' + esc(cariOrang) + '">' +
       '<section class="kartu" id="daftar-orang"></section>' +
@@ -1894,6 +1980,8 @@
     });
     w.querySelector('#cari-orang').oninput = function (e) { cariOrang = e.target.value; gambar(); };
     w.querySelector('#o-baru').onclick = function () { lembarTambahOrang(function () { subOrang(w); }); };
+    var bt = w.querySelector('#b-tim');
+    if (bt) bt.onclick = function () { lembarTim(function () { subOrang(w); }); };
     w.querySelector('#o-ganti').onclick = lembarGantiKode;
     w.querySelector('#o-reset').onclick = function () { lembarUlangSemua(function () { subOrang(w); }); };
     var ba = w.querySelector('#o-aktif');
@@ -2019,7 +2107,7 @@
     fase: 'Phase', tanggal_esm: 'ESM date', tanggal_grand_launch: 'Grand Launch date', tautan_zoom_cs: 'Coffee session Zoom link', tautan_form: 'Guest Form link',
     target_founding: 'Founding target', target_cgt: 'CGT target', target_launch: 'Launch target', target_nama_min: 'Names per person, minimum', target_nama_maks: 'Names per person, maximum',
     target_gold: 'Gold path (new members)', target_driver: 'Drivers wanted', driver_ronde_min: 'Driver: rounds since joining', driver_hadir_bod: 'Driver: BOD attendance %',
-    driver_undang: 'Driver: invited in % of rounds', driver_tamu_hadir: 'Driver: guests who came %', driver_konversi: 'Driver: guests who joined %', driver_lunch: 'Driver: Lunch Networking %', driver_aktif_ronde: 'Driver: active rounds'
+    driver_undang: 'Driver: invited in % of rounds', driver_tamu_hadir: 'Driver: guests who came %', driver_konversi: 'Driver: guests who joined %', driver_lunch: 'Driver: Lunch Networking %', driver_aktif_ronde: 'Driver: active rounds', tim_maks: 'Team size, maximum members'
   };
   async function subAtur(w) {
     w.innerHTML = '<div class="muat"></div>';
@@ -2030,12 +2118,12 @@
       return '<div class="judul-bagian"><h2>' + judul + '</h2></div><section class="kartu"><ul class="daftar">' + isi.map(function (x) {
         var kontrol = x.kunci === 'fase'
           ? '<select name="nilai">' + r.fase_boleh.map(function (f) { return '<option' + (f === x.nilai ? ' selected' : '') + '>' + esc(f) + '</option>'; }).join('') + '</select>'
-          : '<input name="nilai" value="' + esc(x.nilai) + '"' + (x.contoh ? ' placeholder="' + esc(x.contoh) + '"' : '') + (/^(target_|driver_)/.test(x.kunci) ? ' inputmode="numeric"' : '') + '>';
+          : '<input name="nilai" value="' + esc(x.nilai) + '"' + (x.contoh ? ' placeholder="' + esc(x.contoh) + '"' : '') + (/^(target_|driver_|tim_)/.test(x.kunci) ? ' inputmode="numeric"' : '') + '>';
         return '<li><form class="atur-baris" data-kunci="' + esc(x.kunci) + '"><label class="isian" style="margin:0;flex:1"><span>' + esc(LABEL_ATUR[x.kunci] || x.kunci) + '</span>' + kontrol + '</label><button class="tombol kecil kedua" type="submit">Save</button></form></li>';
       }).join('') + '</ul></section>';
     }
-    w.innerHTML = kelompok('Chapter', /^(fase|tanggal_|tautan_)/) + kelompok('Targets', /^target_/) + kelompok('Driver recommendation', /^driver_/) +
-      '<p class="catatan-main">Changing the phase changes the Chapter Mission target and the Founding or Core Group label for new members. Member codes stay off until ESM: after switching the phase, turn them on in People.</p>';
+    w.innerHTML = kelompok('Chapter', /^(fase|tanggal_|tautan_)/) + kelompok('Targets', /^target_/) + kelompok('Teams', /^tim_maks$/) + kelompok('Driver recommendation', /^driver_/) +
+      '<p class="catatan-main"><a href="#tim-data" class="tautan">View sheet data (read only)</a></p><p class="catatan-main">Changing the phase changes the Chapter Mission target and the Founding or Core Group label for new members. Member codes stay off until ESM: after switching the phase, turn them on in People.</p>';
     w.querySelectorAll('form.atur-baris').forEach(function (f) {
       f.onsubmit = async function (e) {
         e.preventDefault();

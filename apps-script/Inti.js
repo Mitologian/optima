@@ -30,7 +30,7 @@ var Inti = (function () {
 
   // pengaturan yang boleh diubah LDC dari app, dan tab yang boleh dilihat (tanpa Master dan Akses; keduanya lewat People)
   var PENGATURAN_BISA = ['fase', 'tanggal_esm', 'tanggal_grand_launch', 'tautan_zoom_cs', 'tautan_form', 'target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver',
-    'driver_ronde_min', 'driver_hadir_bod', 'driver_undang', 'driver_tamu_hadir', 'driver_konversi', 'driver_lunch', 'driver_aktif_ronde'];
+    'driver_ronde_min', 'driver_hadir_bod', 'driver_undang', 'driver_tamu_hadir', 'driver_konversi', 'driver_lunch', 'driver_aktif_ronde', 'tim_maks'];
   var PENGATURAN_CONTOH = { tanggal_esm: 'YYYY-MM-DD', tanggal_grand_launch: 'YYYY-MM-DD', tautan_zoom_cs: 'https://...', tautan_form: 'https://...' };
   var FASE_BOLEH = ['Pembentukan', 'BOD', 'CGT', 'Soft Launch', 'Grand Launch'];
   var TAB_LIHAT = ['Undangan', 'Hadir', 'Events', 'Wawancara', 'Jadwal_CS', 'Responses', 'Butuh', 'Lencana', 'Pengumuman', 'Log'];
@@ -129,7 +129,7 @@ var Inti = (function () {
     if (this._atur) return this._atur;
     var a = {};
     this.tab('Pengaturan').forEach(function (r) { if (teks(r.kunci)) a[teks(r.kunci)] = r.nilai; });
-    ['target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver', 'driver_ronde_min', 'driver_hadir_bod', 'driver_undang', 'driver_tamu_hadir', 'driver_konversi', 'driver_lunch', 'driver_aktif_ronde'].forEach(function (k) { a[k] = Number(a[k]) || 0; });
+    ['target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver', 'driver_ronde_min', 'driver_hadir_bod', 'driver_undang', 'driver_tamu_hadir', 'driver_konversi', 'driver_lunch', 'driver_aktif_ronde', 'tim_maks'].forEach(function (k) { a[k] = Number(a[k]) || 0; });
     a.target_founding = a.target_founding || 20;
     a.target_cgt = a.target_cgt || 37;
     a.target_launch = a.target_launch || 52;
@@ -150,6 +150,9 @@ var Inti = (function () {
     a.hari_bod = teks(a.hari_bod) || 'Rabu';
     a.tautan_form = teks(a.tautan_form);
     a.tautan_zoom_cs = teks(a.tautan_zoom_cs);
+    a.tim_maks = Math.min(Math.max(a.tim_maks || 10, 4), 20);
+    if (a.tim_mulai instanceof Date) a.tim_mulai = isoTanggal(a.tim_mulai);
+    a.tim_mulai = teks(a.tim_mulai);
     if (a.tanggal_esm instanceof Date) a.tanggal_esm = isoTanggal(a.tanggal_esm);
     if (a.tanggal_grand_launch instanceof Date) a.tanggal_grand_launch = isoTanggal(a.tanggal_grand_launch);
     this._atur = a;
@@ -588,6 +591,7 @@ var Inti = (function () {
     for (var z in tambahan || {}) ubah[z] = tambahan[z];
     k.ubah('Master', o, ubah);
     var a = pastikanAkses(k, o, setelahEsm(k));
+    tetapkanTim(k, o);
     return { jenis_anggota: jenis, akses: a };
   }
   function cekSponsor(k, sp) {
@@ -629,6 +633,111 @@ var Inti = (function () {
     });
     h.absen.sort();
     return h;
+  }
+
+  /* ---------- tim: dibagi rata, bertambah saat anggota bertambah ---------- */
+  function timDipakai(k) {
+    var ukuran = {}, nomor = 0;
+    k.anggota().forEach(function (r) {
+      var t = Number(r.tim) || 0;
+      if (!t) return;
+      ukuran[t] = (ukuran[t] || 0) + 1;
+      nomor = Math.max(nomor, t);
+    });
+    return { ukuran: ukuran, jumlah: Math.max(3, nomor) };
+  }
+  /* Member baru masuk tim yang paling kecil. Bila semua tim sudah penuh (tim_maks), dibuat tim baru. */
+  function tetapkanTim(k, o) {
+    var a = k.pengaturan();
+    if (!a.tim_mulai || teks(o.tahap) !== 'Anggota' || timPendiri(o)) return;
+    var u = timDipakai(k), pilih = 1, kecil = Infinity;
+    for (var i = 1; i <= u.jumlah; i++) {
+      var n = u.ukuran[i] || 0;
+      if (n < kecil) { kecil = n; pilih = i; }
+    }
+    if (kecil >= a.tim_maks) pilih = u.jumlah + 1;
+    k.ubah('Master', o, { tim: pilih });
+  }
+  function labelTim(n) { return 'Team ' + n; }
+  function urutBergabung(k) {
+    return k.anggota().slice().sort(function (x, y) {
+      var a = tgl(x.tanggal_bergabung), b = tgl(y.tanggal_bergabung);
+      var d = (a ? a.getTime() : 0) - (b ? b.getTime() : 0);
+      return d || (teks(x.id_orang) < teks(y.id_orang) ? -1 : 1);
+    });
+  }
+
+  /* Angka tim per ronde: tamu yang hadir (diundang anggota tim itu), anggota yang bergabung lewat sponsor tim itu,
+     dan kehadiran BOD anggota sendiri. Pembanding antar tim memakai rata-rata per anggota supaya ukuran tim tidak menentukan. */
+  function ronde1(k, n, ctx) {
+    var b = batasRonde(n);
+    var tim = {};
+    function ambil(t) { return tim[t] || (tim[t] = { tim: t, nama: labelTim(t), anggota: 0, tamu: 0, gabung: 0, hadir: 0, jatah: 0 }); }
+    ctx.anggota.forEach(function (r) { var t = Number(r.tim) || 0; if (!t) return; var d = tgl(r.tanggal_bergabung); if (!d || d <= b.selesai) ambil(t).anggota++; });
+    // tamu hadir
+    var tamuSudah = {};
+    ctx.acara.forEach(function (e) {
+      if (e.t < b.mulai || e.t > b.selesai || e.t > k.now) return;
+      var hadir = ctx.hadir[e.id] || {};
+      Object.keys(hadir).forEach(function (idOrang) {
+        if (hadir[idOrang] !== 'Visitor' || tamuSudah[idOrang]) return;
+        var pengundang = ctx.undangan[e.id + '|' + idOrang];
+        var t = pengundang ? ctx.timDari[pengundang] : 0;
+        if (!t) return;
+        tamuSudah[idOrang] = true;
+        ambil(t).tamu++;
+      });
+      // absen BOD anggota sendiri
+      if (e.jenis !== 'BOD') return;
+      ctx.anggota.forEach(function (r) {
+        var t = Number(r.tim) || 0; if (!t) return;
+        var d = tgl(r.tanggal_bergabung);
+        if (d && d.getTime() - 7 * HARI > e.t.getTime()) return;
+        var x = ambil(t); x.jatah++;
+        if (hadir[teks(r.id_orang)]) x.hadir++;
+      });
+    });
+    ctx.anggota.forEach(function (r) {
+      var t = Number(r.tim) || 0, d = tgl(r.tanggal_bergabung), sp = teks(r.id_sponsor);
+      if (!t || !d || d < b.mulai || d > b.selesai) return;
+      var tp = sp && sp !== 'BNI' ? ctx.timDari[sp] : 0;
+      if (tp) ambil(tp).gabung++;
+    });
+    var daftar = Object.keys(tim).map(Number).sort(function (a, c) { return a - c; }).map(function (t) { return tim[t]; });
+    daftar.forEach(function (x) {
+      var m = x.anggota || 1;
+      x.tamu_per = x.tamu / m; x.gabung_per = x.gabung / m;
+      x.persen = x.jatah ? Math.round(100 * x.hadir / x.jatah) : 0;
+      x.unggul = [];
+    });
+    [['tamu', 'tamu_per'], ['gabung', 'gabung_per'], ['hadir', 'persen']].forEach(function (u) {
+      var maks = Math.max.apply(null, daftar.map(function (x) { return x[u[1]]; }).concat([0]));
+      if (maks > 0) daftar.forEach(function (x) { if (x[u[1]] === maks) x.unggul.push(u[0]); });
+    });
+    daftar.forEach(function (x) { x.skor = x.unggul.length; });
+    var ada = daftar.filter(function (x) { return x.skor > 0; });
+    var juara = null;
+    if (ada.length) {
+      ada.sort(function (x, y) { return y.skor - x.skor || y.tamu_per - x.tamu_per || y.persen - x.persen || x.tim - y.tim; });
+      juara = ada[0].tim;
+    }
+    return { nomor: n, mulai: b.mulai.toISOString(), selesai: b.selesai.toISOString(), tim: daftar, juara: juara };
+  }
+  function hitungTim(k) {
+    var a = k.pengaturan();
+    var awal = tgl(a.tim_mulai);
+    var ctx = { anggota: k.anggota(), acara: [], hadir: {}, undangan: {}, timDari: {} };
+    ctx.anggota.forEach(function (r) { ctx.timDari[teks(r.id_orang)] = Number(r.tim) || 0; });
+    k.tab('Events').forEach(function (e) {
+      var t = tgl(e.tanggal);
+      if (t && teks(e.status) !== 'Batal') ctx.acara.push({ id: teks(e.id_event), t: t, jenis: teks(e.jenis) });
+    });
+    k.tab('Hadir').forEach(function (h) { (ctx.hadir[teks(h.id_event)] = ctx.hadir[teks(h.id_event)] || {})[teks(h.id_orang)] = teks(h.peran); });
+    k.undanganAktif().forEach(function (u) { ctx.undangan[teks(u.id_event) + '|' + teks(u.id_orang_calon)] = teks(u.id_pengundang); });
+    var sekarang = k.ronde(), mulai = nomorRonde(awal);
+    var semua = [];
+    for (var n = mulai; n <= sekarang; n++) semua.push(ronde1(k, n, ctx));
+    return { awal: awal, mulai: mulai, sekarang: sekarang, ronde: semua };
   }
 
   function buatUndangan(k, idCalon, idEvent) {
@@ -1000,6 +1109,93 @@ var Inti = (function () {
       return { jenis_anggota: h.jenis_anggota, kursi: x.bidang, akses: { kode: teks(h.akses.kode_akses), aktif: benar(h.akses.aktif) }, whatsapp: teks(o.whatsapp_norm) };
     },
 
+    /* Papan tim untuk semua peran: ronde ini, riwayat juara tiap ronde, dan total sejak tim dimulai. */
+    timPapan: function (k) {
+      var a = k.pengaturan();
+      if (!a.tim_mulai) return { aktif: false };
+      var h = hitungTim(k);
+      var sekarang = h.ronde[h.ronde.length - 1];
+      var selesai = h.ronde.slice(0, -1);
+      var total = {};
+      h.ronde.forEach(function (r) {
+        r.tim.forEach(function (x) {
+          var t = total[x.tim] || (total[x.tim] = { tim: x.tim, nama: x.nama, anggota: 0, tamu: 0, gabung: 0, hadir: 0, jatah: 0, menang: 0 });
+          t.anggota = x.anggota; t.tamu += x.tamu; t.gabung += x.gabung; t.hadir += x.hadir; t.jatah += x.jatah;
+        });
+      });
+      selesai.forEach(function (r) { if (r.juara && total[r.juara]) total[r.juara].menang++; });
+      var daftarTotal = Object.keys(total).map(Number).sort(function (x, y) { return x - y; }).map(function (t) {
+        var x = total[t], m = x.anggota || 1;
+        x.tamu_per = x.tamu / m; x.gabung_per = x.gabung / m; x.persen = x.jatah ? Math.round(100 * x.hadir / x.jatah) : 0;
+        x.unggul = [];
+        return x;
+      });
+      [['tamu', 'tamu_per'], ['gabung', 'gabung_per'], ['hadir', 'persen']].forEach(function (u) {
+        var maks = Math.max.apply(null, daftarTotal.map(function (x) { return x[u[1]]; }).concat([0]));
+        if (maks > 0) daftarTotal.forEach(function (x) { if (x[u[1]] === maks) x.unggul.push(u[0]); });
+      });
+      daftarTotal.sort(function (x, y) { return y.menang - x.menang || y.tamu_per - x.tamu_per || y.persen - x.persen || x.tim - y.tim; });
+      var urutRonde = sekarang.tim.slice().sort(function (x, y) { return y.skor - x.skor || y.tamu_per - x.tamu_per || y.persen - x.persen || x.tim - y.tim; });
+      var me = k.orang(k.saya.id_orang), timSaya = me && teks(me.tahap) === 'Anggota' && !timPendiri(me) ? Number(me.tim) || 0 : 0;
+      var peringkat = 0;
+      urutRonde.forEach(function (x, i) { if (x.tim === timSaya) peringkat = i + 1; });
+      return {
+        aktif: true, mulai: a.tim_mulai, tim_maks: a.tim_maks,
+        saya: timSaya ? { tim: timSaya, nama: labelTim(timSaya), peringkat: peringkat, dari: urutRonde.length } : null,
+        ronde: { mulai: sekarang.mulai, selesai: sekarang.selesai, tim: urutRonde },
+        riwayat: selesai.slice().reverse().slice(0, 12).map(function (r) { return { mulai: r.mulai, juara: r.juara, nama: r.juara ? labelTim(r.juara) : '' }; }),
+        total: daftarTotal
+      };
+    },
+
+    /* LDC: anggota per tim, untuk mengatur dan menukar. */
+    timDaftar: function (k) {
+      wajibLDC(k);
+      var a = k.pengaturan();
+      var u = timDipakai(k);
+      var tim = [];
+      for (var i = 1; i <= u.jumlah; i++) tim.push({ tim: i, nama: labelTim(i), anggota: [] });
+      var belum = [];
+      urutBergabung(k).forEach(function (r) {
+        var t = Number(r.tim) || 0, x = kursiById(k, r.id_kursi);
+        var baris = { id_orang: teks(r.id_orang), nama: namaTampil(r), bidang: x ? x.bidang : '' };
+        if (t && tim[t - 1]) tim[t - 1].anggota.push(baris); else belum.push(baris);
+      });
+      return { aktif: !!a.tim_mulai, mulai: a.tim_mulai, tim_maks: a.tim_maks, jumlah_anggota: k.anggota().length, tim: tim, belum: belum };
+    },
+
+    /* LDC: memulai atau menyeimbangkan ulang semua tim, atau memindahkan satu anggota. */
+    timAtur: function (k, b) {
+      wajibLDC(k);
+      var a = k.pengaturan();
+      var tindakan = teks(b.tindakan);
+      if (tindakan === 'seimbangkan') {
+        var daftar = urutBergabung(k);
+        if (!daftar.length) gagal('There are no members yet. Teams are formed from members who have joined.');
+        var n = Math.max(3, Math.ceil(daftar.length / a.tim_maks));
+        daftar.forEach(function (r, i) { k.ubah('Master', r, { tim: (i % n) + 1 }); });
+        if (!a.tim_mulai) {
+          var baris = k.tab('Pengaturan').filter(function (r) { return teks(r.kunci) === 'tim_mulai'; })[0];
+          var hari = isoTanggal(k.now);
+          if (baris) k.ubah('Pengaturan', baris, { nilai: hari }); else k.tambah('Pengaturan', { kunci: 'tim_mulai', nilai: hari });
+          k._atur = null;
+        }
+        k.log('timAtur', 'seimbangkan ' + daftar.length + ' anggota ke ' + n + ' tim');
+        return { jumlah_tim: n, jumlah_anggota: daftar.length };
+      }
+      if (tindakan === 'pindah') {
+        if (!a.tim_mulai) gagal('Start the teams first.');
+        var o = k.orang(b.id_orang);
+        if (!o || teks(o.tahap) !== 'Anggota' || timPendiri(o)) gagal('Only chapter members join a team.');
+        var t = parseInt(b.tim, 10), u = timDipakai(k);
+        if (!(t >= 1 && t <= u.jumlah + 1)) gagal('Choose one of the existing teams, or the next new team.');
+        k.ubah('Master', o, { tim: t, terakhir_diubah: k.now.toISOString() });
+        k.log('timAtur', namaDepan(o) + ' pindah ke ' + labelTim(t));
+        return { tim: t };
+      }
+      gagal('Unknown action.');
+    },
+
     /* LDC mengubah nama seat, memindahkannya ke baris lain, atau mematikannya (hanya bila kosong dan tanpa calon). */
     ubahKursi: function (k, b) {
       wajibLDC(k);
@@ -1287,7 +1483,8 @@ var Inti = (function () {
           return { tanggal: teks(w.tanggal), kanal: teks(w.kanal), hasil: teks(w.hasil), pic: namaDepan(k.orang(w.PIC)) };
         }),
         mengundang: { jumlah: mengundang.length, tamu_hadir: mengundang.filter(function (u) { return hadirVisitor[teks(u.id_orang_calon)]; }).length },
-        kehadiran: kehadiranOrang(k, o)
+        kehadiran: kehadiranOrang(k, o),
+        tim: teks(o.tahap) === 'Anggota' && !timPendiri(o) && Number(o.tim) ? labelTim(Number(o.tim)) : ''
       };
     },
 
@@ -1469,6 +1666,7 @@ var Inti = (function () {
       if (kunci === 'fase' && FASE_BOLEH.indexOf(nilai) < 0) gagal('Unknown phase.');
       if (/^(tanggal_esm|tanggal_grand_launch)$/.test(kunci) && nilai && !/^\d{4}-\d{2}-\d{2}$/.test(nilai)) gagal('Use the date format YYYY-MM-DD.');
       if (/^(target_|driver_)/.test(kunci) && (!/^\d{1,3}$/.test(nilai) || Number(nilai) < 1)) gagal('Enter a whole number.');
+      if (kunci === 'tim_maks' && (!/^\d{1,2}$/.test(nilai) || Number(nilai) < 4 || Number(nilai) > 20)) gagal('Team size must be a whole number from 4 to 20.');
       if (/^tautan_/.test(kunci) && nilai && !/^https:\/\/[^\s]{4,480}$/i.test(nilai)) gagal('The link must start with https://');
       var baris = k.tab('Pengaturan').filter(function (r) { return teks(r.kunci) === kunci; })[0];
       if (baris) k.ubah('Pengaturan', baris, { nilai: nilai });
@@ -1863,7 +2061,7 @@ var Inti = (function () {
     }
   };
 
-  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1, orangSemua: 1, orangDetail: 1, acaraCheckin: 1, bacaPengaturan: 1, lihatTab: 1 };
+  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1, orangSemua: 1, orangDetail: 1, acaraCheckin: 1, timPapan: 1, timDaftar: 1, bacaPengaturan: 1, lihatTab: 1 };
 
   /* Titik masuk tunggal. db = adaptor; badan = objek dari JSON. */
   function jalankan(db, badan, sekarang) {

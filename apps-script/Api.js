@@ -56,7 +56,7 @@ var TAB_BARU_ = {
 };
 var KOLOM_BARU_ = {
   Events: ['pembicara', 'poster'],
-  Master: ['driver']
+  Master: ['driver', 'tim']
 };
 
 /* Simpanan sementara hasil baca tab (CacheService), supaya permintaan beruntun tidak membaca sheet berulang.

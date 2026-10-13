@@ -50,7 +50,7 @@ Anggota hanya melihat jam kosong dan pesanan calonnya sendiri. LT bisa memakai "
 | Lihat klasifikasi terisi | Seats, Papan Kursi |
 | Lihat roster anggota | Seats, Member list |
 | Lihat siapa mengundang berapa, siapa yang hadir dan bergabung | Board, All time |
-| Bandingkan pekan ke pekan (undangan, tamu BOD dan Lunch, hadir, bergabung) | Team, More, Round history |
+| Bandingkan pekan ke pekan (undangan, tamu BOD dan Lunch, hadir, bergabung) | Team, More, Insights, Rounds |
 | Lihat leaderboard | Board |
 | Lihat pengumuman, pembicara, dan poster BOD | Home (Announcements), This week (Wednesday program) |
 | Lihat jalur menuju Gold (6 member baru) | Home, Gold path |
@@ -69,7 +69,7 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Putuskan pendaftar Form yang nomornya belum cocok atau tanpa pengundang | Team, Interviews, kartu Form sign-ups |
 | Tulis pengumuman, isi pembicara dan poster acara | Team, More, Announcements |
 | Lihat anggota yang belum mengundang ronde ini (untuk pengingat) | Board, This round (bagian bawah) |
-| Lihat rekomendasi driver otomatis dan tandai driver (minimal 5) | Team, More, Regroup, kartu Drivers |
+| Lihat rekomendasi driver otomatis dan tandai driver (minimal 5) | Team, More, Insights, Regroup, kartu Drivers |
 | Lihat nama, klasifikasi, dan nomor member dan calon | Team, More, Contacts |
 | Lihat semua orang sejak awal beserta riwayatnya (LDC) | Team, More, People |
 | Mengubah nama seat, memindahkannya ke baris lain, atau menghapus seat kosong (LDC) | Seats, ketuk seat, Edit seat |
@@ -82,7 +82,7 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Menghidupkan kode semua member setelah ESM (LDC) | People, Turn on member codes |
 | Mengubah fase, tanggal, target, aturan driver (LDC) | Team, More, Settings |
 | Melihat isi tabel sheet tanpa membuka sheet (LDC) | Team, More, Data |
-| Pantau nama per LT dan kursi kosong | Team, More, Regroup |
+| Pantau nama per LT dan kursi kosong | Team, More, Insights, Regroup |
 | Ringkasan chapter | Team, More, Summary (hanya LDC) |
 
 ## Perbandingan dengan Ventura
@@ -100,3 +100,14 @@ Acquaintance (saya/Anda). Balasan untuk keraguan selalu mengarahkan ke obrolan 1
 | Classification (locked, wanted, post) | Seats (Papan Kursi dan Member list) |
 | PIN admin bersama | Kode akses per orang |
 | Tidak ada: tamu minggu ini | This week |
+
+## Tim
+
+| Langkah | Tempat |
+|---|---|
+| Membagi anggota ke tim saat ESM (rata, minimal 3 tim) | Team, More, People, kartu Teams, Set up teams |
+| Menukar anggota antar tim, atau menyeimbangkan ulang semua | People, Teams, Manage teams |
+| Mengubah maksimum anggota per tim | Team, More, Settings, Teams |
+| Anggota baru masuk tim terkecil otomatis | Saat menjadikan member |
+| Anggota melihat tim sendiri dan peringkatnya | Home (satu baris) dan Board |
+| Klasemen tim ronde ini dan sepanjang waktu | Board, This round dan All time |

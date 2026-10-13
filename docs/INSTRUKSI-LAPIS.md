@@ -198,3 +198,12 @@ Hanya `apps-script/Api.js` yang berubah. Simpanan tab kini hidup 10 menit (sebel
 - App kini mengubah baris di tab `Klasifikasi` (kolom `bidang`, `singkat`, `baris`, `sphere`, `aktif`). Mohon jangan menyusun ulang atau menghapus baris di tab itu.
 - Bila ada otomasi Lapis yang membaca nama seat dari `Klasifikasi` (misalnya pilihan di Form), pastikan ia membaca nilai terbaru dan tidak menyimpan salinan nama lama.
 
+
+## N. Menyusul: kompetisi Tim (13 Oktober 2026)
+
+- Naikkan versi Apps Script lagi: aksi baru `timPapan`, `timDaftar`, `timAtur`.
+- Kolom baru `tim` di tab `Master` (ditambah otomatis oleh `Api.js`). Isinya nomor tim anggota (1, 2, 3, ...). Mohon jangan diisi atau diubah dari luar app; LDC mengatur tim dari app (People, Teams).
+- Dua kunci baru di tab `Pengaturan` (dibuat app saat dipakai): `tim_maks` (maksimum anggota per tim, default 10, bisa diubah LDC di Settings) dan `tim_mulai` (tanggal tim dimulai, diisi app saat LDC menekan Set up teams). Jangan diisi manual.
+- Tim belum aktif sampai LDC menekan Set up teams. Sebelum itu app tidak menampilkan apa pun soal tim.
+- Tim dibagi rata menurut urutan bergabung. Anggota baru otomatis masuk tim terkecil, dan tim baru dibuka bila semua tim sudah `tim_maks`. Bila otomasi Lapis meresmikan anggota lewat script sendiri (bukan lewat `Inti.js`), kolom `tim` perlu diisi dengan cara yang sama, atau biarkan kosong lalu LDC menekan Rebalance.
+- Tidak ada tab baru dan tidak ada pemicu baru.

@@ -24,6 +24,7 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
 - Notifikasi hanya di dalam app (sorotan saat app dibuka).
 - Gamifikasi: Misi Chapter (gerbang 20, 37, 52, dengan grafik garis), Papan Kursi (9 baris contact sphere: 8 baris x 8 kursi dan baris 9 Retail & Home Services dengan 4 kursi, total 68),
   Ronde Rabu (satu undangan per pekan), 5 lencana, papan pengundang ronde ini, dinding sponsor.
+- **Tim (13 Oktober 2026).** Kompetisi antar tim, dimulai LDC saat ESM (People, Teams, Set up teams): minimal 3 tim dibagi rata menurut urutan bergabung, tim baru dibuka bila semua tim penuh (`tim_maks`, default 10). Anggota baru masuk tim terkecil. Hanya LDC yang memindahkan (`timAtur`). Tiga ukuran per ronde dan sepanjang waktu: tamu hadir, anggota yang bergabung, kehadiran BOD anggota sendiri, dibandingkan per anggota. Tampil sebagai satu kartu di Board (dua tab yang sama) dan satu baris di Home anggota. LDC dan LT tidak punya tim.
 - Jalur Gold (6 member baru) kembali sebagai angka nyata, bukan poin (keputusan Coach Dedy, 11 Oktober). Pengumuman dan info acara (pembicara, poster) ada di app, ditulis LT.
 - Dibuang dari app Ventura: poin, tim dan bonus tim, persentase konversi, member
   mengundang ke coffee session, PIN bersama, halaman terpisah. Brain jolter dan permintaan klasifikasi

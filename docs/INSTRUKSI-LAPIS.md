@@ -184,3 +184,11 @@ Hanya `apps-script/Api.js` yang berubah. Simpanan tab kini hidup 10 menit (sebel
   (dropdown "Acara yang diikuti") ikut mengambil baris baru itu, dan beri tahu Claude bila perlu jeda atau pemicu tertentu.
 - Acara yang dibatalkan dari app diberi `status` = Batal. Mohon dropdown Form tidak menampilkan acara yang Batal.
 
+## L. Menyusul: pilihan acara di Form langsung tersegarkan (13 Oktober 2026)
+
+- `Api.js` kini memanggil `sinkronPilihan()` (fungsi milik Lapis) di akhir aksi `tambahAcara` dan `ubahAcara` bila hasilnya berhasil. Bila fungsi itu tidak ada
+  atau gagal, aksinya tetap berhasil dan hanya dicatat di log. Pemicu per jam milik Lapis tetap dipertahankan sebagai jaring pengaman.
+- Syarat untuk Lapis: nama fungsi `sinkronPilihan` jangan diubah, tanpa argumen, aman dipanggil berulang, dan selesai dalam beberapa detik
+  (dipanggil saat LT menekan Add event, jadi waktunya terasa oleh LT).
+- Naikkan versi lagi, lalu uji dari app: Team, More, Announcements, Add event, buka Form, dan acara baru seharusnya langsung ada di dropdown.
+

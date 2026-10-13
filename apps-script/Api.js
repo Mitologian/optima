@@ -24,12 +24,25 @@ function doPost(e) {
     var db = api_adaptor_();
     var hasil = Inti.jalankan(db, badan, new Date());
     db.simpan();
+    api_sesudahTulis_(badan.action, hasil);
     return api_json_(hasil);
   } catch (err) {
     console.error(err && err.stack ? err.stack : err);
     return api_json_({ ok: false, pesan: 'Server error. Try again shortly.' });
   } finally {
     if (tulis) try { kunci.releaseLock(); } catch (x) {}
+  }
+}
+
+/* Aksi yang mengubah jadwal acara menyegarkan pilihan acara di Google Form (fungsi sinkronPilihan milik Lapis), supaya langsung terlihat.
+   Gagalnya sinkron tidak boleh menggagalkan aksi: pemicu tiap jam milik Lapis tetap menjadi jaring pengaman. */
+var AKSI_JADWAL_ = { tambahAcara: true, ubahAcara: true };
+function api_sesudahTulis_(aksi, hasil) {
+  if (!AKSI_JADWAL_[aksi] || !hasil || hasil.ok !== true) return;
+  try {
+    if (typeof sinkronPilihan === 'function') sinkronPilihan();
+  } catch (err) {
+    console.warn('sinkronPilihan gagal setelah ' + aksi + ': ' + err);
   }
 }
 

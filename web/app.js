@@ -1715,7 +1715,8 @@
         return '<li><div class="utama"><b>' + esc(a.judul) + '</b><span>' + esc(lalu(a.tanggal_tayang)) + ' · by ' + esc(a.oleh) + (a.tanggal_berakhir ? ' · until ' + esc(tglPendek(a.tanggal_berakhir)) : '') + '</span></div>' +
           '<button class="tombol kecil kedua" data-ubah="' + esc(a.id_pengumuman) + '">Edit</button><button class="tombol kecil kedua" data-hapus="' + esc(a.id_pengumuman) + '">Remove</button></li>';
       }).join('') + '</ul>' : '<p class="kosong-isi">No active announcements. Members see announcements on Home.</p>') + '</section>' +
-      '<div class="judul-bagian"><h2>Events</h2><button class="tombol kecil" id="a-baru">Add event</button></div>' +
+      '<div class="judul-bagian"><h2>Events</h2>' + (isLDC() ? '<button class="tombol kecil kedua" id="a-geser" type="button">Shift dates</button>' : '') + '<button class="tombol kecil" id="a-baru">Add event</button></div>' +
+      '<p class="kecil" style="margin:-4px 2px 10px">The sign-up Form shows only the next Wednesday events (BOD and Lunch Networking). The list updates by itself.</p>' +
       '<section class="kartu">' + (acara.length ? '<ul class="daftar">' + acara.map(function (e) {
         return '<li><div class="utama"><b>' + esc(tglHari(e.tanggal)) + ' · ' + esc(e.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + esc(e.jam_mulai) + '</b><span>' + (e.pembicara ? esc(e.pembicara) : 'No speaker yet') + (e.poster ? ' · poster set' : '') + '</span></div>' +
           '<button class="tombol kecil kedua" data-acara="' + esc(e.id_event) + '">Edit</button></li>';
@@ -1724,6 +1725,8 @@
     var segar = function () { subInfo(w); };
     w.querySelector('#p-baru').onclick = function () { lembarPengumuman(null, segar); };
     w.querySelector('#a-baru').onclick = function () { lembarTambahAcara(segar); };
+    var ag = w.querySelector('#a-geser');
+    if (ag) ag.onclick = function () { lembarGeserAcara(segar); };
     w.querySelectorAll('[data-ubah]').forEach(function (b) { b.onclick = function () { lembarPengumuman(pg.pengumuman.filter(function (a) { return a.id_pengumuman === b.dataset.ubah; })[0], segar); }; });
     w.querySelectorAll('[data-hapus]').forEach(function (b) {
       b.onclick = async function () {
@@ -1784,6 +1787,26 @@
   }
 
   /* Tambah jadwal: BOD, Lunch Networking, ESM, atau lainnya; bisa diulang tiap pekan. */
+  /* LDC: geser semua acara yang belum lewat, mis. saat ESM maju atau mundur. */
+  function lembarGeserAcara(segarkan) {
+    var hariIni = new Date(Date.now() + 7 * 36e5).toISOString().slice(0, 10);
+    bukaLembar('<h2>Shift dates</h2><p class="kecil" style="margin:4px 0 12px">Moves every event on or after the chosen date by the same number of days. If the ESM event moves, the ESM date in Settings follows. Guests who already signed up stay attached to their event, so send them a new confirmation.</p>' +
+      '<form id="f-geser"><label class="isian"><span>From this date</span><input type="date" name="dari" value="' + hariIni + '" required></label>' +
+      '<label class="isian"><span>Move by how many days (negative moves earlier, 7 = one week later)</span><input name="hari" inputmode="numeric" required placeholder="7"></label>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Shift dates</button></form>',
+      function (el) {
+        el.querySelector('#f-geser').onsubmit = async function (e) {
+          e.preventDefault();
+          var f = e.target, n = parseInt(f.hari.value, 10);
+          if (!confirm('Move all events from ' + f.dari.value + ' by ' + n + ' days?')) return;
+          var h = await api('geserAcara', { dari: f.dari.value, hari: n });
+          if (!h.ok) { var s = el.querySelector('#salah'); s.textContent = h.pesan; s.hidden = false; return; }
+          var m = await api('masuk'); if (m.ok) S.atur = m.pengaturan;
+          tutupLembar(); toast(h.digeser + ' events moved.'); if (segarkan) segarkan();
+        };
+      });
+  }
+
   function lembarTambahAcara(segarkan) {
     var PRESET = { 'BOD': ['07:00', '09:00', 'Online', 'Zoom'], 'Lunch Networking': ['12:00', '14:00', 'Onsite', ''], 'ESM': ['', '', 'Onsite', ''], 'Other': ['', '', 'Onsite', ''] };
     var jenis = 'BOD';

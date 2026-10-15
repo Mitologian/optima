@@ -660,6 +660,36 @@ var Inti = (function () {
     return h;
   }
 
+  /* ---------- pilihan acara di Form: hanya yang terdekat ---------- */
+  var JENIS_FORM = ['BOD', 'Lunch Networking', 'ESM'];
+  function mulaiAcara(e) {
+    var t = tgl(e.tanggal);
+    return t ? new Date(isoTanggal(t) + 'T' + (jamEv(e.jam_mulai) || '00:00') + ':00+07:00') : null;
+  }
+  /* Acara yang boleh tampil di pilihan Form saat ini: acara terdekat yang belum mulai, dan acara lain dalam 6 hari sesudahnya.
+     Jadi pada hari biasa hanya terlihat BOD pagi dan Lunch Networking siang Rabu berikutnya. Hasil: {id_event: true}. */
+  function jendelaForm(events, sekarang) {
+    var kand = [];
+    events.forEach(function (e) {
+      if (JENIS_FORM.indexOf(teks(e.jenis)) < 0 || teks(e.status) === 'Batal') return;
+      var m = mulaiAcara(e);
+      if (m && m.getTime() > sekarang.getTime()) kand.push({ id: teks(e.id_event), hari: isoTanggal(tgl(e.tanggal)), t: tgl(e.tanggal) });
+    });
+    if (!kand.length) return {};
+    kand.sort(function (a, b) { return a.hari < b.hari ? -1 : a.hari > b.hari ? 1 : 0; });
+    var batas = isoTanggal(new Date(kand[0].t.getTime() + 6 * HARI)), buka = {};
+    kand.forEach(function (c) { if (c.hari <= batas) buka[c.id] = true; });
+    return buka;
+  }
+  function aturPengaturan(k, kunci, nilai) {
+    var baris = k.tab('Pengaturan').filter(function (r) { return teks(r.kunci) === kunci; })[0];
+    if (baris) k.ubah('Pengaturan', baris, { nilai: nilai }); else k.tambah('Pengaturan', { kunci: kunci, nilai: nilai });
+    k._atur = null;
+  }
+  function acaraEsm(k) {
+    return k.tab('Events').filter(function (e) { return teks(e.jenis) === 'ESM' && teks(e.status) !== 'Batal'; });
+  }
+
   /* ---------- tim: dibagi rata, bertambah saat anggota bertambah ---------- */
   function timDipakai(k) {
     var ukuran = {}, nomor = 0;
@@ -1707,6 +1737,11 @@ var Inti = (function () {
       if (baris) k.ubah('Pengaturan', baris, { nilai: nilai });
       else k.tambah('Pengaturan', { kunci: kunci, nilai: nilai });
       k._atur = null;
+      // Tanggal ESM di Settings dan acara ESM di Events dijaga sama.
+      if (kunci === 'tanggal_esm' && nilai) {
+        var esm = acaraEsm(k);
+        if (esm.length === 1 && isoTanggal(tgl(esm[0].tanggal)) !== nilai) k.ubah('Events', esm[0], { tanggal: nilai });
+      }
       k.log('ubahPengaturan', kunci + ' = ' + nilai);
       return { kunci: kunci, nilai: nilai };
     },
@@ -1808,8 +1843,32 @@ var Inti = (function () {
         ubah.status = teks(b.status);
       }
       k.ubah('Events', e, ubah);
+      if (ubah.tanggal && teks(e.jenis) === 'ESM' && teks(e.status) !== 'Batal') aturPengaturan(k, 'tanggal_esm', ubah.tanggal);
       k.log('ubahAcara', teks(e.id_event) + ': ' + Object.keys(ubah).join(', '));
       return { pembicara: teks(e.pembicara), poster: teks(e.poster), status: teks(e.status) };
+    },
+
+    /* LDC menggeser semua acara yang belum lewat (mulai dari tanggal tertentu) sekian hari maju atau mundur, misalnya saat ESM berubah.
+       Tanggal ESM di Settings ikut berubah bila acara ESM ikut tergeser. */
+    geserAcara: function (k, b) {
+      wajibLDC(k);
+      var dari = teks(b.dari) || isoTanggal(k.now);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dari) || !tgl(dari)) gagal('Enter the date to start from.');
+      var hari = parseInt(b.hari, 10);
+      if (!hari || hari < -90 || hari > 90) gagal('Enter how many days to move, from -90 to 90, not zero.');
+      var jumlah = 0, esmBaru = '';
+      k.tab('Events').forEach(function (e) {
+        var t = tgl(e.tanggal);
+        if (!t || teks(e.status) === 'Batal' || isoTanggal(t) < dari) return;
+        var baru = isoTanggal(new Date(t.getTime() + hari * HARI));
+        k.ubah('Events', e, { tanggal: baru });
+        if (teks(e.jenis) === 'ESM') esmBaru = baru;
+        jumlah++;
+      });
+      if (!jumlah) gagal('No upcoming events on or after that date.');
+      if (esmBaru) aturPengaturan(k, 'tanggal_esm', esmBaru);
+      k.log('geserAcara', jumlah + ' acara dari ' + dari + ' digeser ' + hari + ' hari');
+      return { digeser: jumlah, tanggal_esm: esmBaru };
     },
 
     /* LT dan LDC menambah jadwal: BOD, Lunch Networking, ESM, atau lainnya; bisa diulang tiap pekan (sampai 12 kali). */
@@ -1842,6 +1901,7 @@ var Inti = (function () {
         k.tambah('Events', ev);
         dibuat.push(ev.id_event);
       }
+      if (jenis === 'ESM' && dibuat.length) aturPengaturan(k, 'tanggal_esm', isoTanggal(awal));
       k.log('tambahAcara', nama + ' ' + tanggal + ' x' + dibuat.length + (dilewati ? ', ' + dilewati + ' sudah ada' : ''));
       return { dibuat: dibuat.length, dilewati: dilewati, id_event: dibuat[0] || '' };
     },
@@ -2122,6 +2182,8 @@ var Inti = (function () {
 
   return {
     jalankan: jalankan,
+    jendelaForm: jendelaForm,
+    JENIS_FORM: JENIS_FORM,
     normWa: normWa,
     nomorRonde: nomorRonde,
     batasRonde: batasRonde,

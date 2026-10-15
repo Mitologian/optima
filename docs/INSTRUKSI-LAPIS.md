@@ -227,3 +227,17 @@ Mohon dikerjakan Lapis:
 5. **Pengaturan baru** di tab `Pengaturan` (dibuat app saat disimpan lewat Settings, jangan diisi manual): `tautan_zoom_bod`, `zoom_bod_id`, `zoom_bod_kode`, `form_entry_pengundang`. Tidak ada tab, kolom, atau pemicu baru.
 
 Aksi `daftarHadir` kini juga mengembalikan nomor WhatsApp, nama lengkap pengundang, dan status undangan tiap visitor (hanya untuk LT dan LDC), dan `masuk` memuat `profil.usaha`. Tanpa perubahan kolom.
+
+## Q. Menyusul: Form hanya menampilkan acara terdekat, geser jadwal, ESM sinkron (15 Oktober 2026)
+
+Coach Dedy menguji Form: pilihan "Diundang oleh" tidak memuat nama LDC dan LT (Dedy Dahlan dan Herlambang Prayatno, keduanya ada di tab Master), dan daftar tanggal acara terlalu panjang (22 acara sekaligus).
+
+**Sudah dikerjakan di kode (Api.js dan Inti.js), perlu naik versi:**
+- Kolom `Events.tampil_di_form` kini diatur otomatis oleh `api_segarkanJendelaForm_()` (tiap 5 menit lewat pemicu `api_panaskan_` yang sudah ada, dan sesudah jadwal berubah). Isinya `TRUE` hanya untuk acara BOD, Lunch Networking, dan ESM yang belum mulai dan paling dekat, plus acara lain dalam 6 hari sesudahnya. Jadi pada hari biasa hanya dua pilihan: BOD pagi dan Lunch Networking siang Rabu berikutnya. Setelah BOD mulai, pilihannya tinggal Lunch; setelah Lunch mulai, pindah ke Rabu berikutnya. Acara jenis lain tidak disentuh.
+- Bila daftar yang tampil berubah, `Api.js` memanggil `sinkronPilihan()` sendiri, jadi Form segar dalam sekitar 5 menit tanpa menunggu pemicu per jam.
+- Aksi baru `geserAcara` (LDC): menggeser semua acara yang belum lewat sekian hari. Tanggal ESM di tab `Pengaturan` dan acara ESM di tab `Events` kini dijaga sama dari dua arah.
+
+**Mohon dikerjakan Lapis di `sinkronPilihan()`:**
+1. Pilihan **"Diundang oleh"**: muat semua baris `Master` dengan `kategori` = `LDC` atau `LT`, ditambah yang `tahap` = `Anggota`, dengan teks = kolom `nama` (nama lengkap), diurutkan menurut abjad, ditambah satu pilihan `Tidak Ada`. Dugaan penyebab nama LDC dan LT tidak muncul: daftar sekarang hanya mengambil `tahap` = `Anggota`. Kabari format yang dipakai bila berbeda.
+2. Pilihan **"Acara yang diikuti"**: hanya acara dengan `tampil_di_form` = TRUE (jangan menyaring sendiri dengan aturan lain), dengan format label yang sama seperti sekarang supaya pemetaan label ke `id_event` di normalisasi tetap jalan. Bila tidak ada satu pun, isi satu pilihan penanda (mis. "Belum ada jadwal terdekat") karena Form tidak boleh kosong.
+3. Dari catatan versi 41 sebelumnya (tetap berlaku): alamat panjang Form dan kode kolom "Diundang oleh" (`entry.…`) untuk isi otomatis pengundang, dan isi `Responses.id_pengundang` dari `Undangan` saat tamu cocok dengan undangan yang sudah ada.

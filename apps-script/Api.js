@@ -37,14 +37,32 @@ function doPost(e) {
 /* Aksi yang mengubah jadwal acara menyegarkan pilihan acara di Google Form (fungsi sinkronPilihan milik Lapis), supaya langsung terlihat.
    Gagalnya sinkron tidak boleh menggagalkan aksi: pemicu tiap jam milik Lapis tetap menjadi jaring pengaman. */
 /* Aksi yang mengubah isi pilihan Form: acara dan daftar orang pada "Diundang oleh". */
-var AKSI_JADWAL_ = { tambahAcara: true, ubahAcara: true, tambahOrang: true, jadikanAnggota: true, ubahOrang: true };
+var AKSI_JADWAL_ = { tambahAcara: true, ubahAcara: true, geserAcara: true, tambahOrang: true, jadikanAnggota: true, ubahOrang: true };
 function api_sesudahTulis_(aksi, hasil) {
   if (!AKSI_JADWAL_[aksi] || !hasil || hasil.ok !== true) return;
+  try { api_segarkanJendelaForm_(); } catch (err) { console.warn('jendela Form gagal setelah ' + aksi + ': ' + err); }
   try {
     if (typeof sinkronPilihan === 'function') sinkronPilihan();
   } catch (err) {
     console.warn('sinkronPilihan gagal setelah ' + aksi + ': ' + err);
   }
+}
+
+/* Pilihan acara di Form hanya memuat acara terdekat (BOD pagi dan Lunch Networking siang Rabu berikutnya), bukan seluruh jadwal.
+   Fungsi ini mengatur kolom Events.tampil_di_form menurut jam sekarang. Dipanggil tiap 5 menit dan setelah jadwal berubah.
+   Mengembalikan true bila ada baris yang berubah. */
+function api_segarkanJendelaForm_() {
+  var db = api_adaptor_({ paksa: true });
+  var ev = db.baca('Events');
+  var buka = Inti.jendelaForm(ev, new Date());
+  var berubah = false;
+  ev.forEach(function (e) {
+    if (Inti.JENIS_FORM.indexOf(String(e.jenis).trim()) < 0) return;
+    var mau = !!buka[String(e.id_event).trim()];
+    var kini = e.tampil_di_form === true || String(e.tampil_di_form).toUpperCase() === 'TRUE';
+    if (mau !== kini) { db.ubah('Events', e, { tampil_di_form: mau ? 'TRUE' : 'FALSE' }); berubah = true; }
+  });
+  return berubah;
 }
 
 function api_json_(obj) {
@@ -103,6 +121,9 @@ function api_panaskan_() {
   TAB_CACHE_.forEach(function (n) {
     try { db.baca(n); } catch (err) { console.warn('api_panaskan_ ' + n + ': ' + err); }
   });
+  try {
+    if (api_segarkanJendelaForm_() && typeof sinkronPilihan === 'function') sinkronPilihan();
+  } catch (err) { console.warn('api_panaskan_ jendela Form: ' + err); }
 }
 /* Pemicu onEdit terpasang: edit tangan di sheet langsung membersihkan simpanan. */
 function api_saatEdit_() { api_bersihkanCache_(); }

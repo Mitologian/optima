@@ -958,7 +958,9 @@ var Inti = (function () {
           var x = kursiById(k, r.id_kursi);
           var u = terakhir[teks(r.id_orang)], e = u ? acara[teks(u.id_event)] : null;
           return { id_orang: teks(r.id_orang), nama: teks(r.nama), bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), punya_wa: !!teks(r.whatsapp_norm), whatsapp: teks(r.whatsapp_norm), bisnis: teks(r.bisnis), jumlah_undangan: hitung[teks(r.id_orang)] || 0,
-            jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '', status_undangan: u ? teks(u.status) : '', acara_undangan: e ? teks(e.nama_acara) : '', tanggal_undangan: e && tgl(e.tanggal) ? isoTanggal(tgl(e.tanggal)) : '' };
+            jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '', status_undangan: u ? teks(u.status) : '', acara_undangan: e ? teks(e.nama_acara) : '', tanggal_undangan: e && tgl(e.tanggal) ? isoTanggal(tgl(e.tanggal)) : '',
+            id_event_undangan: u ? teks(u.id_event) : '',
+            acara_detail: e && tgl(e.tanggal) ? { id_event: teks(e.id_event), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai), jam_selesai: jamEv(e.jam_selesai), nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi) } : null };
         }).reverse()
       };
     },

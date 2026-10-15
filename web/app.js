@@ -653,7 +653,7 @@
         }
         if (r.id_undangan) {
           var e2 = pilihanAcara.filter(function (z) { return z.id_event === idEv; })[0];
-          lembarKirim(f.nama.value.trim().split(/\s+/)[0], f.whatsapp.value, e2, id ? x.bidang : '', f.bisnis.value);
+          lembarKirim(f.nama.value.trim().split(/\s+/)[0], f.whatsapp.value, e2, id ? x.bidang : '', f.bisnis.value, r.id_orang);
         } else {
           tutupLembar();
           toast(!id ? 'Name added to the list' : x.status === 'kosong' ? 'The ' + x.bidang + ' seat now has a prospect' : 'Name added to the ' + x.bidang + ' seat', !!id && x.status === 'kosong');
@@ -819,9 +819,23 @@
 
   /* Lembar undangan: pilih acara, kedekatan, dan langkah pesan, lalu salin atau kirim.
      opsi: {id, nama, wa, bidang, bisnis, acara[], idEv, tercatat, segarkan} */
+  /* Pesan mana yang sudah dikirim ke seseorang untuk satu acara. Disimpan di perangkat ini saja, hanya untuk penanda dan langkah berikutnya. */
+  function kunciPesan(idOrang, idEv) { return 'optima_pesan_' + idOrang + '_' + idEv; }
+  function pesanTerkirim(idOrang, idEv) {
+    try { var a = JSON.parse(ambil(kunciPesan(idOrang, idEv)) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+  }
+  function tandaiPesan(idOrang, idEv, langkah) {
+    var a = pesanTerkirim(idOrang, idEv);
+    if (a.indexOf(langkah) < 0) { a.push(langkah); simpan(kunciPesan(idOrang, idEv), JSON.stringify(a)); }
+  }
+  function langkahBerikut(idOrang, idEv, terdaftar) {
+    if (terdaftar) return 3;
+    var a = pesanTerkirim(idOrang, idEv);
+    return a.length ? Math.min(Math.max.apply(null, a) + 1, 3) : 0;
+  }
   function lembarUndangan(o) {
     var depan = o.nama.split(/\s+/)[0];
-    var st = { dekat: 'teman', bahasa: 'id', langkah: 0, balasan: false, idEv: o.idEv || (o.acara[0] && o.acara[0].id_event), tercatat: !!o.tercatat, wa: o.wa || '' };
+    var st = { dekat: 'teman', bahasa: 'id', langkah: o.langkahAwal || 0, balasan: false, idEv: o.idEv || (o.acara[0] && o.acara[0].id_event), tercatat: !!o.tercatat, wa: o.wa || '' };
     var bidang = o.bidang && !/^Undecided/.test(o.bidang) ? o.bidang : '';
     function acaraDipilih() { return o.acara.filter(function (z) { return z.id_event === st.idEv; })[0]; }
     bukaLembar(
@@ -833,7 +847,7 @@
         return '<button type="button" data-dekat="' + g[0] + '" aria-pressed="' + (g[0] === st.dekat) + '">' + g[1] + '</button>';
       }).join('') + '<button type="button" id="u-bhs" class="bahasa" aria-label="Switch message language">ID | EN</button></div>' +
       '<div class="seg langkah-seg" id="u-langkah">' + LANGKAH.map(function (g, i) {
-        return '<button type="button" data-langkah="' + i + '" aria-selected="' + (i === st.langkah) + '"><b>' + g[0] + '</b><span>' + g[1] + '</span></button>';
+        return '<button type="button" data-langkah="' + i + '" aria-selected="' + (i === st.langkah) + '"><b>' + g[0] + (o.id && pesanTerkirim(o.id, st.idEv).indexOf(i) >= 0 ? ' \u2713' : '') + '</b><span>' + g[1] + '</span></button>';
       }).join('') + '</div>' +
       '<p class="kecil redup" id="u-petunjuk" style="margin:8px 2px"></p>' +
       '<textarea id="u-pesan" class="pesan-undangan" rows="8"></textarea>' +
@@ -882,7 +896,7 @@
         }
         el.querySelector('#u-salin').onclick = async function () {
           if (!(await catat())) return;
-          salinTeks(ta.value, ta); toast('Message copied. Paste it in WhatsApp.');
+          salinTeks(ta.value, ta); toast('Message copied. Paste it in WhatsApp.'); tandaKirim();
         };
         el.querySelector('#u-wa-buka').onclick = async function () {
           // Jendela dibuka sekarang, saat ketukan masih dihitung. Membuka sesudah menunggu server sering diblokir browser HP.
@@ -891,12 +905,19 @@
           var nomor = String(st.wa).replace(/\D/g, '').replace(/^620/, '62').replace(/^0/, '62');
           var url = waLink(nomor, ta.value);
           if (jendela) jendela.location.href = url; else location.href = url;
+          tandaKirim();
         };
+        function tandaKirim() {
+          if (!o.id) return;
+          tandaiPesan(o.id, st.idEv, st.langkah);
+          var tombol = el.querySelector('[data-langkah="' + st.langkah + '"] b');
+          if (tombol && tombol.textContent.indexOf('\u2713') < 0) tombol.textContent += ' \u2713';
+        }
       });
   }
 
-  function lembarKirim(namaTamu, wa, e, bidang, bisnis) {
-    lembarUndangan({ nama: namaTamu, wa: String(wa || ''), acara: [e], idEv: e.id_event, tercatat: true, bidang: bidang, bisnis: bisnis });
+  function lembarKirim(namaTamu, wa, e, bidang, bisnis, idOrang) {
+    lembarUndangan({ id: idOrang, nama: namaTamu, wa: String(wa || ''), acara: [e], idEv: e.id_event, tercatat: true, bidang: bidang, bisnis: bisnis });
   }
 
   /* ---------- coffee session: templat dan lembar pemesanan ----------
@@ -1173,14 +1194,21 @@
   function lembarPilihUndang(u, acara, segarkan) {
     var bisaKunjung = !u.status_undangan && u.tahap === 'Listed' && acara.length > 0;
     var bisaKopi = ['Listed', 'Invited', 'Attended', 'Coffee_Scheduled'].indexOf(u.tahap) >= 0;
+    var lanjut = ['Diundang', 'Terdaftar'].indexOf(u.status_undangan) >= 0 && ['Listed', 'Invited'].indexOf(u.tahap) >= 0 && u.acara_detail;
     var depan = u.nama.split(/\s+/)[0];
     bukaLembar('<h2>Invite ' + esc(depan) + '</h2><p class="kecil" style="margin:6px 0 14px">' + esc(u.bidang) + '</p>' +
       '<div class="pilihan kolom">' +
       (!acara.length && u.tahap === 'Listed' && !u.status_undangan ? '<p class="kecil redup" style="margin-bottom:8px">No Wednesday meetings are open yet, so a coffee session is the way to invite for now.</p>' : '') +
+      (lanjut ? '<button type="button" id="p-lanjut"><b>Continue the invitation messages</b><small>' + esc((u.acara_detail.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + tglPendek(u.acara_detail.tanggal) + ' · ' + (u.status_undangan === 'Terdaftar' ? 'registered, send the last message' : 'next: ' + ['opener', 'invitation details', 'Form link', 'after sign-up'][langkahBerikut(u.id_orang, u.acara_detail.id_event, false)])) + '</small></button>' : '') +
       (bisaKunjung ? '<button type="button" id="p-kunjung"><b>Visit a Wednesday meeting</b><small>BOD or Lunch Networking, then a coffee session</small></button>' : '') +
       (bisaKopi ? '<button type="button" id="p-kopi"><b>' + (u.tahap === 'Coffee_Scheduled' ? 'Coffee session booked' : 'Coffee session straight away') + '</b><small>' + (u.tahap === 'Coffee_Scheduled' ? 'See the time, confirm, or change it' : '30 minutes 1 on 1 with Coach Dedy, no visit needed') + '</small></button>' : '') +
       '</div>',
       function (el) {
+        var lj = el.querySelector('#p-lanjut');
+        if (lj) lj.onclick = function () {
+          var ed = u.acara_detail, daftar = u.status_undangan === 'Terdaftar';
+          lembarUndangan({ id: u.id_orang, nama: u.nama, wa: u.whatsapp, acara: [ed], idEv: ed.id_event, tercatat: true, bidang: u.bidang, bisnis: u.bisnis, segarkan: segarkan, langkahAwal: langkahBerikut(u.id_orang, ed.id_event, daftar) });
+        };
         var k = el.querySelector('#p-kunjung');
         if (k) k.onclick = function () { lembarUndang(u.id_orang, u.nama, u.whatsapp, acara, segarkan, u.bidang, u.bisnis); };
         var c = el.querySelector('#p-kopi');
@@ -1212,7 +1240,8 @@
     function baris(u) {
       var bisa = !u.status_undangan && u.tahap === 'Listed';
       var ketuk = !bisa && ['Invited', 'Attended', 'Coffee_Scheduled'].indexOf(u.tahap) >= 0;
-      var info = u.tahap === 'Coffee_Scheduled' && u.jadwal_cs ? ' · Coffee ' + jamCS(u.jadwal_cs).hari + ' ' + jamCS(u.jadwal_cs).jam : (u.tanggal_undangan ? ' · ' + esc(u.acara_undangan) + ', ' + esc(tglPendek(u.tanggal_undangan)) : '');
+      var kirim = u.id_event_undangan && u.tahap === 'Invited' ? pesanTerkirim(u.id_orang, u.id_event_undangan).length : 0;
+      var info = u.tahap === 'Coffee_Scheduled' && u.jadwal_cs ? ' · Coffee ' + jamCS(u.jadwal_cs).hari + ' ' + jamCS(u.jadwal_cs).jam : (u.tanggal_undangan ? ' · ' + esc(u.acara_undangan) + ', ' + esc(tglPendek(u.tanggal_undangan)) + (kirim ? ' · ' + kirim + ' of 4 messages sent' : '') : '');
       var isiBaris = '<div class="utama"><b>' + esc(u.nama) + '</b><span>' + esc(u.bidang) + info + '</span></div>';
       return '<li>' + (ketuk ? '<button class="ketuk" data-buka="' + esc(u.id_orang) + '" style="flex:1;min-width:0">' + isiBaris + '</button>' : isiBaris) + ikonWa(u.whatsapp, u.nama) +
         (bisa ? '<button class="tombol kecil" data-undang="' + esc(u.id_orang) + '">Invite</button>' : chipUndangan(u)) + '</li>';

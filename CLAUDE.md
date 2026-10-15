@@ -13,6 +13,7 @@ App pendamping peluncuran chapter BNI yang dipimpin Coach Dedy Dahlan sebagai La
 - Tahap pembentukan: Pembentukan (kumpulkan 17 sampai 20 founding member, oleh LDC dan LT) → ESM →
   era BOD setiap **Rabu** (BOD pagi, Lunch Networking siang, 10 sampai 12 kali) → **CGT di 37 anggota** →
   Soft Launch → Grand Launch (**52**).
+- **Arti milestone (16 Oktober 2026, Coach Dedy).** ESM: kickoff awal, saat member masuk app untuk pertama kali dan mulai bisa mengundang; wajib bagi semua member yang sudah bergabung, jadi bukan acara tamu dan tidak tampil di halaman daftar. CGT (37 anggota): jumlah member cukup untuk memulai training member awal. Grand Launch (52): peluncuran final.
 - Tampilan app dibedakan menurut **peran** (LDC, LT, anggota), bukan menurut fase. Sebelum ESM hanya LDC dan LT yang punya kode, jadi otomatis hanya mereka yang memakai. Kode anggota dibagikan setelah ESM. `Pengaturan.fase` tetap ada, tetapi hanya untuk target Misi Chapter (20, 37, 52) dan label Founding atau Core Group. Setiap orang mengisi **20 sampai 40
   nama**, terikat ke kursi atau "bidang belum pasti".
 - **LDC dan LT adalah pendiri, bukan member BNI Optima.** Mereka tidak punya kursi, tidak masuk daftar member, Misi Chapter, sponsor, atau kandidat driver. LT dan LDC boleh melihat nama, klasifikasi, dan nomor WhatsApp semua member dan calon (More, Contacts).

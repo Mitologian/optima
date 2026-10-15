@@ -213,3 +213,17 @@ Hanya `apps-script/Api.js` yang berubah. Simpanan tab kini hidup 10 menit (sebel
 - Naikkan versi Apps Script lagi. Tidak ada kolom, tab, atau pemicu baru, dan aksi lama tidak berubah nama. Aksi `anggota` kini juga mengembalikan daftar `pendiri` (LDC dan LT).
 - Kolom `Master.id_sponsor` kini bisa berisi: id member (seperti sebelumnya), id LDC atau LT, `BNI` (tampil di app sebagai "BNI Indonesia"), atau teks bebas berawalan `Luar: ` (misalnya `Luar: Pak Andi, BNI Bandung`) untuk sponsor di luar daftar.
 - Bila ada otomasi atau laporan Lapis yang membaca `id_sponsor`, anggap nilai yang tidak cocok dengan id orang sebagai teks nama. Sponsor LDC, LT, BNI, dan teks bebas tidak dihitung ke Jalur Gold, Board, atau skor tim (hanya sponsor member yang dihitung).
+
+## P. Menyusul: nama pengundang di Form, pesan konfirmasi H-1, pengaturan Zoom (15 Oktober 2026)
+
+Temuan dari uji Coach Dedy: tamu uji (P0003) diundang lewat app oleh LDC (`Undangan.U0001`, `id_pengundang` = P0001, benar), tetapi di tab `Responses` kolom `Diundang oleh` berisi "Tidak Ada" dan `id_pengundang` kosong. Di app nama pengundang tampil benar. Yang kosong ada di sisi Form.
+
+Mohon dikerjakan Lapis:
+
+1. **Pilihan "Diundang oleh" di Form.** Periksa isinya. Harus memuat semua member, semua LT, dan LDC (LT dan LDC sudah ada di app, mis. P0001 Dedy Dahlan dan P0002 Herlambang Prayatno). Format teks pilihan mohon sama persis dengan kolom `Master.nama` (nama lengkap), supaya bisa diisi otomatis dari app. Kabari format yang dipakai bila berbeda.
+2. **Isi otomatis pengundang.** Bantu app mengisi kolom itu sendiri: berikan (a) alamat panjang Form `https://docs.google.com/forms/d/e/.../viewform` (bukan forms.gle, karena tautan pendek tidak meneruskan isian otomatis), dan (b) kode kolom "Diundang oleh" (bentuk `entry.1234567890`, bisa dilihat dari menu "Dapatkan tautan isi otomatis" di Form). Coach Dedy memasukkan keduanya di More, Settings: `Guest Form link` dan `Form field code for Invited by`. App kemudian membuat tautan Form yang nama pengundangnya sudah terisi, jadi tamu tidak perlu memilih.
+3. **Normalisasi.** Bila tamu mengisi Form dan nomornya cocok dengan calon yang sudah punya `Undangan` (kasus aturan 2 di KONTRAK bagian Form), isi `Responses.id_pengundang` dari `Undangan.id_pengundang` supaya tab itu tidak tampak kosong. Undangan tetap milik pengundang asli seperti sekarang.
+4. **Pilihan Form lebih cepat segar.** `Api.js` kini memanggil `sinkronPilihan()` juga sesudah `tambahOrang`, `jadikanAnggota`, dan `ubahOrang`, jadi LT atau member baru langsung masuk ke pilihan Form tanpa menunggu penyegaran per jam. Pastikan `sinkronPilihan()` aman dipanggil berulang.
+5. **Pengaturan baru** di tab `Pengaturan` (dibuat app saat disimpan lewat Settings, jangan diisi manual): `tautan_zoom_bod`, `zoom_bod_id`, `zoom_bod_kode`, `form_entry_pengundang`. Tidak ada tab, kolom, atau pemicu baru.
+
+Aksi `daftarHadir` kini juga mengembalikan nomor WhatsApp, nama lengkap pengundang, dan status undangan tiap visitor (hanya untuk LT dan LDC), dan `masuk` memuat `profil.usaha`. Tanpa perubahan kolom.

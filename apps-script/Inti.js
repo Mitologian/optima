@@ -29,9 +29,9 @@ var Inti = (function () {
 
 
   // pengaturan yang boleh diubah LDC dari app, dan tab yang boleh dilihat (tanpa Master dan Akses; keduanya lewat People)
-  var PENGATURAN_BISA = ['fase', 'tanggal_esm', 'tanggal_grand_launch', 'tautan_zoom_cs', 'tautan_form', 'target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver',
+  var PENGATURAN_BISA = ['fase', 'tanggal_esm', 'tanggal_grand_launch', 'tautan_zoom_cs', 'tautan_zoom_bod', 'zoom_bod_id', 'zoom_bod_kode', 'tautan_form', 'form_entry_pengundang', 'target_founding', 'target_cgt', 'target_launch', 'target_nama_min', 'target_nama_maks', 'target_gold', 'target_driver',
     'driver_ronde_min', 'driver_hadir_bod', 'driver_undang', 'driver_tamu_hadir', 'driver_konversi', 'driver_lunch', 'driver_aktif_ronde', 'tim_maks'];
-  var PENGATURAN_CONTOH = { tanggal_esm: 'YYYY-MM-DD', tanggal_grand_launch: 'YYYY-MM-DD', tautan_zoom_cs: 'https://...', tautan_form: 'https://...' };
+  var PENGATURAN_CONTOH = { tanggal_esm: 'YYYY-MM-DD', tanggal_grand_launch: 'YYYY-MM-DD', tautan_zoom_cs: 'https://...', tautan_zoom_bod: 'https://...', zoom_bod_id: '820 2571 8641', zoom_bod_kode: 'optima', tautan_form: 'https://...', form_entry_pengundang: 'entry.1234567890' };
   var FASE_BOLEH = ['Pembentukan', 'BOD', 'CGT', 'Soft Launch', 'Grand Launch'];
   var TAB_LIHAT = ['Undangan', 'Hadir', 'Events', 'Wawancara', 'Jadwal_CS', 'Responses', 'Butuh', 'Lencana', 'Pengumuman', 'Log'];
 
@@ -151,6 +151,10 @@ var Inti = (function () {
     a.hari_bod = teks(a.hari_bod) || 'Rabu';
     a.tautan_form = teks(a.tautan_form);
     a.tautan_zoom_cs = teks(a.tautan_zoom_cs);
+    a.tautan_zoom_bod = teks(a.tautan_zoom_bod);
+    a.zoom_bod_id = teks(a.zoom_bod_id);
+    a.zoom_bod_kode = teks(a.zoom_bod_kode);
+    a.form_entry_pengundang = teks(a.form_entry_pengundang);
     a.tim_maks = Math.min(Math.max(a.tim_maks || 10, 4), 20);
     if (a.tim_mulai instanceof Date) a.tim_mulai = isoTanggal(a.tim_mulai);
     a.tim_mulai = teks(a.tim_mulai);
@@ -792,10 +796,12 @@ var Inti = (function () {
     masuk: function (k) {
       var a = k.pengaturan();
       if (k.saya.akses) k.ubah('Akses', k.saya.akses, { terakhir_masuk: k.now.toISOString() });
+      var diri = k.orang(k.saya.id_orang);
       return {
-        profil: { id_orang: k.saya.id_orang, nama: k.saya.nama, nama_depan: k.saya.nama_depan, peran: k.saya.peran },
+        profil: { id_orang: k.saya.id_orang, nama: k.saya.nama, nama_depan: k.saya.nama_depan, peran: k.saya.peran, usaha: diri ? (teks(diri.perusahaan) || teks(diri.bisnis)) : '' },
         pengaturan: {
           nama_chapter: a.nama_chapter, fase: a.fase, hari_bod: a.hari_bod, tautan_form: a.tautan_form, tautan_zoom_cs: a.tautan_zoom_cs,
+          tautan_zoom_bod: a.tautan_zoom_bod, zoom_bod_id: a.zoom_bod_id, zoom_bod_kode: a.zoom_bod_kode, form_entry_pengundang: a.form_entry_pengundang,
           target_founding: a.target_founding, target_cgt: a.target_cgt, target_launch: a.target_launch,
           target_nama_min: a.target_nama_min, target_nama_maks: a.target_nama_maks, target_gold: a.target_gold, tanggal_esm: teks(a.tanggal_esm), tanggal_grand_launch: teks(a.tanggal_grand_launch)
         }
@@ -1071,7 +1077,8 @@ var Inti = (function () {
         var o = k.orang(u.id_orang_calon);
         if (!o || sudah[o.id_orang]) return;
         sudah[o.id_orang] = true;
-        orang.push({ id_orang: teks(o.id_orang), nama: teks(o.nama), peran: 'Visitor', pengundang: namaDepan(k.orang(u.id_pengundang)), hadir: !!hadir[teks(o.id_orang)] });
+        var peng = teks(u.id_pengundang) ? k.orang(u.id_pengundang) : null;
+        orang.push({ id_orang: teks(o.id_orang), nama: teks(o.nama), peran: 'Visitor', pengundang: namaDepan(peng), pengundang_lengkap: peng ? teks(peng.nama) : '', whatsapp: teks(o.whatsapp_norm), status: teks(u.status), hadir: !!hadir[teks(o.id_orang)] });
       });
       k.tab('Master').forEach(function (r) {
         var kat = teks(r.kategori);
@@ -1080,7 +1087,7 @@ var Inti = (function () {
           orang.push({ id_orang: teks(r.id_orang), nama: namaTampil(r), peran: kat === 'LDC' ? 'LDC' : kat === 'LT' ? 'LT' : 'Anggota', pengundang: '', hadir: !!hadir[teks(r.id_orang)] });
         }
       });
-      return { acara: { id_event: idEv, nama_acara: teks(ev.nama_acara), tanggal: tgl(ev.tanggal) ? isoTanggal(tgl(ev.tanggal)) : '' }, orang: orang };
+      return { acara: { id_event: idEv, nama_acara: teks(ev.nama_acara), jenis: teks(ev.jenis), mode: teks(ev.mode), lokasi: teks(ev.lokasi), jam_mulai: jamEv(ev.jam_mulai), jam_selesai: jamEv(ev.jam_selesai), tanggal: tgl(ev.tanggal) ? isoTanggal(tgl(ev.tanggal)) : '' }, orang: orang };
     },
 
     checkin: function (k, b) {
@@ -1690,6 +1697,12 @@ var Inti = (function () {
       if (/^(target_|driver_)/.test(kunci) && (!/^\d{1,3}$/.test(nilai) || Number(nilai) < 1)) gagal('Enter a whole number.');
       if (kunci === 'tim_maks' && (!/^\d{1,2}$/.test(nilai) || Number(nilai) < 4 || Number(nilai) > 20)) gagal('Team size must be a whole number from 4 to 20.');
       if (/^tautan_/.test(kunci) && nilai && !/^https:\/\/[^\s]{4,480}$/i.test(nilai)) gagal('The link must start with https://');
+      if (kunci === 'form_entry_pengundang' && nilai) {
+        var m = nilai.match(/^(?:entry\.)?(\d{6,14})$/);
+        if (!m) gagal('Use the form field code, like entry.1234567890.');
+        nilai = 'entry.' + m[1];
+      }
+      if (/^zoom_bod_/.test(kunci) && nilai.length > 40) gagal('That value is too long.');
       var baris = k.tab('Pengaturan').filter(function (r) { return teks(r.kunci) === kunci; })[0];
       if (baris) k.ubah('Pengaturan', baris, { nilai: nilai });
       else k.tambah('Pengaturan', { kunci: kunci, nilai: nilai });
@@ -2071,6 +2084,7 @@ var Inti = (function () {
           persen_mengundang: persenMengundang, anggota_baru_ronde: baru[0], kursi_tanpa_calon: reg.kursi_tanpa_calon
         },
         peringatan: [
+          { teks: 'ESM date has passed but the phase is still Pembentukan. Update the phase in Settings.', menyala: !setelahEsm && !!tgl(a.tanggal_esm) && k.now.getTime() > tgl(a.tanggal_esm).getTime() + HARI },
           { teks: 'LT with fewer than 3 new names this week: ' + (ltKurang.join(', ') || 'none'), menyala: ltKurang.length > 0 },
           { teks: 'CS this week: ' + cs + ', threshold 5', menyala: cs < 5 },
           { teks: 'Members who invited this week: ' + persenMengundang + '%, threshold 50%', menyala: setelahEsm && persenMengundang < 50 },

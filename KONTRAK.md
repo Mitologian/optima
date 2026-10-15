@@ -391,6 +391,7 @@ Balasan selalu JSON: `{ "ok": true, ... }` atau `{ "ok": false, "pesan": "kalima
 | 2026-10-11 | Impact Board: `papan` memuat `dampak`, dan `belum_ronde` untuk LT | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Riwayat per ronde: aksi `riwayatRonde` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-13 | Kompetisi Tim: kolom `Master.tim`, kunci `tim_maks` dan `tim_mulai`, aksi `timPapan`/`timDaftar`/`timAtur`; menu More dirapikan (Insights) | Coach Dedy, 13 Oktober 2026 |
+| 2026-10-15 | Pesan konfirmasi H-1 untuk visitor terdaftar (Team, Check-in, tombol Confirm), pengaturan `tautan_zoom_bod`, `zoom_bod_id`, `zoom_bod_kode`, `form_entry_pengundang`, tautan Form dengan pengundang terisi, lampu ESM lewat di Summary, sinkron pilihan Form sesudah tambah orang | Coach Dedy, 15 Oktober 2026 |
 | 2026-10-11 | Penanda driver: kolom `Master.driver`, `Pengaturan.target_driver`, aksi `kandidatDriver`, `tandaiDriver`, `regroup.driver`, lampu peringatan driver di `ringkas` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-11 | Rekomendasi driver otomatis: tiga pilar (komit, network, pengaruh), ambang di `Pengaturan` (`driver_*`), `regroup.driver.rekomendasi` dan `hampir` | Coach Dedy, 11 Oktober 2026 |
 | 2026-10-12 | LDC dan LT bukan member chapter (`tahap` kosong, tanpa kursi). Aksi `kontak` untuk LT dan LDC: nama, klasifikasi, nomor WhatsApp member dan calon aktif | Coach Dedy, 12 Oktober 2026 |

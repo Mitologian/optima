@@ -36,7 +36,8 @@ function doPost(e) {
 
 /* Aksi yang mengubah jadwal acara menyegarkan pilihan acara di Google Form (fungsi sinkronPilihan milik Lapis), supaya langsung terlihat.
    Gagalnya sinkron tidak boleh menggagalkan aksi: pemicu tiap jam milik Lapis tetap menjadi jaring pengaman. */
-var AKSI_JADWAL_ = { tambahAcara: true, ubahAcara: true };
+/* Aksi yang mengubah isi pilihan Form: acara dan daftar orang pada "Diundang oleh". */
+var AKSI_JADWAL_ = { tambahAcara: true, ubahAcara: true, tambahOrang: true, jadikanAnggota: true, ubahOrang: true };
 function api_sesudahTulis_(aksi, hasil) {
   if (!AKSI_JADWAL_[aksi] || !hasil || hasil.ok !== true) return;
   try {

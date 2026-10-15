@@ -793,10 +793,17 @@
       tamu: namaTamu, saya: S.profil.nama_depan, chapter: S.atur.nama_chapter, acara: e.nama_acara,
       bidang: bidang || bisnis || 'bisnis', bisnisNama: bisnis || '',
       salam: jam < 11 ? 'pagi' : jam < 15 ? 'siang' : 'sore', salamEn: jam < 12 ? 'morning' : 'afternoon',
-      form: S.atur.tautan_form || '(form link)', jam: e.jam_mulai, hariID: tglID(e.tanggal), hariEn: tglHari(e.tanggal),
+      form: urlFormUndangan(), jam: e.jam_mulai, hariID: tglID(e.tanggal), hariEn: tglHari(e.tanggal),
       tempatID: e.mode === 'Online' ? 'online lewat ' + (e.lokasi || 'Zoom') : 'di ' + (e.lokasi || 'lokasi yang akan dikabari'),
       tempatEn: e.mode === 'Online' ? 'online via ' + (e.lokasi || 'Zoom') : 'at ' + (e.lokasi || 'a location to be confirmed')
     };
+  }
+  /* Tautan Form dengan nama pengundang sudah terisi, bila kolom Form dan alamat panjangnya sudah diatur di Settings. */
+  function urlFormUndangan() {
+    var f = S.atur.tautan_form || '', ent = S.atur.form_entry_pengundang, nama = S.profil && S.profil.nama;
+    if (!f) return '(form link)';
+    if (ent && nama && /^https:\/\/docs\.google\.com\/forms\//.test(f)) return f + (f.indexOf('?') < 0 ? '?' : '&') + 'usp=pp_url&' + ent + '=' + encodeURIComponent(nama);
+    return f;
   }
   function buatPesan(bahasa, kedekatan, langkah, namaTamu, e, bidang, bisnis) {
     var d = dataPesan(namaTamu, e, bidang, bisnis);
@@ -1609,7 +1616,7 @@
       }).join('') + '</div>' +
       '<input class="cari" id="cari" placeholder="Search name" type="search">' +
       '<section class="kartu"><ul class="daftar">' + r.orang.map(function (o) {
-        return '<li data-cari="' + esc(o.nama.toLowerCase()) + '" data-hadir="' + o.hadir + '" data-peran="' + esc(o.peran) + '"><div class="utama"><b>' + esc(o.nama) + '</b><span>' + esc(o.peran === 'Visitor' ? 'Visitor' + (o.pengundang ? ', invited by ' + o.pengundang : '') : (PERAN_LABEL[o.peran] || o.peran)) + '</span></div><button class="hadir-saklar" data-o="' + esc(o.id_orang) + '" aria-pressed="' + o.hadir + '" aria-label="Present: ' + esc(o.nama) + '"></button></li>';
+        return '<li data-cari="' + esc(o.nama.toLowerCase()) + '" data-hadir="' + o.hadir + '" data-peran="' + esc(o.peran) + '"><div class="utama"><b>' + esc(o.nama) + '</b><span>' + esc(o.peran === 'Visitor' ? 'Visitor' + (o.pengundang ? ', invited by ' + o.pengundang : '') : (PERAN_LABEL[o.peran] || o.peran)) + '</span></div>' + (o.peran === 'Visitor' && o.status === 'Terdaftar' && o.whatsapp ? '<button class="tombol kecil kedua" data-konfirm="' + esc(o.id_orang) + '" type="button">' + (sudahKonfirm(r.acara.id_event, o.id_orang) ? 'Sent' : 'Confirm') + '</button>' : '') + '<button class="hadir-saklar" data-o="' + esc(o.id_orang) + '" aria-pressed="' + o.hadir + '" aria-label="Present: ' + esc(o.nama) + '"></button></li>';
       }).join('') + '</ul></section>';
     function terapkan() {
       var q = w.querySelector('#cari').value.toLowerCase();
@@ -1630,6 +1637,12 @@
     w.querySelectorAll('[data-saring-absen]').forEach(function (t) {
       t.onclick = function () { saringAbsen = t.dataset.saringAbsen; w.querySelectorAll('[data-saring-absen]').forEach(function (z) { z.setAttribute('aria-pressed', z === t); }); terapkan(); };
     });
+    w.querySelectorAll('[data-konfirm]').forEach(function (b) {
+      b.onclick = function () {
+        var o = r.orang.filter(function (z) { return z.id_orang === b.dataset.konfirm; })[0];
+        lembarKonfirmasi(o, r.acara, function () { b.textContent = 'Sent'; });
+      };
+    });
     w.querySelectorAll('[data-o]').forEach(function (t) {
       t.onclick = async function () {
         var jadi = t.getAttribute('aria-pressed') !== 'true';
@@ -1639,6 +1652,55 @@
         if (!h.ok) { t.setAttribute('aria-pressed', !jadi); li.dataset.hadir = String(!jadi); hitung(); return toast(h.pesan); }
       };
     });
+  }
+
+  /* ---------- Konfirmasi H-1 untuk visitor yang sudah mendaftar (LT dan LDC) ---------- */
+  function kunciKonfirm(idEv, idOrang) { return 'optima_konf_' + idEv + '_' + idOrang; }
+  function sudahKonfirm(idEv, idOrang) { return ambil(kunciKonfirm(idEv, idOrang)) === '1'; }
+  function tglIDPenuh(iso) { var d = wib(iso); return HARI_ID[d.getUTCDay()] + ', ' + d.getUTCDate() + ' ' + BULAN_ID[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); }
+  function selisihHari(iso) {
+    var n = wib(new Date().toISOString());
+    return Math.round((Date.parse(iso + 'T00:00:00Z') - Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())) / 864e5);
+  }
+  function pesanKonfirmasi(o, e) {
+    var A = S.atur, P = S.profil, depan = o.nama.split(/\s+/)[0];
+    var judul = e.jenis === 'BOD' ? 'Exclusive Business Opportunity Day' : (e.nama_acara || 'acara');
+    var sel = selisihHari(e.tanggal), rel = sel === 1 ? 'besok' : sel === 0 ? 'hari ini' : 'pada ' + tglID(e.tanggal);
+    var jam = e.jam_mulai + (e.jam_selesai ? ' - ' + e.jam_selesai : '');
+    var online = e.mode === 'Online';
+    var zoom = '';
+    if (online) {
+      zoom = '\n\n' + (A.tautan_zoom_bod || '[link Zoom belum diisi di Settings]');
+      if (A.zoom_bod_id) zoom += '\n\nMeeting ID: ' + A.zoom_bod_id;
+      if (A.zoom_bod_kode) zoom += '\nPasscode: ' + A.zoom_bod_kode;
+    }
+    var chapter = 'BNI ' + (A.nama_chapter || 'Optima');
+    return 'Selamat ' + salamSekarang().id + ' Bapak/Ibu ' + o.nama + ',\n\n' +
+      (o.pengundang_lengkap ? 'Anda diundang oleh teman Anda, *' + o.pengundang_lengkap + '* untuk acara *' + judul + '*.' : 'Anda diundang untuk acara *' + judul + '*.') + '\n\n' +
+      (online ? 'Berikut adalah link Zoom untuk mengikuti acara Business Owners Meeting and Networking bersama ' + chapter + ' ' + rel + ':' : 'Berikut adalah detail acara Business Owners Meeting and Networking bersama ' + chapter + ' ' + rel + ':') + '\n\n' +
+      'Tanggal *' + tglIDPenuh(e.tanggal) + '*\nPukul *' + jam + '* WIB ' + (online ? 'via ' + (e.lokasi || 'Zoom') : 'di ' + (e.lokasi || 'lokasi yang akan dikabari')) + '\n\n' +
+      'Mohon datang tepat waktu supaya Anda bisa mendapatkan experience networking optimal, dalam acara networking antar founders, serta sesi sharing tentang bisnis Anda, bersama member kami dan visitor lainnya.\n\n' +
+      'Sampai ketemu ' + rel + ' Bapak/Ibu ' + depan + ' 🙏🏻' + zoom + '\n\nSalam Hangat,\n\n' + P.nama + '\n' +
+      (P.usaha ? 'CEO ' + P.usaha + ',\n' : '') + (isLDC() ? 'Director Consultant' : 'Launch Team') + ' ' + chapter + '.';
+  }
+  function lembarKonfirmasi(o, e, tandai) {
+    var A = S.atur, kurang = e.mode === 'Online' && !A.tautan_zoom_bod;
+    bukaLembar('<h2>Confirm ' + esc(o.nama.split(/\s+/)[0]) + '</h2><p class="kecil" style="margin:4px 0 12px">Send this the day before, with the Zoom details. You can edit the text first.</p>' +
+      (kurang ? '<p class="pesan-salah">The Wednesday Zoom link is not set yet.' + (isLDC() ? ' Add it in More, Settings.' : ' Ask Coach Dedy to add it in Settings.') + '</p>' : '') +
+      '<textarea id="k-pesan" class="pesan-undangan" rows="14"></textarea>' +
+      '<div class="baris-tombol" style="margin-top:10px"><button class="tombol" id="k-wa" type="button">Open WhatsApp</button><button class="tombol kedua" id="k-salin" type="button">Copy message</button></div>',
+      function (el) {
+        var ta = el.querySelector('#k-pesan');
+        ta.value = pesanKonfirmasi(o, e);
+        function catat() { simpan(kunciKonfirm(e.id_event, o.id_orang), '1'); if (tandai) tandai(); }
+        el.querySelector('#k-salin').onclick = function () { salinTeks(ta.value, ta); catat(); toast('Message copied. Paste it in WhatsApp.'); };
+        el.querySelector('#k-wa').onclick = function () {
+          var url = waLink(String(o.whatsapp).replace(/\D/g, '').replace(/^620/, '62').replace(/^0/, '62'), ta.value);
+          var j = window.open(url, '_blank');
+          if (!j) location.href = url;
+          catat();
+        };
+      });
   }
 
   /* ---------- Announce: pengumuman dan info acara ---------- */
@@ -2151,7 +2213,7 @@
   }
 
   var LABEL_ATUR = {
-    fase: 'Phase', tanggal_esm: 'ESM date', tanggal_grand_launch: 'Grand Launch date', tautan_zoom_cs: 'Coffee session Zoom link', tautan_form: 'Guest Form link',
+    fase: 'Phase', tanggal_esm: 'ESM date', tanggal_grand_launch: 'Grand Launch date', tautan_zoom_cs: 'Coffee session Zoom link', tautan_form: 'Guest Form link (use the long docs.google.com link to prefill the inviter)', tautan_zoom_bod: 'Wednesday Zoom link', zoom_bod_id: 'Wednesday Zoom meeting ID', zoom_bod_kode: 'Wednesday Zoom passcode', form_entry_pengundang: 'Form field code for Invited by (entry.123...)',
     target_founding: 'Founding target', target_cgt: 'CGT target', target_launch: 'Launch target', target_nama_min: 'Names per person, minimum', target_nama_maks: 'Names per person, maximum',
     target_gold: 'Gold path (new members)', target_driver: 'Drivers wanted', driver_ronde_min: 'Driver: rounds since joining', driver_hadir_bod: 'Driver: BOD attendance %',
     driver_undang: 'Driver: invited in % of rounds', driver_tamu_hadir: 'Driver: guests who came %', driver_konversi: 'Driver: guests who joined %', driver_lunch: 'Driver: Lunch Networking %', driver_aktif_ronde: 'Driver: active rounds', tim_maks: 'Team size, maximum members'
@@ -2169,7 +2231,7 @@
         return '<li><form class="atur-baris" data-kunci="' + esc(x.kunci) + '"><label class="isian" style="margin:0;flex:1"><span>' + esc(LABEL_ATUR[x.kunci] || x.kunci) + '</span>' + kontrol + '</label><button class="tombol kecil kedua" type="submit">Save</button></form></li>';
       }).join('') + '</ul></section>';
     }
-    w.innerHTML = kelompok('Chapter', /^(fase|tanggal_|tautan_)/) + kelompok('Targets', /^target_/) + kelompok('Teams', /^tim_maks$/) + kelompok('Driver recommendation', /^driver_/) +
+    w.innerHTML = kelompok('Chapter', /^(fase|tanggal_|tautan_(zoom_cs|form))/) + kelompok('Wednesday guests: Zoom and Form', /^(tautan_zoom_bod|zoom_bod_|form_entry_)/) + kelompok('Targets', /^target_/) + kelompok('Teams', /^tim_maks$/) + kelompok('Driver recommendation', /^driver_/) +
       '<p class="catatan-main"><a href="#tim-data" class="tautan">View sheet data (read only)</a></p><p class="catatan-main">Changing the phase changes the Chapter Mission target and the Founding or Core Group label for new members. Member codes stay off until ESM: after switching the phase, turn them on in People.</p>';
     w.querySelectorAll('form.atur-baris').forEach(function (f) {
       f.onsubmit = async function (e) {

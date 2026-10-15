@@ -75,7 +75,8 @@ var TAB_BARU_ = {
 };
 var KOLOM_BARU_ = {
   Events: ['pembicara', 'poster'],
-  Master: ['driver', 'tim']
+  Master: ['driver', 'tim'],
+  Undangan: ['konfirmasi_oleh', 'konfirmasi_waktu', 'konfirmasi_acara']
 };
 
 /* Simpanan sementara hasil baca tab (CacheService), supaya permintaan beruntun tidak membaca sheet berulang.

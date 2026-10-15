@@ -315,17 +315,27 @@ var Inti = (function () {
     return hasil;
   }
 
+  /* Jam selesai acara (WIB). Bila jam selesai kosong, dianggap dua jam sesudah mulai. */
+  function akhirAcara(e) {
+    var t = tgl(e.tanggal);
+    if (!t) return null;
+    var mulai = mulaiAcara(e);
+    var sl = jamEv(e.jam_selesai);
+    var akhir = sl ? new Date(isoTanggal(t) + 'T' + sl + ':00+07:00') : null;
+    return akhir && mulai && akhir > mulai ? akhir : (mulai ? new Date(mulai.getTime() + 2 * JAM) : null);
+  }
   function acaraBerikut(k) {
-    var hariIni = isoTanggal(k.now);
+    var buka = jendelaForm(k.tab('Events'), k.now);
     return k.tab('Events').filter(function (e) {
       var t = tgl(e.tanggal);
       var st = teks(e.status);
-      return t && isoTanggal(t) >= hariIni && st !== 'Batal' && st !== 'Selesai';
+      var akhir = akhirAcara(e);
+      return t && akhir && akhir.getTime() > k.now.getTime() && st !== 'Batal' && st !== 'Selesai';
     }).map(function (e) {
       return {
         id_event: teks(e.id_event), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai), jam_selesai: jamEv(e.jam_selesai),
         nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi),
-        pembicara: teks(e.pembicara), poster: teks(e.poster)
+        pembicara: teks(e.pembicara), poster: teks(e.poster), di_form: !!buka[teks(e.id_event)]
       };
     }).sort(function (a, b) { return (a.tanggal + a.jam_mulai) < (b.tanggal + b.jam_mulai) ? -1 : 1; });
   }
@@ -802,9 +812,13 @@ var Inti = (function () {
     if (!teks(calon.whatsapp_norm)) gagal('The prospect\'s WhatsApp number is required before inviting.');
     var acara = acaraBerikut(k).filter(function (e) { return e.id_event === teks(idEvent); })[0];
     if (!acara) gagal('Event not found or already past.');
+    var batal = {};
+    k.tab('Events').forEach(function (e) { if (teks(e.status) === 'Batal') batal[teks(e.id_event)] = true; });
     var milikCalon = k.undanganAktif().filter(function (u) { return teks(u.id_orang_calon) === teks(idCalon); });
-    if (milikCalon.some(function (u) { return teks(u.id_event) === acara.id_event; })) gagal(namaDepan(calon) + ' is already invited to this event.');
-    if (milikCalon.length >= 2) gagal('Per BNI rules, a person can be invited as a Visitor only twice. ' + namaDepan(calon) + ' has already been invited twice.');
+    // Sudah tercatat untuk acara ini (mis. tamu sudah mendaftar lewat Form): anggap berhasil, jangan menolak.
+    var sudah = milikCalon.filter(function (u) { return teks(u.id_event) === acara.id_event; })[0];
+    if (sudah) return sudah;
+    if (milikCalon.filter(function (u) { return !batal[teks(u.id_event)]; }).length >= 2) gagal('Per BNI rules, a person can be invited as a Visitor only twice. ' + namaDepan(calon) + ' has already been invited twice.');
     var u = {
       id_undangan: idBaru(k.tab('Undangan'), 'id_undangan', 'U', 4),
       tanggal: k.now.toISOString(),
@@ -1097,6 +1111,106 @@ var Inti = (function () {
       };
     },
 
+    /* Pemilik nama (yang mendaftarkannya) atau LT memperbaiki nama, nomor WhatsApp, dan jenis usaha calon. */
+    ubahCalonSaya: function (k, b) {
+      var o = k.orang(b.id_orang);
+      if (!o || teks(o.kategori) !== 'Calon' || teks(o.tahap) === 'Anggota') gagal('Prospect not found.');
+      if (!k.isLT() && teks(o.diajukan_oleh) !== k.saya.id_orang) gagal('Members can only edit names they added themselves.');
+      var ubah = {};
+      if (b.nama !== undefined) {
+        var nama = teks(b.nama).replace(/\s+/g, ' ');
+        if (nama.length < 2) gagal('Name is required.');
+        if (nama.length > 80) gagal('The name is too long.');
+        ubah.nama = nama; ubah.nama_depan = nama.split(' ')[0];
+      }
+      if (b.bisnis !== undefined) { ubah.bisnis = teks(b.bisnis).slice(0, 80); }
+      if (b.whatsapp !== undefined) {
+        var wa = normWa(b.whatsapp);
+        if (wa && wa.length < 10) gagal('WhatsApp number is too short.');
+        var kembar = wa && k.tab('Master').filter(function (r) { return teks(r.whatsapp_norm) === wa && teks(r.id_orang) !== teks(o.id_orang); })[0];
+        if (kembar) gagal('This number is already used by ' + namaDepan(kembar) + ' on the chapter list.');
+        ubah.whatsapp_norm = wa;
+      }
+      if (!Object.keys(ubah).length) gagal('Nothing to change.');
+      ubah.terakhir_diubah = k.now.toISOString();
+      k.ubah('Master', o, ubah);
+      k.log('ubahCalonSaya', teks(o.id_orang) + ': ' + Object.keys(ubah).join(', '));
+      return { nama: teks(o.nama), whatsapp: teks(o.whatsapp_norm), bisnis: teks(o.bisnis) };
+    },
+
+    /* Pengundang (atau LT) membatalkan undangan atau menggantinya ke acara lain, selama tamu belum mendaftar. */
+    ubahUndangan: function (k, b) {
+      var o = k.orang(b.id_orang);
+      if (!o) gagal('Prospect not found.');
+      var daftar = k.undanganAktif().filter(function (u) { return teks(u.id_orang_calon) === teks(o.id_orang) && (k.isLT() || teks(u.id_pengundang) === k.saya.id_orang); });
+      var u = daftar.filter(function (x) { return teks(x.status) === 'Diundang'; }).pop();
+      if (!u) gagal(daftar.length ? 'This guest already registered. Ask the launch team to change it.' : 'There is no invitation to change.');
+      var aksi = teks(b.aksi);
+      if (aksi === 'batal') {
+        k.ubah('Undangan', u, { status: 'Batal' });
+        var sisa = k.undanganAktif().filter(function (x) { return teks(x.id_orang_calon) === teks(o.id_orang); });
+        if (!sisa.length && teks(o.tahap) === 'Invited') k.ubah('Master', o, { tahap: 'Listed', terakhir_diubah: k.now.toISOString() });
+        k.log('ubahUndangan', namaDepan(o) + ' batal');
+        return { status: 'Batal' };
+      }
+      if (aksi === 'ganti') {
+        var e = acaraBerikut(k).filter(function (x) { return x.id_event === teks(b.id_event); })[0];
+        if (!e) gagal('Event not found or already past.');
+        if (daftar.some(function (x) { return x !== u && teks(x.id_event) === e.id_event; })) gagal(namaDepan(o) + ' is already invited to that event.');
+        k.ubah('Undangan', u, { id_event: e.id_event });
+        k.log('ubahUndangan', namaDepan(o) + ' dipindah ke ' + e.nama_acara + ' ' + e.tanggal);
+        return { id_event: e.id_event };
+      }
+      gagal('Unknown action.');
+    },
+
+    /* LT mencatat tamu yang hadir tanpa mendaftar lebih dulu, atau yang hadir di acara lain dari yang diundang. */
+    tambahTamuHadir: function (k, b) {
+      wajibLT(k);
+      var idEv = teks(b.id_event);
+      var ev = k.tab('Events').filter(function (e) { return teks(e.id_event) === idEv && teks(e.status) !== 'Batal'; })[0];
+      if (!ev) gagal('Event not found.');
+      var wa = normWa(b.whatsapp);
+      var o = wa ? k.tab('Master').filter(function (r) { return teks(r.whatsapp_norm) === wa; })[0] : null;
+      if (o && (teks(o.tahap) === 'Anggota' || timPendiri(o))) gagal(namaDepan(o) + ' is already on the list as a member or launch team. Use the normal check-in list.');
+      var peng = teks(b.id_pengundang);
+      if (peng && peng !== 'Walk-in' && !k.orang(peng)) gagal('Choose the inviter from the list.');
+      if (!o) {
+        var nama = teks(b.nama).replace(/\s+/g, ' ');
+        if (nama.length < 2) gagal('Name is required.');
+        if (wa && wa.length < 10) gagal('WhatsApp number is too short.');
+        o = {
+          id_orang: idBaru(k.tab('Master'), 'id_orang', 'P', 4), nama: nama, nama_depan: nama.split(' ')[0], whatsapp_norm: wa, email: '', perusahaan: '', bisnis: teks(b.bisnis).slice(0, 80),
+          id_kursi: '', kota: '', sumber: 'walk-in', kategori: 'Calon', tahap: 'Attended', jenis_anggota: '', tanggal_bergabung: '', id_sponsor: '',
+          PIC: k.saya.id_orang, diajukan_oleh: peng && peng !== 'Walk-in' ? peng : '', tanggal_masuk: k.now.toISOString(), tanggal_sentuh: k.now.toISOString(), alasan_tidak_lanjut: '', catatan: '',
+          terakhir_diubah: k.now.toISOString(), jadwal_cs: ''
+        };
+        k.tambah('Master', o);
+        k._idx = null;
+      }
+      var u = k.undanganAktif().filter(function (x) { return teks(x.id_orang_calon) === teks(o.id_orang) && teks(x.id_event) === idEv; })[0];
+      if (!u) {
+        u = { id_undangan: idBaru(k.tab('Undangan'), 'id_undangan', 'U', 4), tanggal: k.now.toISOString(), id_pengundang: peng || 'Walk-in', id_orang_calon: teks(o.id_orang), id_event: idEv, status: 'Hadir', sumber: 'app' };
+        k.tambah('Undangan', u);
+      } else if (teks(u.status) !== 'Hadir') k.ubah('Undangan', u, { status: 'Hadir' });
+      var ada = k.tab('Hadir').filter(function (h) { return teks(h.id_event) === idEv && teks(h.id_orang) === teks(o.id_orang); })[0];
+      if (!ada) k.tambah('Hadir', { id_hadir: idBaru(k.tab('Hadir'), 'id_hadir', 'H', 5), id_event: idEv, id_orang: teks(o.id_orang), peran: 'Visitor', waktu_checkin: k.now.toISOString(), dicatat_oleh: k.saya.id_orang });
+      if (['Listed', 'Invited'].indexOf(teks(o.tahap)) >= 0) k.ubah('Master', o, { tahap: 'Attended', tanggal_sentuh: k.now.toISOString(), terakhir_diubah: k.now.toISOString() });
+      k.log('tambahTamuHadir', namaDepan(o) + ' di ' + idEv);
+      return { id_orang: teks(o.id_orang), nama: teks(o.nama) };
+    },
+
+    /* LT mencatat bahwa pesan konfirmasi sudah dikirim, supaya LT lain tidak mengirim dua kali. */
+    catatKonfirmasi: function (k, b) {
+      wajibLT(k);
+      var idEv = teks(b.id_event), idO = teks(b.id_orang);
+      var ev = k.tab('Events').filter(function (e) { return teks(e.id_event) === idEv; })[0];
+      var u = k.undanganAktif().filter(function (x) { return teks(x.id_orang_calon) === idO && teks(x.id_event) === idEv; })[0];
+      if (!ev || !u) gagal('Registration not found.');
+      k.ubah('Undangan', u, { konfirmasi_oleh: k.saya.id_orang, konfirmasi_waktu: k.now.toISOString(), konfirmasi_acara: isoTanggal(tgl(ev.tanggal)) + ' ' + jamEv(ev.jam_mulai) });
+      return { oleh: k.saya.nama_depan, waktu: k.now.toISOString() };
+    },
+
     daftarHadir: function (k, b) {
       wajibLT(k);
       var idEv = teks(b.id_event);
@@ -1112,7 +1226,8 @@ var Inti = (function () {
         if (!o || sudah[o.id_orang]) return;
         sudah[o.id_orang] = true;
         var peng = teks(u.id_pengundang) ? k.orang(u.id_pengundang) : null;
-        orang.push({ id_orang: teks(o.id_orang), nama: teks(o.nama), peran: 'Visitor', pengundang: namaDepan(peng), pengundang_lengkap: peng ? teks(peng.nama) : '', whatsapp: teks(o.whatsapp_norm), status: teks(u.status), hadir: !!hadir[teks(o.id_orang)] });
+        orang.push({ id_orang: teks(o.id_orang), nama: teks(o.nama), peran: 'Visitor', pengundang: namaDepan(peng), pengundang_lengkap: peng ? teks(peng.nama) : '', whatsapp: teks(o.whatsapp_norm), status: teks(u.status), hadir: !!hadir[teks(o.id_orang)],
+          konfirmasi: teks(u.konfirmasi_waktu) ? { oleh: namaDepan(k.orang(teks(u.konfirmasi_oleh))), waktu: teks(u.konfirmasi_waktu), lama: teks(u.konfirmasi_acara) !== (isoTanggal(tgl(ev.tanggal)) + ' ' + jamEv(ev.jam_mulai)) } : null });
       });
       k.tab('Master').forEach(function (r) {
         var kat = teks(r.kategori);

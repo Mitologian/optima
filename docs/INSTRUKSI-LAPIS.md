@@ -254,3 +254,16 @@ Coach Dedy menguji Form: pilihan "Diundang oleh" tidak memuat nama LDC dan LT (D
 - `usulanSaya` kini juga mengembalikan `id_event_undangan` dan `acara_detail` (ringkasan acara dari undangan terakhir).
 
 - Tambahan untuk normalisasi Form (member mengundang dengan pesan sendiri): bila baris `Responses` cocok dengan baris `Master` yang belum punya `Undangan`, buat `Undangan` baru dengan `id_pengundang` dari kolom "Diundang oleh" bila valid, dan bila isinya "Tidak Ada", pakai `Master.diajukan_oleh` (orang yang mendaftarkan nama itu di My list) sebagai cadangan. Kartu "No inviter" di app kini juga menyarankan `diajukan_oleh` bila tidak ada undangan lain.
+
+## T. Menyusul: perbaikan celah alur undangan dan konfirmasi (15 Oktober 2026)
+
+Hasil audit alur member mengundang, tamu mengisi Form, dan LT mengirim konfirmasi. Perubahan di kode (perlu naik versi, tanpa tab atau pemicu baru):
+- Tiga kolom baru di tab `Undangan`, ditambah otomatis oleh `Api.js`: `konfirmasi_oleh`, `konfirmasi_waktu`, `konfirmasi_acara`. Mohon jangan diisi manual. Dipakai supaya LT dan LDC tahu siapa yang sudah mengirim pesan konfirmasi H-1.
+- Aksi baru: `ubahCalonSaya` (pemilik nama atau LT memperbaiki nama, nomor, usaha), `ubahUndangan` (batal atau ganti acara selama tamu belum mendaftar), `tambahTamuHadir` (LT mencatat tamu yang hadir tanpa mendaftar), `catatKonfirmasi`.
+- `undang` kini idempoten: bila tamu sudah terdaftar untuk acara itu (mis. lewat Form), kembalikan undangan yang ada, bukan menolak. Batas "dua kali diundang" tidak lagi menghitung undangan untuk acara yang dibatalkan.
+- Pilihan acara untuk mengundang di app hanya BOD dan Lunch Networking yang sedang tampil di Form, dan acara yang sudah selesai tidak ditawarkan.
+
+Mohon dipertimbangkan Lapis (di sisi Form dan normalisasi):
+1. **Teks konfirmasi Form** (pesan setelah tamu menekan Kirim): "Terima kasih sudah mendaftar. Link Zoom dan detail acara dikirim lewat WhatsApp sehari sebelum acara. Pastikan nomor WhatsApp Anda aktif." Tanpa ini tamu tidak tahu apa yang terjadi sesudah mengisi.
+2. **Tamu mengisi Form dua kali** (mis. BOD dan Lunch, atau salah pilih): jangan menimpa `id_event` undangan yang sudah ada. Beri tanda `Perlu_Cek` atau buat undangan kedua selama belum melewati batas dua kali.
+3. **Nomor beda dari yang didaftarkan member** (tamu memakai nomor lain di Form): hasilnya baris Master ganda. Bila nama mirip dan pengundang sama, beri `Perlu_Cek` (aturan 3 di KONTRAK) agar LT bisa menggabungkan.

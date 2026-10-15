@@ -612,7 +612,7 @@
     }
 
     if (!id && !S.cache.kursi) { var kr0 = await api('kursi'); if (kr0.ok) S.cache.kursi = kr0.baris; }
-    var pilihanAcara = (ac && ac.ok ? ac.acara : []).filter(function (e) { return e.jenis === 'BOD' || e.jenis === 'Lunch Networking'; });
+    var pilihanAcara = acaraUndang(ac && ac.ok ? ac.acara : []);
     html += '<form id="f-calon">' +
       '<h3 style="margin:4px 0 10px">' + (id ? 'Add a prospect for ' + esc(x.bidang) : 'Add a name') + '</h3>' +
       '<label class="isian"><span>Full name</span><input name="nama" required autocomplete="off"></label>' +
@@ -799,6 +799,12 @@
     };
   }
   /* Tautan Form dengan nama pengundang sudah terisi, bila kolom Form dan alamat panjangnya sudah diatur di Settings. */
+  /* Acara yang bisa dipilih untuk mengundang: BOD dan Lunch Networking yang sedang tampil di Form (terdekat). Bila tidak ada yang bertanda, semuanya. */
+  function acaraUndang(daftar) {
+    var semua = (daftar || []).filter(function (e) { return e.jenis === 'BOD' || e.jenis === 'Lunch Networking'; });
+    var buka = semua.filter(function (e) { return e.di_form; });
+    return buka.length ? buka : semua;
+  }
   function urlFormUndangan() {
     var f = S.atur.tautan_form || '', ent = S.atur.form_entry_pengundang, nama = S.profil && S.profil.nama;
     if (!f) return '(form link)';
@@ -1248,8 +1254,20 @@
       (lanjut ? '<button type="button" id="p-lanjut"><b>Continue the invitation messages</b><small>' + esc((u.acara_detail.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + tglPendek(u.acara_detail.tanggal) + ' · ' + (u.status_undangan === 'Terdaftar' ? 'registered, send the last message' : 'next: ' + ['opener', 'invitation details', 'Form link', 'after sign-up'][langkahBerikut(u.id_orang, false)])) + '</small></button>' : '') +
       (bisaKunjung ? '<button type="button" id="p-kunjung"><b>Visit a Wednesday meeting</b><small>BOD or Lunch Networking, then a coffee session</small></button>' : '') +
       (bisaKopi ? '<button type="button" id="p-kopi"><b>' + (u.tahap === 'Coffee_Scheduled' ? 'Coffee session booked' : 'Coffee session straight away') + '</b><small>' + (u.tahap === 'Coffee_Scheduled' ? 'See the time, confirm, or change it' : '30 minutes 1 on 1 with Coach Dedy, no visit needed') + '</small></button>' : '') +
-      '</div>',
+      '</div>' +
+      '<p class="kecil redup" style="margin:12px 2px 0"><button type="button" class="tautan-tombol" id="p-ubah">Edit name or number</button>' +
+      (u.status_undangan === 'Diundang' ? ' · <button type="button" class="tautan-tombol" id="p-ganti">Change event</button> · <button type="button" class="tautan-tombol" id="p-batal">Cancel invitation</button>' : '') + '</p>',
       function (el) {
+        el.querySelector('#p-ubah').onclick = function () { lembarUbahCalon(u, segarkan); };
+        var pg = el.querySelector('#p-ganti'), pb = el.querySelector('#p-batal');
+        if (pg) pg.onclick = function () { u.id_event_undangan = u.id_event_undangan || (u.acara_detail && u.acara_detail.id_event); lembarGantiAcara(u, acara, segarkan); };
+        if (pb) pb.onclick = async function () {
+          if (!confirm('Cancel the invitation for ' + u.nama.split(/\s+/)[0] + '? They go back to Ready to invite.')) return;
+          var h = await api('ubahUndangan', { id_orang: u.id_orang, aksi: 'batal' });
+          if (!h.ok) return toast(h.pesan);
+          simpan(kunciPesan(u.id_orang), null);
+          tutupLembar(); toast('Invitation cancelled.'); if (segarkan) segarkan();
+        };
         var lj = el.querySelector('#p-lanjut');
         if (lj) lj.onclick = function () {
           var ed = u.acara_detail, daftar = u.status_undangan === 'Terdaftar';
@@ -1279,7 +1297,7 @@
     var h = await Promise.all([api('beranda'), api('usulanSaya'), api('acara')]);
     var b = h[0], us = h[1], ac = h[2];
     if (!b.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(b.pesan) + '</p>'; return; }
-    var acara = (ac.acara || []).filter(function (e) { return e.jenis === 'BOD' || e.jenis === 'Lunch Networking'; });
+    var acara = acaraUndang(ac.acara);
     var st = b.saya;
     var baru = us.usulan.filter(function (u) { return !u.status_undangan && u.tahap === 'Listed'; });
     var sudah = us.usulan.filter(function (u) { return u.status_undangan || u.tahap !== 'Listed'; });
@@ -1580,6 +1598,7 @@
     bukaLembar(
       '<div class="tajuk"><span class="lambang" style="width:52px;height:52px;font-size:20px">' + inisial(c.nama) + '</span><div><p class="kecil">' + esc(c.bidang) + '</p><h2>' + esc(c.nama) + '</h2>' + (c.bisnis ? '<p class="kecil">' + esc(c.bisnis) + '</p>' : '') + '</div></div>' +
       (c.whatsapp ? '<a class="tombol kedua" target="_blank" rel="noopener" href="' + esc(waLink(c.whatsapp)) + '" style="margin-bottom:14px">Chat on WhatsApp</a>' : '') +
+      '<p class="kecil redup" style="margin:-4px 2px 12px"><button type="button" class="tautan-tombol" id="c-ubah">Edit name or number</button></p>' +
       '<form id="f-tl"><p class="kecil" style="margin-bottom:4px">Current stage: <b>' + esc(lblTahap(c.tahap)) + '</b>. Change to:</p><p class="kecil redup" style="margin-bottom:8px">Flow: Invited, Attended, Coffee session, Applied, Joined. Exit: Declined, Rejected.</p>' +
       '<div class="pilihan" style="margin-bottom:14px">' + tahap.map(function (t) {
         return '<button type="button" data-tahap="' + t + '" aria-pressed="' + (t === c.tahap) + '">' + esc(lblTahap(t)) + '</button>';
@@ -1608,6 +1627,7 @@
           tutupLembar(); toast(c.nama.split(/\s+/)[0] + ' is now ' + lblTahap(r.tahap)); S.cache.kursi = null; segarkan();
         };
         el.querySelector('#b-anggota').onclick = function () { lembarAnggota(c, segarkan); };
+        el.querySelector('#c-ubah').onclick = function () { lembarUbahCalon(c, function () { S.cache.kursi = null; segarkan(); }); };
       });
   }
   var TAHAP_VALID = ['Listed', 'Invited', 'Coffee_Scheduled', 'Attended', 'Coffee_Session', 'Applied', 'Joined_Other', 'Declined', 'Rejected'];
@@ -1693,9 +1713,10 @@
       '<div class="saring" role="group" aria-label="Filter">' + [['semua', 'Everyone'], ['absen', 'Not present'], ['hadir', 'Present']].map(function (f) {
         return '<button data-saring-absen="' + f[0] + '" aria-pressed="' + (saringAbsen === f[0]) + '">' + f[1] + '</button>';
       }).join('') + '</div>' +
+      '<div class="baris-tombol" style="margin:0 0 10px"><button class="tombol kecil kedua" id="b-langsung" type="button">Add a guest who came without registering</button></div>' +
       '<input class="cari" id="cari" placeholder="Search name" type="search">' +
       '<section class="kartu"><ul class="daftar">' + r.orang.map(function (o) {
-        return '<li data-cari="' + esc(o.nama.toLowerCase()) + '" data-hadir="' + o.hadir + '" data-peran="' + esc(o.peran) + '"><div class="utama"><b>' + esc(o.nama) + '</b><span>' + esc(o.peran === 'Visitor' ? 'Visitor' + (o.pengundang ? ', invited by ' + o.pengundang : '') : (PERAN_LABEL[o.peran] || o.peran)) + '</span></div>' + (o.peran === 'Visitor' && o.status === 'Terdaftar' && o.whatsapp ? '<button class="tombol kecil kedua" data-konfirm="' + esc(o.id_orang) + '" type="button">' + (sudahKonfirm(r.acara.id_event, o.id_orang) ? 'Sent' : 'Confirm') + '</button>' : '') + '<button class="hadir-saklar" data-o="' + esc(o.id_orang) + '" aria-pressed="' + o.hadir + '" aria-label="Present: ' + esc(o.nama) + '"></button></li>';
+        return '<li data-cari="' + esc(o.nama.toLowerCase()) + '" data-hadir="' + o.hadir + '" data-peran="' + esc(o.peran) + '"><div class="utama"><b>' + esc(o.nama) + '</b><span>' + esc(o.peran === 'Visitor' ? 'Visitor' + (o.pengundang ? ', invited by ' + o.pengundang : '') + (o.konfirmasi ? (o.konfirmasi.lama ? ' · date or time changed, resend' : ' · confirmed by ' + o.konfirmasi.oleh) : '') : (PERAN_LABEL[o.peran] || o.peran)) + '</span></div>' + (o.peran === 'Visitor' && o.status === 'Terdaftar' && o.whatsapp ? '<button class="tombol kecil kedua" data-konfirm="' + esc(o.id_orang) + '" type="button">' + (o.konfirmasi ? (o.konfirmasi.lama ? 'Resend' : 'Sent') : 'Confirm') + '</button>' : '') + '<button class="hadir-saklar" data-o="' + esc(o.id_orang) + '" aria-pressed="' + o.hadir + '" aria-label="Present: ' + esc(o.nama) + '"></button></li>';
       }).join('') + '</ul></section>';
     function terapkan() {
       var q = w.querySelector('#cari').value.toLowerCase();
@@ -1716,10 +1737,11 @@
     w.querySelectorAll('[data-saring-absen]').forEach(function (t) {
       t.onclick = function () { saringAbsen = t.dataset.saringAbsen; w.querySelectorAll('[data-saring-absen]').forEach(function (z) { z.setAttribute('aria-pressed', z === t); }); terapkan(); };
     });
+    w.querySelector('#b-langsung').onclick = function () { lembarTamuLangsung(r.acara, function () { subRabu(w); }); };
     w.querySelectorAll('[data-konfirm]').forEach(function (b) {
       b.onclick = function () {
         var o = r.orang.filter(function (z) { return z.id_orang === b.dataset.konfirm; })[0];
-        lembarKonfirmasi(o, r.acara, function () { b.textContent = 'Sent'; });
+        lembarKonfirmasi(o, r.acara, function () { subRabu(w); });
       };
     });
     w.querySelectorAll('[data-o]').forEach(function (t) {
@@ -1733,9 +1755,59 @@
     });
   }
 
+  /* ---------- Perbaikan alur undangan: ubah data calon, ganti acara, batalkan, tamu tanpa daftar ---------- */
+  function lembarUbahCalon(c, segarkan) {
+    bukaLembar('<h2>Edit details</h2><p class="kecil" style="margin:4px 0 12px">Fix a typo in the name, number, or business. The number must not belong to someone else on the list.</p>' +
+      '<form id="f-ubah"><label class="isian"><span>Full name</span><input name="nama" required value="' + esc(c.nama) + '"></label>' +
+      '<label class="isian"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" value="' + esc(c.whatsapp || '') + '" placeholder="08..."></label>' +
+      '<label class="isian"><span>Business</span><input name="bisnis" value="' + esc(c.bisnis || '') + '"></label>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save</button></form>',
+      function (el) {
+        el.querySelector('#f-ubah').onsubmit = async function (e) {
+          e.preventDefault();
+          var f = e.target;
+          var h = await api('ubahCalonSaya', { id_orang: c.id_orang, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value });
+          if (!h.ok) { var s0 = el.querySelector('#salah'); s0.textContent = h.pesan; s0.hidden = false; return; }
+          tutupLembar(); toast('Saved.'); if (segarkan) segarkan();
+        };
+      });
+  }
+  function lembarGantiAcara(u, acara, segarkan) {
+    var opsi = acara.filter(function (e) { return e.id_event !== u.id_event_undangan; });
+    bukaLembar('<h2>Change the event</h2><p class="kecil" style="margin:4px 0 12px">Pick another Wednesday event for ' + esc(u.nama.split(/\s+/)[0]) + '. Only possible until the guest signs up on the Form.</p>' +
+      (opsi.length ? '<label class="isian"><span>Event</span><select id="g-acara">' + opsi.map(function (e) { return '<option value="' + esc(e.id_event) + '">' + esc(tglHari(e.tanggal) + ' · ' + (e.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + e.jam_mulai) + '</option>'; }).join('') + '</select></label>' +
+        '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" id="g-simpan" type="button">Change event</button>' : '<p class="kosong-isi">No other Wednesday event is open yet.</p>'),
+      function (el) {
+        var b = el.querySelector('#g-simpan');
+        if (b) b.onclick = async function () {
+          var h = await api('ubahUndangan', { id_orang: u.id_orang, aksi: 'ganti', id_event: el.querySelector('#g-acara').value });
+          if (!h.ok) { var s0 = el.querySelector('#salah'); s0.textContent = h.pesan; s0.hidden = false; return; }
+          tutupLembar(); toast('Event changed. Send the Form link again if needed.'); if (segarkan) segarkan();
+        };
+      });
+  }
+  async function lembarTamuLangsung(e, segarkan) {
+    bukaLembar('<div class="muat"></div>');
+    var ang = await api('anggota');
+    var peng = (ang.anggota || []).concat(ang.pendiri || []).sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    bukaLembar('<h2>Guest without sign-up</h2><p class="kecil" style="margin:4px 0 12px">For someone who joined ' + esc((e.jenis === 'BOD' ? 'BOD' : e.nama_acara) + ' ' + tglPendek(e.tanggal)) + ' without registering on the Form. They are marked present right away. If the number is already on the list, that person is used.</p>' +
+      '<form id="f-langsung"><label class="isian"><span>Full name</span><input name="nama" required></label>' +
+      '<label class="isian"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" placeholder="08..."></label>' +
+      '<label class="isian"><span>Business</span><input name="bisnis"></label>' +
+      '<label class="isian"><span>Who invited them?</span><select name="peng"><option value="Walk-in">No one, came on their own</option>' + peng.map(function (a) { return '<option value="' + esc(a.id_orang) + '">' + esc(a.nama) + '</option>'; }).join('') + '</select></label>' +
+      '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Add and mark present</button></form>',
+      function (el) {
+        el.querySelector('#f-langsung').onsubmit = async function (ev) {
+          ev.preventDefault();
+          var f = ev.target;
+          var h = await api('tambahTamuHadir', { id_event: e.id_event, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value, id_pengundang: f.peng.value });
+          if (!h.ok) { var s0 = el.querySelector('#salah'); s0.textContent = h.pesan; s0.hidden = false; return; }
+          tutupLembar(); toast(h.nama + ' is marked present.'); if (segarkan) segarkan();
+        };
+      });
+  }
+
   /* ---------- Konfirmasi H-1 untuk visitor yang sudah mendaftar (LT dan LDC) ---------- */
-  function kunciKonfirm(idEv, idOrang) { return 'optima_konf_' + idEv + '_' + idOrang; }
-  function sudahKonfirm(idEv, idOrang) { return ambil(kunciKonfirm(idEv, idOrang)) === '1'; }
   function tglIDPenuh(iso) { var d = wib(iso); return HARI_ID[d.getUTCDay()] + ', ' + d.getUTCDate() + ' ' + BULAN_ID[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); }
   function selisihHari(iso) {
     var n = wib(new Date().toISOString());
@@ -1771,7 +1843,7 @@
       function (el) {
         var ta = el.querySelector('#k-pesan');
         ta.value = pesanKonfirmasi(o, e);
-        function catat() { simpan(kunciKonfirm(e.id_event, o.id_orang), '1'); if (tandai) tandai(); }
+        function catat() { api('catatKonfirmasi', { id_event: e.id_event, id_orang: o.id_orang }).then(function (h) { if (h.ok && tandai) tandai(); }); }
         el.querySelector('#k-salin').onclick = function () { salinTeks(ta.value, ta); catat(); toast('Message copied. Paste it in WhatsApp.'); };
         el.querySelector('#k-wa').onclick = function () {
           var url = waLink(String(o.whatsapp).replace(/\D/g, '').replace(/^620/, '62').replace(/^0/, '62'), ta.value);

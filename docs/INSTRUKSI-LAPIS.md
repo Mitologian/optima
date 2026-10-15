@@ -267,3 +267,10 @@ Mohon dipertimbangkan Lapis (di sisi Form dan normalisasi):
 1. **Teks konfirmasi Form** (pesan setelah tamu menekan Kirim): "Terima kasih sudah mendaftar. Link Zoom dan detail acara dikirim lewat WhatsApp sehari sebelum acara. Pastikan nomor WhatsApp Anda aktif." Tanpa ini tamu tidak tahu apa yang terjadi sesudah mengisi.
 2. **Tamu mengisi Form dua kali** (mis. BOD dan Lunch, atau salah pilih): jangan menimpa `id_event` undangan yang sudah ada. Beri tanda `Perlu_Cek` atau buat undangan kedua selama belum melewati batas dua kali.
 3. **Nomor beda dari yang didaftarkan member** (tamu memakai nomor lain di Form): hasilnya baris Master ganda. Bila nama mirip dan pengundang sama, beri `Perlu_Cek` (aturan 3 di KONTRAK) agar LT bisa menggabungkan.
+
+## U. Pendaftaran tamu satu pintu (15 Oktober 2026)
+
+1. Naikkan Apps Script (`Inti.js`, `Api.js`). Kolom baru `Master.kode_ajak` ditambah otomatis dan terisi saat member masuk.
+2. Dua aksi publik tanpa kode akses: `infoDaftar` dan `daftarTamu`. Pastikan deployment web app tetap "Anyone".
+3. Tamu mendaftar lewat `https://mitologian.github.io/optima/daftar/?m=<kode>` dan masuk ke sheet Undangan (status Terdaftar, sumber `daftar`) dan Master (Calon).
+4. Google Form dan `sinkronPilihan()` tidak lagi dipakai app. Boleh dibiarkan hidup sebagai cadangan, tetapi pendaftar Form tidak lagi diprioritaskan.

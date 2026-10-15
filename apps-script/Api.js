@@ -75,7 +75,7 @@ var TAB_BARU_ = {
 };
 var KOLOM_BARU_ = {
   Events: ['pembicara', 'poster'],
-  Master: ['driver', 'tim'],
+  Master: ['driver', 'tim', 'kode_ajak'],
   Undangan: ['konfirmasi_oleh', 'konfirmasi_waktu', 'konfirmasi_acara']
 };
 
@@ -237,6 +237,13 @@ function api_adaptor_(opsi) {
       var t = siapkan(nama);
       if (obj._baris) t.sheet.deleteRow(obj._baris);
       naikkanVersi(nama);
+    },
+    /* Pembatas laju untuk aksi publik: true bila masih boleh, false bila sudah melewati batas dalam jendela waktunya. */
+    batasi: function (kunci, maks, detik) {
+      var kk = 'optima_bts_' + kunci, n = Number(cache.get(kk) || 0);
+      if (n >= maks) return false;
+      cache.put(kk, String(n + 1), detik);
+      return true;
     },
     terkunci: function () {
       return cache.get('optima_kunci_masuk') === '1';

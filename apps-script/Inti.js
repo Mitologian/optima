@@ -448,7 +448,7 @@ var Inti = (function () {
     return k.tab('Responses').filter(function (r) { return teks(r.status_cocok) === 'Perlu_Cek' && teks(r.id_response) && !teks(r.id_orang_hasil); });
   }
   function pendaftarTanpaPengundang(k) {
-    return k.undanganAktif().filter(function (u) { return !teks(u.id_pengundang) && teks(u.sumber) === 'form'; });
+    return k.undanganAktif().filter(function (u) { return !teks(u.id_pengundang) && (teks(u.sumber) === 'form' || teks(u.sumber) === 'daftar'); });
   }
 
   function tautanAman(v) {
@@ -836,13 +836,38 @@ var Inti = (function () {
 
   /* ---------- aksi ---------- */
 
+  /* Aksi yang boleh dipanggil tanpa kode akses (halaman pendaftaran tamu). Harus memeriksa semua masukan sendiri. */
+  var PUBLIK = { infoDaftar: 1, daftarTamu: 1 };
+  var HURUF_AJAK = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  function kodeAjakBaru(k) {
+    var kode, ada = {};
+    k.tab('Master').forEach(function (r) { if (teks(r.kode_ajak)) ada[teks(r.kode_ajak).toUpperCase()] = true; });
+    do {
+      kode = '';
+      for (var i = 0; i < 6; i++) kode += HURUF_AJAK.charAt(Math.floor(Math.random() * HURUF_AJAK.length));
+    } while (ada[kode]);
+    return kode;
+  }
+  /* Kode ajak: kode pendek pribadi untuk tautan pendaftaran tamu. Terpisah dari kode akses, aman dibagikan. */
+  function pastikanKodeAjak(k, o) {
+    if (!o) return '';
+    if (!teks(o.kode_ajak)) k.ubah('Master', o, { kode_ajak: kodeAjakBaru(k) });
+    return teks(o.kode_ajak);
+  }
+  function orangDariKodeAjak(k, kode) {
+    var c = teks(kode).toUpperCase();
+    return c ? k.tab('Master').filter(function (r) { return teks(r.kode_ajak).toUpperCase() === c; })[0] || null : null;
+  }
+  function batasi(k, kunci, maks, detik) {
+    if (k.db.batasi && !k.db.batasi(kunci, maks, detik)) gagal('Terlalu banyak percobaan. Coba lagi beberapa saat lagi.');
+  }
   var AKSI = {
     masuk: function (k) {
       var a = k.pengaturan();
       if (k.saya.akses) k.ubah('Akses', k.saya.akses, { terakhir_masuk: k.now.toISOString() });
       var diri = k.orang(k.saya.id_orang);
       return {
-        profil: { id_orang: k.saya.id_orang, nama: k.saya.nama, nama_depan: k.saya.nama_depan, peran: k.saya.peran, usaha: diri ? (teks(diri.perusahaan) || teks(diri.bisnis)) : '' },
+        profil: { id_orang: k.saya.id_orang, nama: k.saya.nama, nama_depan: k.saya.nama_depan, peran: k.saya.peran, usaha: diri ? (teks(diri.perusahaan) || teks(diri.bisnis)) : '', kode_ajak: pastikanKodeAjak(k, diri) },
         pengaturan: {
           nama_chapter: a.nama_chapter, fase: a.fase, hari_bod: a.hari_bod, tautan_form: a.tautan_form, tautan_zoom_cs: a.tautan_zoom_cs,
           tautan_zoom_bod: a.tautan_zoom_bod, zoom_bod_id: a.zoom_bod_id, zoom_bod_kode: a.zoom_bod_kode, form_entry_pengundang: a.form_entry_pengundang,
@@ -1109,6 +1134,78 @@ var Inti = (function () {
         calon_diam: k.calonAktif().map(function (r) { return { nama: teks(r.nama), pic: namaDepan(k.orang(r.PIC)) || 'None yet', hari: k.hariDiam(r) }; })
           .filter(function (r) { return r.hari >= 7; }).sort(function (x, y) { return y.hari - x.hari; }).slice(0, 10)
       };
+    },
+
+    /* ---------- halaman pendaftaran tamu (publik, tanpa kode akses) ---------- */
+    infoDaftar: function (k, b) {
+      var peng = teks(b.m) ? orangDariKodeAjak(k, b.m) : null;
+      return {
+        chapter: teks(k.pengaturan().nama_chapter) || 'Optima',
+        pengundang: peng ? teks(peng.nama) : '',
+        acara: acaraBerikut(k).filter(function (e) { return e.di_form && JENIS_FORM.indexOf(e.jenis) >= 0; }).map(function (e) {
+          return { id_event: e.id_event, tanggal: e.tanggal, jam_mulai: e.jam_mulai, jam_selesai: e.jam_selesai, nama_acara: e.nama_acara, jenis: e.jenis, mode: e.mode, lokasi: e.lokasi };
+        })
+      };
+    },
+
+    daftarTamu: function (k, b) {
+      if (teks(b.situs)) return { terdaftar: true };   // jebakan untuk bot: pura-pura berhasil, tidak menulis apa pun
+      var nama = teks(b.nama).replace(/\s+/g, ' ');
+      if (nama.length < 2) gagal('Mohon isi nama lengkap.');
+      if (nama.length > 80) gagal('Nama terlalu panjang.');
+      var wa = normWa(b.whatsapp);
+      if (wa.length < 10 || wa.length > 15) gagal('Mohon isi nomor WhatsApp yang benar, misalnya 0812 3456 7890.');
+      var email = teks(b.email);
+      if (email && (email.length > 80 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) gagal('Alamat email tampaknya belum benar.');
+      batasi(k, 'daftar_wa_' + wa, 5, 3600);
+      batasi(k, 'daftar_semua', 400, 3600);
+      var peng = teks(b.m) ? orangDariKodeAjak(k, b.m) : null;
+      if (peng) batasi(k, 'daftar_ajak_' + teks(peng.id_orang), 80, 3600);
+      var ev = acaraBerikut(k).filter(function (e) { return e.id_event === teks(b.id_event) && e.di_form; })[0];
+      if (!ev) gagal('Acara ini belum atau sudah tidak dibuka untuk pendaftaran. Silakan pilih acara lain.');
+      var o = k.tab('Master').filter(function (r) { return teks(r.whatsapp_norm) === wa; })[0];
+      if (o && (teks(o.tahap) === 'Anggota' || timPendiri(o))) gagal('Nomor ini sudah terdaftar sebagai anggota atau tim kami. Silakan hubungi pengundang Anda.');
+      var norma = function (t) { return teks(t).toLowerCase().replace(/\s+/g, ' '); };
+      if (!o && peng) {
+        // Nama yang sama persis dengan yang didaftarkan pengundang ini: orang yang sama, jangan dibuat ganda.
+        o = k.tab('Master').filter(function (r) {
+          return teks(r.kategori) === 'Calon' && teks(r.tahap) !== 'Anggota' && teks(r.diajukan_oleh) === teks(peng.id_orang) && norma(r.nama) === norma(nama);
+        })[0] || null;
+      }
+      var usaha = teks(b.usaha).slice(0, 80), perusahaan = teks(b.perusahaan).slice(0, 80), kota = teks(b.kota).slice(0, 40);
+      if (!o) {
+        o = {
+          id_orang: idBaru(k.tab('Master'), 'id_orang', 'P', 4), nama: nama, nama_depan: nama.split(' ')[0], whatsapp_norm: wa, email: email, perusahaan: perusahaan, bisnis: usaha,
+          id_kursi: '', kota: kota, sumber: 'daftar', kategori: 'Calon', tahap: 'Invited', jenis_anggota: '', tanggal_bergabung: '', id_sponsor: '',
+          PIC: peng && timPendiri(peng) ? teks(peng.id_orang) : '', diajukan_oleh: peng ? teks(peng.id_orang) : '',
+          tanggal_masuk: k.now.toISOString(), tanggal_sentuh: k.now.toISOString(), alasan_tidak_lanjut: '', catatan: '', terakhir_diubah: k.now.toISOString(), jadwal_cs: ''
+        };
+        k.tambah('Master', o);
+        k._idx = null;
+      } else {
+        var isi = { tanggal_sentuh: k.now.toISOString(), terakhir_diubah: k.now.toISOString() };
+        if (!teks(o.whatsapp_norm)) isi.whatsapp_norm = wa;
+        if (!teks(o.email) && email) isi.email = email;
+        if (!teks(o.perusahaan) && perusahaan) isi.perusahaan = perusahaan;
+        if (!teks(o.bisnis) && usaha) isi.bisnis = usaha;
+        if (!teks(o.kota) && kota) isi.kota = kota;
+        if (teks(o.tahap) === 'Listed') isi.tahap = 'Invited';
+        k.ubah('Master', o, isi);
+      }
+      var milik = k.undanganAktif().filter(function (u) { return teks(u.id_orang_calon) === teks(o.id_orang); });
+      var u = milik.filter(function (x) { return teks(x.id_event) === ev.id_event; })[0];
+      if (!u) u = milik.filter(function (x) { return teks(x.status) === 'Diundang'; }).pop();   // diundang ke acara lain: ikut pilihan tamu
+      if (u) {
+        var ubah = {};
+        if (teks(u.id_event) !== ev.id_event) ubah.id_event = ev.id_event;
+        if (teks(u.status) === 'Diundang') ubah.status = 'Terdaftar';
+        if (!teks(u.id_pengundang) && peng) ubah.id_pengundang = teks(peng.id_orang);
+        if (Object.keys(ubah).length) k.ubah('Undangan', u, ubah);
+      } else {
+        k.tambah('Undangan', { id_undangan: idBaru(k.tab('Undangan'), 'id_undangan', 'U', 4), tanggal: k.now.toISOString(), id_pengundang: peng ? teks(peng.id_orang) : '', id_orang_calon: teks(o.id_orang), id_event: ev.id_event, status: 'Terdaftar', sumber: 'daftar' });
+      }
+      k.log('daftarTamu', namaDepan(o) + ' ke ' + ev.nama_acara + ' ' + ev.tanggal + (peng ? ', diajak ' + namaDepan(peng) : ', tanpa pengundang'));
+      return { terdaftar: true, nama: nama, pengundang: peng ? teks(peng.nama) : '', acara: { tanggal: ev.tanggal, jam_mulai: ev.jam_mulai, jam_selesai: ev.jam_selesai, nama_acara: ev.nama_acara, jenis: ev.jenis, mode: ev.mode, lokasi: ev.lokasi } };
     },
 
     /* Pemilik nama (yang mendaftarkannya) atau LT memperbaiki nama, nomor WhatsApp, dan jenis usaha calon. */
@@ -2280,7 +2377,7 @@ var Inti = (function () {
     }
   };
 
-  var TANPA_LOG = { masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1, orangSemua: 1, orangDetail: 1, acaraCheckin: 1, timPapan: 1, timDaftar: 1, bacaPengaturan: 1, lihatTab: 1 };
+  var TANPA_LOG = { infoDaftar: 1, masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1, orangSemua: 1, orangDetail: 1, acaraCheckin: 1, timPapan: 1, timDaftar: 1, bacaPengaturan: 1, lihatTab: 1 };
 
   /* Titik masuk tunggal. db = adaptor; badan = objek dari JSON. */
   function jalankan(db, badan, sekarang) {
@@ -2289,7 +2386,8 @@ var Inti = (function () {
       badan = badan || {};
       var nama = teks(badan.action);
       if (!AKSI[nama]) gagal('Unknown action: ' + nama);
-      autentikasi(k, badan.kode);
+      if (PUBLIK[nama]) k.saya = { id_orang: '', nama: '', nama_depan: '', peran: 'Tamu', akses: null };
+      else autentikasi(k, badan.kode);
       var hasil = AKSI[nama](k, badan) || {};
       hasil.ok = true;
       return hasil;

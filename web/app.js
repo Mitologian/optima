@@ -731,19 +731,19 @@
     dekat: [
       function (d) { return 'Halo ' + d.tamu + ', lu bisnisnya di bidang ' + d.bidang + ' kan ya?\n\nGue mau ngajak lu ketemu teman-teman pebisnis gue, sesama owner, yang menurut gue cocok banget buat bisnis lu. Kita lagi cari pebisnis di bidang ' + d.bidang + ' kayak lu, gue rasa lu bakal nemu banyak peluang di sana. Ikut yuk, gue kenalin.'; },
       function (d) { return d.hari + ' ada pertemuan ' + d.acara + ' ' + d.tempat + ', jam ' + d.jam + ', bareng komunitas owner bisnis Jakarta. Isinya networking dan tukar peluang bisnis antar anggota. Acaranya invitation only, tapi gue ada di sana, jadi bisa ajak lu kalau mau.'; },
-      function (d) { return 'Buat daftar jadi visitor, isi form ini ya: ' + d.form + '\nPilih nama gue (' + d.saya + ') di kolom "Diundang oleh" dan pakai nomor WA ini. Nanti gue pastiin lu dapat seat.'; },
+      function (d) { return 'Buat daftar jadi visitor, isi form ini ya (1 menit): ' + d.form + '\nPakai nomor WA ini biar gue bisa kabarin detailnya. Nanti gue pastiin lu dapat seat.'; },
       function (d) { return 'Sampai ketemu ya! Nanti di sana gue kenalin ke teman-teman owner lain, semoga nambah network lu dan bantu ' + d.bisnis + ' makin luas jangkauannya!'; }
     ],
     teman: [
       function (d) { return 'Halo ' + d.tamu + ', bisnismu di bidang ' + d.bidang + ' kan ya?\n\nAku mau kenalin kamu sama teman-teman pebisnisku. Mereka circle business owners yang saling support satu sama lain. Kayaknya bisa ada peluang kolaborasi sama kamu.'; },
       function (d) { return d.hari + ' ada pertemuan ' + d.acara + ' ' + d.tempat + ', pukul ' + d.jam + ', bareng komunitas owner bisnis Jakarta. Fokusnya networking dan tukar peluang bisnis antar anggota. Acaranya invitation only, tapi aku ada di sana, jadi bisa ajak kamu kalau mau.'; },
-      function (d) { return 'Untuk daftar sebagai visitor, isi form ini ya: ' + d.form + '\nPilih namaku (' + d.saya + ') di kolom "Diundang oleh" dan pakai nomor WhatsApp ini. Nanti aku pastikan kamu dapat seat.'; },
+      function (d) { return 'Untuk daftar sebagai visitor, isi form ini ya (1 menit): ' + d.form + '\nPakai nomor WhatsApp ini supaya aku bisa kabari detailnya. Nanti aku pastikan kamu dapat seat.'; },
       function (d) { return 'Sampai ketemu ya! Nanti di sana aku kenalin ke teman-teman business owners lain, semoga nambah networkmu dan bantu ' + d.bisnis + ' makin luas jangkauannya!'; }
     ],
     kenal: [
       function (d) { return 'Selamat ' + d.salam + ' ' + d.tamu + ', bisnis Anda di bidang ' + d.bidang + ', benar?\n\nSaya ingin memperkenalkan Anda dengan rekan-rekan pemilik bisnis lintas industri yang saling mendukung. Kami sedang mencari pebisnis di bidang ' + d.bidang + ', dan menurut saya Anda cocok bergabung dalam pertemuan kami.'; },
       function (d) { return 'Pertemuan ' + d.acara + ' kami diadakan ' + d.hari + ', pukul ' + d.jam + ', ' + d.tempat + ', bersama komunitas pemilik bisnis Jakarta. Fokusnya networking dan pertukaran peluang bisnis antar anggota. Acara ini hanya dengan undangan, dan saya dengan senang hati mengajak Anda.'; },
-      function (d) { return 'Untuk mendaftar sebagai tamu, mohon isi form berikut: ' + d.form + '\nPada kolom "Diundang oleh", mohon pilih ' + d.saya + ', dan gunakan nomor WhatsApp ini. Saya akan memastikan Anda mendapat tempat.'; },
+      function (d) { return 'Untuk mendaftar sebagai tamu, mohon isi form berikut (sekitar 1 menit): ' + d.form + '\nMohon gunakan nomor WhatsApp ini agar detail acara dapat kami kirimkan. Saya akan memastikan Anda mendapat tempat.'; },
       function (d) { return 'Terima kasih sudah mendaftar. Sampai bertemu! Di sana saya akan memperkenalkan Anda kepada pemilik bisnis lain, semoga menambah jaringan dan membantu ' + d.bisnis + ' menjangkau lebih luas.'; }
     ]
   };
@@ -751,13 +751,13 @@
     santai: [
       function (d) { return 'Hi ' + d.tamu + ', your business is in ' + d.bidang + ', right?\n\nI would love to introduce you to my circle of business owners. We support each other, and I think there is real potential to work together.'; },
       function (d) { return d.hari + ' we have ' + d.acara + ' ' + d.tempat + ', at ' + d.jam + ', with a community of Jakarta business owners. It is about networking and sharing business opportunities. It is invitation only, but I will be there, so I can bring you along.'; },
-      function (d) { return 'To register as a visitor, fill in this form: ' + d.form + '\nChoose my name (' + d.saya + ') under "Invited by" and use this WhatsApp number. I will make sure you get a seat.'; },
+      function (d) { return 'To register as a visitor, fill in this form (1 minute): ' + d.form + '\nPlease use this WhatsApp number so I can send you the details. I will make sure you get a seat.'; },
       function (d) { return 'See you there! I will introduce you to the other business owners, and hopefully it grows your network and helps ' + d.bisnis + ' reach further.'; }
     ],
     formal: [
       function (d) { return 'Good ' + (d.salamEn) + ' ' + d.tamu + ', your business is in ' + d.bidang + ', correct?\n\nI would like to introduce you to a community of business owners across industries who support one another. We are looking for ' + d.bidang + ' professionals, and I believe you would be a good fit.'; },
       function (d) { return 'Our ' + d.acara + ' takes place ' + d.hari + ' at ' + d.jam + ', ' + d.tempat + ', with Jakarta business owners. The focus is networking and exchanging business opportunities. It is by invitation only, and I would be glad to invite you.'; },
-      function (d) { return 'To register as a guest, please fill in this form: ' + d.form + '\nUnder "Invited by", please choose ' + d.saya + ', and use this WhatsApp number. I will make sure a seat is reserved for you.'; },
+      function (d) { return 'To register as a guest, please fill in this form (about 1 minute): ' + d.form + '\nPlease use this WhatsApp number so the event details can reach you. I will make sure a seat is reserved for you.'; },
       function (d) { return 'Thank you for registering. I look forward to seeing you. I will introduce you to other business owners, and I hope it widens your network and helps ' + d.bisnis + ' grow.'; }
     ]
   };
@@ -805,11 +805,14 @@
     var buka = semua.filter(function (e) { return e.di_form; });
     return buka.length ? buka : semua;
   }
+  /* Tautan pendaftaran pribadi member: satu pintu ke database yang sama. Pengundang sudah terbawa di tautan. */
   function urlFormUndangan() {
-    var f = S.atur.tautan_form || '', ent = S.atur.form_entry_pengundang, nama = S.profil && S.profil.nama;
-    if (!f) return '(form link)';
-    if (ent && nama && /^https:\/\/docs\.google\.com\/forms\//.test(f)) return f + (f.indexOf('?') < 0 ? '?' : '&') + 'usp=pp_url&' + ent + '=' + encodeURIComponent(nama);
-    return f;
+    var kode = S.profil && S.profil.kode_ajak;
+    if (!kode) return S.atur.tautan_form || '(registration link)';
+    var u = new URL('../daftar/', location.href);
+    u.searchParams.set('m', kode);
+    if (Api.tiruan) u.searchParams.set('tiruan', '1');
+    return u.href;
   }
   function buatPesan(bahasa, kedekatan, langkah, namaTamu, e, bidang, bisnis) {
     var d = dataPesan(namaTamu, e, bidang, bisnis);
@@ -849,19 +852,32 @@
     if (!A.tautan_zoom_bod) return '';
     return A.tautan_zoom_bod + (A.zoom_bod_id ? '\n\nMeeting ID: ' + A.zoom_bod_id : '') + (A.zoom_bod_kode ? '\nPasscode: ' + A.zoom_bod_kode : '');
   }
+  /* Teks yang menyertai poster saat diteruskan lewat WhatsApp. */
+  function teksPoster(acara) {
+    var daftar = acaraUndang(acara).slice(0, 3);
+    var baris = daftar.map(function (e) { return '\u2022 ' + tglIDPenuh(e.tanggal) + ' \u00b7 ' + (e.jenis === 'BOD' ? 'Exclusive Business Opportunity Day' : 'Lunch Networking') + ' ' + e.jam_mulai + (e.jam_selesai ? ' - ' + e.jam_selesai : '') + ' WIB' + (e.mode === 'Online' ? ' (online via ' + (e.lokasi || 'Zoom') + ')' : (e.lokasi ? ' (' + e.lokasi + ')' : '')); });
+    return 'Halo! Saya mengundang Anda ke Business Owners Meeting and Networking BNI ' + (S.atur.nama_chapter || 'Optima') + ':\n\n' + (baris.length ? baris.join('\n') + '\n\n' : '') +
+      'Daftar di sini (sekitar 1 menit): ' + urlFormUndangan() + '\n\nSetelah mendaftar, link Zoom dan detail acara kami kirim lewat WhatsApp sehari sebelum acara.\n\nSalam,\n' + (S.profil ? S.profil.nama : '');
+  }
+  var ACARA_BAGI = [];
   function kartuLinkBagi() {
-    var form = S.atur.tautan_form ? urlFormUndangan() : '', zoom = infoZoomRabu();
-    function baris(judul, ada, kosong, id) {
-      return '<li><div class="utama"><b>' + judul + '</b><span>' + (ada ? 'Ready to copy' : kosong) + '</span></div>' + (ada ? '<button class="tombol kecil kedua" type="button" data-salin-link="' + id + '">Copy</button>' : '') + '</li>';
+    var zoom = infoZoomRabu();
+    function baris(judul, ket, ada, id) {
+      return '<li><div class="utama"><b>' + judul + '</b><span>' + (ada ? ket : 'Not set yet. The LDC adds it in Settings.') + '</span></div>' + (ada ? '<button class="tombol kecil kedua" type="button" data-salin-link="' + id + '">Copy</button>' : '') + '</li>';
     }
     return '<div class="judul-bagian"><h2>Links to share</h2></div><section class="kartu"><ul class="daftar">' +
-      baris('Guest registration Form', form, 'Not set yet. The LDC adds it in Settings.', 'form') +
-      baris('Wednesday Zoom (link, ID, passcode)', zoom, 'Not set yet. The LDC adds it in Settings.', 'zoom') +
-      '</ul><p class="catatan-main">The Form link already has your name filled in as the inviter. Guests get the Zoom details the day before from the launch team, so share it yourself only when needed.</p></section>';
+      baris('My registration link', 'Personal. Guests who register here appear in your list.', true, 'form') +
+      baris('Caption for the poster', 'Ready to paste under the poster you forward.', true, 'poster') +
+      baris('Wednesday Zoom (link, ID, passcode)', 'For guests who already registered.', zoom, 'zoom') +
+      '</ul><p class="catatan-main">Forward the poster as usual, with the caption. Guests register on one page, and every guest who uses your link is recorded under your name automatically. Zoom details reach guests the day before from the launch team.</p></section>';
   }
   function pasangLinkBagi(el) {
     el.querySelectorAll('[data-salin-link]').forEach(function (b) {
-      b.onclick = function () { salinTeks(b.dataset.salinLink === 'form' ? urlFormUndangan() : infoZoomRabu()); toast(b.dataset.salinLink === 'form' ? 'Form link copied.' : 'Zoom details copied.'); };
+      b.onclick = function () {
+        var j = b.dataset.salinLink;
+        salinTeks(j === 'form' ? urlFormUndangan() : j === 'poster' ? teksPoster(ACARA_BAGI) : infoZoomRabu());
+        toast(j === 'form' ? 'Registration link copied.' : j === 'poster' ? 'Caption copied.' : 'Zoom details copied.');
+      };
     });
   }
   function lembarUndangan(o) {
@@ -884,12 +900,12 @@
       '<textarea id="u-pesan" class="pesan-undangan" rows="8"></textarea>' +
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<div class="baris-tombol" style="margin-top:10px"><button class="tombol" id="u-wa-buka">Open WhatsApp</button><button class="tombol kedua" id="u-salin">Copy message</button></div>' +
-      '<div class="baris-tombol" style="margin-top:8px"><button class="tombol kecil kedua" id="u-link-form" type="button">Copy Form link</button>' + (S.atur.tautan_zoom_bod ? '<button class="tombol kecil kedua" id="u-link-zoom" type="button">Copy Zoom details</button>' : '') + '</div>' +
+      '<div class="baris-tombol" style="margin-top:8px"><button class="tombol kecil kedua" id="u-link-form" type="button">Copy registration link</button>' + (S.atur.tautan_zoom_bod ? '<button class="tombol kecil kedua" id="u-link-zoom" type="button">Copy Zoom details</button>' : '') + '</div>' +
       '<p class="kecil redup" id="u-manual-bag" style="margin:10px 2px 0"' + (st.tercatat ? ' hidden' : '') + '>Sent your own message with the Form link? <button type="button" id="u-manual" class="tautan-tombol">Mark as invited</button></p>' +
       '<details class="lipat" id="u-balasan" style="margin-top:14px"><summary><span>If they hesitate or ask</span><em>replies</em></summary><div id="u-balasan-isi"></div></details>',
       function (el) {
         var ta = el.querySelector('#u-pesan');
-        var petunjuk = ['Start the conversation. Wait for a reply before sending the next one.', 'Share the details of the event.', 'Send the form link. Ask them to choose your name under "Invited by".', 'Send this after they have registered.'];
+        var petunjuk = ['Start the conversation. Wait for a reply before sending the next one.', 'Share the details of the event.', 'Send the registration link. It is yours, so the guest shows up in your list by itself once they register.', 'Send this after they have registered.'];
         function segarPesan() {
           var e = acaraDipilih();
           if (e) ta.value = buatPesan(st.bahasa, st.dekat, st.langkah, depan, e, bidang, o.bisnis);
@@ -942,7 +958,7 @@
           var t3 = el.querySelector('[data-langkah="2"] b'); if (t3 && t3.textContent.indexOf('\u2713') < 0) t3.textContent += ' \u2713';
           toast('Marked as invited.');
         };
-        el.querySelector('#u-link-form').onclick = function () { salinTeks(urlFormUndangan()); toast('Form link copied.'); };
+        el.querySelector('#u-link-form').onclick = function () { salinTeks(urlFormUndangan()); toast('Registration link copied.'); };
         var lz = el.querySelector('#u-link-zoom');
         if (lz) lz.onclick = function () { salinTeks(infoZoomRabu()); toast('Zoom details copied.'); };
         el.querySelector('#u-salin').onclick = async function () {
@@ -1324,7 +1340,8 @@
   }
 
   async function layarMinggu(isi) {
-    var tm = await api('tamuPekanIni');
+    var hh = await Promise.all([api('tamuPekanIni'), api('acara')]);
+    var tm = hh[0]; ACARA_BAGI = hh[1] && hh[1].ok ? hh[1].acara : [];
     if (!tm.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(tm.pesan) + '</p>'; return; }
     function baris(g) {
       var chip = g.bergabung ? '<span class="chip emas">Joined</span>' : g.status === 'Hadir' ? '<span class="chip hijau">Attended</span>' : '<span class="chip">Registered</span>';
@@ -2405,7 +2422,7 @@
         return '<li><form class="atur-baris" data-kunci="' + esc(x.kunci) + '"><label class="isian" style="margin:0;flex:1"><span>' + esc(LABEL_ATUR[x.kunci] || x.kunci) + '</span>' + kontrol + '</label><button class="tombol kecil kedua" type="submit">Save</button></form></li>';
       }).join('') + '</ul></section>';
     }
-    w.innerHTML = kelompok('Chapter', /^(fase|tanggal_|tautan_(zoom_cs|form))/) + kelompok('Wednesday guests: Zoom and Form', /^(tautan_zoom_bod|zoom_bod_|form_entry_)/) + kelompok('Targets', /^target_/) + kelompok('Teams', /^tim_maks$/) + kelompok('Driver recommendation', /^driver_/) +
+    w.innerHTML = kelompok('Chapter', /^(fase|tanggal_|tautan_zoom_cs)/) + kelompok('Wednesday guests: Zoom', /^(tautan_zoom_bod|zoom_bod_)/) + kelompok('Targets', /^target_/) + kelompok('Teams', /^tim_maks$/) + kelompok('Driver recommendation', /^driver_/) +
       '<p class="catatan-main"><a href="#tim-data" class="tautan">View sheet data (read only)</a></p><p class="catatan-main">Changing the phase changes the Chapter Mission target and the Founding or Core Group label for new members. Member codes stay off until ESM: after switching the phase, turn them on in People.</p>';
     w.querySelectorAll('form.atur-baris').forEach(function (f) {
       f.onsubmit = async function (e) {

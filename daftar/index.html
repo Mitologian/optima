@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#C8102E">
+<meta name="robots" content="noindex">
+<title>Daftar Visitor BNI Optima</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --kertas:#fff; --kertas-2:#F5F3F3; --tinta:#1A1718; --abu:#6F6768; --garis:#E8E2E2; --merah:#C8102E; --merah-muda:#FCE8EB; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--kertas); color: var(--tinta); font: 16px/1.5 'Plus Jakarta Sans', system-ui, sans-serif; }
+.bungkus { max-width: 480px; margin: 0 auto; padding: 0 16px 48px; }
+header { padding: 26px 0 8px; }
+.merek { font: 800 13px Helvetica, Arial, sans-serif; letter-spacing: .06em; color: var(--merah); }
+h1 { font: 800 26px/1.15 Helvetica, Arial, sans-serif; margin: 4px 0 6px; }
+.sub { color: var(--abu); margin: 0 0 14px; font-size: 14px; }
+.undang { background: var(--merah-muda); border: 1px solid #F3C4CB; border-radius: 14px; padding: 12px 14px; margin: 6px 0 18px; font-size: 15px; }
+h2 { font: 700 15px Helvetica, Arial, sans-serif; margin: 18px 0 8px; }
+.acara { display: block; border: 1.5px solid var(--garis); border-radius: 14px; padding: 12px 14px; margin: 0 0 8px; cursor: pointer; }
+.acara input { position: absolute; opacity: 0; pointer-events: none; }
+.acara b { display: block; }
+.acara span { color: var(--abu); font-size: 14px; }
+.acara:has(input:checked) { border-color: var(--merah); background: var(--merah-muda); }
+label.isian { display: block; margin: 0 0 12px; }
+label.isian > span { display: block; font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+label.isian > small { display: block; color: var(--abu); font-size: 12px; margin-top: 3px; }
+input[type=text], input[type=tel], input[type=email] { width: 100%; font: inherit; padding: 12px; border: 1.5px solid var(--garis); border-radius: 12px; background: #fff; }
+input:focus { outline: 0; border-color: var(--merah); }
+.jebakan { position: absolute; left: -9999px; height: 0; overflow: hidden; }
+button.kirim { width: 100%; font: inherit; font-weight: 700; color: #fff; background: var(--merah); border: 0; border-radius: 12px; padding: 14px; margin-top: 6px; cursor: pointer; }
+button.kirim[disabled] { opacity: .6; }
+.salah { color: var(--merah); font-size: 14px; margin: 8px 0 0; }
+.selesai { border: 1.5px solid #E5B8BF; border-radius: 16px; padding: 18px; background: var(--merah-muda); }
+.selesai h2 { font-size: 20px; margin: 0 0 8px; }
+.selesai p { margin: 0 0 10px; }
+.kecil { color: var(--abu); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="bungkus">
+<header>
+  <div class="merek">BNI CHAPTER</div>
+  <h1 id="judul">Daftar sebagai visitor</h1>
+  <p class="sub">Business Owners Meeting and Networking. Mengisi hanya sekitar satu menit.</p>
+</header>
+<main id="isi"><p class="kecil">Memuat jadwal...</p></main>
+</div>
+<script src="../web/config.js"></script>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var tiruan = !CONFIG.API_URL || q.get('tiruan') === '1';
+  var HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  var BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  var $isi = document.getElementById('isi');
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function tanggalLengkap(iso) { var d = new Date(iso + 'T00:00:00Z'); return HARI[d.getUTCDay()] + ', ' + d.getUTCDate() + ' ' + BULAN[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); }
+  function judulAcara(e) { return e.jenis === 'BOD' ? 'Exclusive Business Opportunity Day' : (e.nama_acara || 'Acara'); }
+  function jamAcara(e) { return e.jam_mulai + (e.jam_selesai ? ' - ' + e.jam_selesai : '') + ' WIB'; }
+  function tempat(e) { return e.mode === 'Online' ? 'Online via ' + (e.lokasi || 'Zoom') : (e.lokasi || 'Lokasi menyusul'); }
+
+  async function panggil(action, data) {
+    var badan = Object.assign({ action: action, kode: '' }, data || {});
+    if (tiruan) return Tiruan.panggil(badan);
+    try {
+      var res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(badan), redirect: 'follow' });
+      return await res.json();
+    } catch (e) { return { ok: false, pesan: 'Tidak ada koneksi internet. Silakan coba lagi.' }; }
+  }
+  function muat(src) { return new Promise(function (ok, gagal) { var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = gagal; document.head.appendChild(s); }); }
+
+  function gambarForm(info) {
+    var m = q.get('m') || '', pilih = q.get('e') || '';
+    if (!info.acara.length) {
+      $isi.innerHTML = '<p>Belum ada jadwal terdekat yang dibuka untuk pendaftaran. Silakan hubungi pengundang Anda.</p>';
+      return;
+    }
+    if (!info.acara.some(function (e) { return e.id_event === pilih; })) pilih = info.acara[0].id_event;
+    $isi.innerHTML =
+      (info.pengundang ? '<div class="undang">Anda diundang oleh <b>' + esc(info.pengundang) + '</b>.</div>' : '') +
+      '<form id="f" novalidate autocomplete="on">' +
+      '<h2>Pilih acara</h2>' + info.acara.map(function (e) {
+        return '<label class="acara"><input type="radio" name="acara" value="' + esc(e.id_event) + '"' + (e.id_event === pilih ? ' checked' : '') + '><b>' + esc(judulAcara(e)) + '</b><span>' + esc(tanggalLengkap(e.tanggal) + ' · ' + jamAcara(e)) + '<br>' + esc(tempat(e)) + '</span></label>';
+      }).join('') +
+      '<h2>Data Anda</h2>' +
+      '<label class="isian"><span>Nama lengkap</span><input type="text" name="nama" autocomplete="name" required></label>' +
+      '<label class="isian"><span>Nomor WhatsApp</span><input type="tel" name="whatsapp" inputmode="tel" autocomplete="tel" placeholder="0812 3456 7890" required><small>Link Zoom dan detail acara dikirim ke nomor ini.</small></label>' +
+      '<label class="isian"><span>Bidang usaha</span><input type="text" name="usaha" placeholder="Contoh: katering, arsitek, percetakan" required></label>' +
+      '<label class="isian"><span>Nama perusahaan (boleh dikosongkan)</span><input type="text" name="perusahaan" autocomplete="organization"></label>' +
+      '<label class="isian"><span>Kota (boleh dikosongkan)</span><input type="text" name="kota" autocomplete="address-level2"></label>' +
+      '<label class="isian"><span>Email (boleh dikosongkan)</span><input type="email" name="email" autocomplete="email"></label>' +
+      '<div class="jebakan" aria-hidden="true"><label>Situs <input type="text" name="situs" tabindex="-1" autocomplete="off"></label></div>' +
+      '<p class="salah" id="salah" hidden></p>' +
+      '<button class="kirim" type="submit">Daftar</button>' +
+      '</form>';
+    var f = document.getElementById('f');
+    f.onsubmit = async function (ev) {
+      ev.preventDefault();
+      var salah = document.getElementById('salah'), tombol = f.querySelector('button');
+      salah.hidden = true;
+      if (!f.nama.value.trim() || !f.whatsapp.value.trim() || !f.usaha.value.trim()) { salah.textContent = 'Mohon isi nama, nomor WhatsApp, dan bidang usaha.'; salah.hidden = false; return; }
+      tombol.disabled = true; tombol.textContent = 'Mengirim...';
+      var r = await panggil('daftarTamu', { m: m, id_event: f.acara.value, nama: f.nama.value, whatsapp: f.whatsapp.value, usaha: f.usaha.value, perusahaan: f.perusahaan.value, kota: f.kota.value, email: f.email.value, situs: f.situs.value });
+      if (!r.ok) { salah.textContent = r.pesan || 'Pendaftaran belum berhasil. Silakan coba lagi.'; salah.hidden = false; tombol.disabled = false; tombol.textContent = 'Daftar'; return; }
+      var a = r.acara || info.acara.filter(function (e) { return e.id_event === f.acara.value; })[0];
+      $isi.innerHTML = '<div class="selesai"><h2>Terima kasih, ' + esc((r.nama || f.nama.value).trim().split(/\s+/)[0]) + '!</h2>' +
+        '<p>Anda sudah terdaftar di <b>' + esc(a ? judulAcara(a) : 'acara kami') + '</b>' + (a ? ',<br><b>' + esc(tanggalLengkap(a.tanggal)) + '</b>, pukul <b>' + esc(jamAcara(a)) + '</b>.' : '.') + '</p>' +
+        '<p>Link Zoom dan detail acara kami kirim lewat WhatsApp sehari sebelum acara. Pastikan nomor WhatsApp Anda aktif.</p>' +
+        (r.pengundang ? '<p class="kecil">Undangan dari ' + esc(r.pengundang) + '.</p>' : '') + '</div>';
+      window.scrollTo(0, 0);
+    };
+  }
+
+  (async function () {
+    try {
+      if (tiruan) { await muat('../apps-script/Inti.js'); await muat('../web/tiruan.js'); }
+      var info = await panggil('infoDaftar', { m: q.get('m') || '' });
+      if (!info.ok) { $isi.innerHTML = '<p>' + esc(info.pesan || 'Halaman belum bisa dibuka. Silakan coba lagi.') + '</p>'; return; }
+      gambarForm(info);
+    } catch (e) { $isi.innerHTML = '<p>Halaman belum bisa dibuka. Silakan coba lagi.</p>'; }
+  })();
+})();
+</script>
+</body>
+</html>

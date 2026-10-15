@@ -413,8 +413,8 @@
     var tunggu = pipa ? pipa.filter(function (c) { return ['Listed', 'Invited', 'Attended'].indexOf(c.tahap) >= 0; }).length : 0;
     var cs = pipa ? pipa.filter(function (c) { return c.tahap === 'Coffee_Scheduled'; }).length : 0;
     if (isLT() && cek) {
-      judul = 'Check Form sign-ups'; href = '#tim'; tombol = 'Open interviews';
-      isi = cek + ' sign-up' + (cek > 1 ? 's' : '') + ' from the Form need a decision, so guests are matched to the right inviter.';
+      judul = 'Check sign-ups'; href = '#tim'; tombol = 'Open interviews';
+      isi = cek + ' sign-up' + (cek > 1 ? 's' : '') + ' need a decision, so guests are matched to the right inviter.';
     } else if (n < min) {
       judul = 'Add prospect names'; href = '#kursi'; tombol = 'Choose a seat';
       isi = (min - n) + ' more names to reach the minimum of ' + min + '. Tap a seat on the board, then add a prospect from that classification.';
@@ -472,9 +472,9 @@
 
     var sorot = ud && ud.ok ? sorotan(ud.undangan) : [];
     if (sorot.length) {
-      html += '<section class="kartu sorotan"><h3>News from invitations</h3><ul class="kabar">' + sorot.map(function (u) {
+      html += '<section class="kartu sorotan"><h3>News from invitations</h3><ul class="kabar">' + sorot.slice(0, 3).map(function (u) {
         return '<li class="k-' + (u.status === 'Bergabung' ? 'baris' : 'anggota') + '"><span class="titik"></span><div>' + esc(u.nama_depan) + (u.status === 'Bergabung' ? ' has joined the chapter. Congratulations, this came from an invitation.' : ' attended ' + esc(u.acara) + ' ' + esc(tglPendek(u.tanggal)) + '.') + '</div></li>';
-      }).join('') + '</ul><div class="baris-tombol"><button class="tombol kecil kedua" id="b-sorot">Mark as read</button></div></section>';
+      }).join('') + '</ul>' + (sorot.length > 3 ? '<p class="kecil redup">and ' + (sorot.length - 3) + ' more</p>' : '') + '<div class="baris-tombol"><button class="tombol kecil kedua" id="b-sorot">Mark as read</button></div></section>';
     }
 
     html += kartuPengumuman(pg && pg.ok ? pg.pengumuman : []);
@@ -867,10 +867,10 @@
     }
     return '<div class="judul-bagian"><h2>Links to share</h2></div><section class="kartu"><ul class="daftar">' +
       baris('My registration link', 'Personal. Guests who register here appear in your list.', true, 'form') +
-      baris('General link', 'No name attached. Guests type who invited them. Use it for group broadcasts.', true, 'umum') +
+      (isLT() ? baris('General link', 'No name attached. Guests type who invited them. For group broadcasts.', true, 'umum') : '') +
       baris('Caption for the poster', 'Ready to paste under the poster you forward.', true, 'poster') +
-      baris('Wednesday Zoom (link, ID, passcode)', 'For guests who already registered.', zoom, 'zoom') +
-      '</ul><p class="catatan-main">Forward the poster as usual, with the caption. Guests register on one page, and every guest who uses your link is recorded under your name automatically. Zoom details reach guests the day before from the launch team.</p></section>';
+      (zoom || isLT() ? baris('Wednesday Zoom', 'Link, ID and passcode for registered guests.', zoom, 'zoom') : '') +
+      '</ul><p class="catatan-main">Forward the poster with the caption. Guests who register through your link are recorded under your name.</p></section>';
   }
   function pasangLinkBagi(el) {
     el.querySelectorAll('[data-salin-link]').forEach(function (b) {
@@ -1356,10 +1356,10 @@
         '<span>' + (e.pembicara ? 'Speaker: ' + esc(e.pembicara) : 'Speaker to be announced') + '</span>' + kartuPoster(e.poster) + '</div></li>';
     }).join('');
     isi.innerHTML = '<div class="sapa"><h1>This week</h1><p class="kecil">' + ((tm.acara_ronde || []).length ? 'Visitors registered for Wednesday, with their classification. Phone numbers are not shown.' : 'No Wednesday meetings are scheduled yet. They appear here once the launch team adds them.') + '</p></div>' +
-      (prog ? '<div class="judul-bagian"><h2>Wednesday program</h2><span class="kecil">' + tm.acara_ronde.length + ' sessions</span></div><section class="kartu"><ul class="daftar">' + prog + '</ul></section>' : '') +
       kartuLinkBagi() +
       '<div class="judul-bagian"><h2>Invited by me</h2><span class="kecil">' + saya.length + '</span></div>' +
       '<section class="kartu">' + (saya.length ? '<ul class="daftar">' + saya.map(baris).join('') + '</ul>' : '<p class="kosong-isi">None of my invitees are registered yet. Check "My list" for who still needs a reminder.</p>') + '</section>' +
+      (prog ? '<div class="judul-bagian"><h2>Wednesday program</h2><span class="kecil">' + tm.acara_ronde.length + ' sessions</span></div><section class="kartu"><ul class="daftar">' + prog + '</ul></section>' : '') +
       '<div class="judul-bagian"><h2>Other Visitors</h2><span class="kecil">' + lain.length + '</span></div>' +
       '<section class="kartu">' + (lain.length ? '<ul class="daftar">' + lain.map(baris).join('') + '</ul><p class="catatan-main">Know their classification before Wednesday, so you can greet and connect them.</p>' : '<p class="kosong-isi">No other Visitors registered yet.</p>') + '</section>';
     pasangLinkBagi(isi);
@@ -1474,7 +1474,7 @@
     var bagian = [];
     if (pc.perlu_cek.length) bagian.push(pc.perlu_cek.length + ' to match');
     if (pc.tanpa_pengundang.length) bagian.push(pc.tanpa_pengundang.length + ' without inviter');
-    return '<section class="kartu sorotan"><div class="langkah-atas"><span class="chip merah">Form sign-ups</span></div>' +
+    return '<section class="kartu sorotan"><div class="langkah-atas"><span class="chip merah">Guest sign-ups</span></div>' +
       '<h3>' + pc.jumlah + ' sign-up' + (pc.jumlah > 1 ? 's' : '') + ' need a decision</h3><p class="kecil">' + esc(bagian.join(', ')) + '.</p>' +
       '<div class="baris-tombol"><button class="tombol" id="b-cek">Review</button></div></section>';
   }
@@ -1488,14 +1488,14 @@
     if (!pc.ok) { bukaLembar('<p class="kosong-isi">' + esc(pc.pesan) + '</p>'); return; }
     var semuaPeng = (ang.anggota || []).concat(ang.pendiri || []).sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
     function opsiPeng(pilih) { return semuaPeng.map(function (a) { return '<option value="' + esc(a.id_orang) + '"' + (a.id_orang === pilih ? ' selected' : '') + '>' + esc(a.nama) + '</option>'; }).join(''); }
-    var html = '<h2>Form sign-ups</h2><p class="kecil" style="margin:6px 0 12px">Decide each one to keep the guest list accurate.</p>';
+    var html = '<h2>Guest sign-ups</h2><p class="kecil" style="margin:6px 0 12px">Decide each one to keep the guest list accurate.</p>';
     if (!pc.jumlah) html += '<p class="kosong-isi">All sign-ups are handled.</p>';
     if (pc.perlu_cek.length) {
       html += '<div class="judul-bagian"><h2>Is it the same person?</h2><span class="kecil">' + pc.perlu_cek.length + '</span></div>' + pc.perlu_cek.map(function (c) {
         var k = c.kandidat;
         return '<section class="kartu" data-resp="' + esc(c.id_response) + '" style="box-shadow:none"><h3>' + esc(c.nama) + '</h3>' +
           '<p class="kecil">Signed up for ' + esc(labelAcaraCek(c.acara)) + (c.pengundang ? ' · invited by ' + esc(c.pengundang) : ' · no inviter chosen') + '</p>' +
-          '<p class="kecil redup">Form: ' + esc(c.whatsapp || 'no number') + (c.bisnis ? ' · ' + esc(c.bisnis) : '') + '</p>' +
+          '<p class="kecil redup">Sign-up: ' + esc(c.whatsapp || 'no number') + (c.bisnis ? ' · ' + esc(c.bisnis) : '') + '</p>' +
           (k ? '<p class="kecil" style="margin-top:8px"><b>Possible match</b> on the list: ' + esc(k.nama) + (k.bidang ? ' · ' + esc(k.bidang) : '') + ' · ' + esc(lblTahap(k.tahap)) + '</p>'
              : '<p class="kecil" style="margin-top:8px">No suggested match.</p>') +
           '<p class="pesan-salah" hidden></p>' +
@@ -1885,7 +1885,7 @@
           '<button class="tombol kecil kedua" data-ubah="' + esc(a.id_pengumuman) + '">Edit</button><button class="tombol kecil kedua" data-hapus="' + esc(a.id_pengumuman) + '">Remove</button></li>';
       }).join('') + '</ul>' : '<p class="kosong-isi">No active announcements. Members see announcements on Home.</p>') + '</section>' +
       '<div class="judul-bagian"><h2>Events</h2>' + (isLDC() ? '<button class="tombol kecil kedua" id="a-geser" type="button">Shift dates</button>' : '') + '<button class="tombol kecil" id="a-baru">Add event</button></div>' +
-      '<p class="kecil" style="margin:-4px 2px 10px">The sign-up Form shows only the next Wednesday events (BOD and Lunch Networking). The list updates by itself.</p>' +
+      '<p class="kecil" style="margin:-4px 2px 10px">The sign-up page shows only the next Wednesday events (BOD and Lunch Networking). The list updates by itself.</p>' +
       '<section class="kartu">' + (acara.length ? '<ul class="daftar">' + acara.map(function (e) {
         return '<li><div class="utama"><b>' + esc(tglHari(e.tanggal)) + ' · ' + esc(e.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + esc(e.jam_mulai) + '</b><span>' + (e.pembicara ? esc(e.pembicara) : 'No speaker yet') + (e.poster ? ' · poster set' : '') + '</span></div>' +
           '<button class="tombol kecil kedua" data-acara="' + esc(e.id_event) + '">Edit</button></li>';

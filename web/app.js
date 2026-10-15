@@ -620,7 +620,7 @@
         : '<label class="isian"><span>Classification (their type of business)</span><input name="bisnis" required autocomplete="off" placeholder="Example: Halal catering"></label>' +
           '<p class="kecil" style="margin:-6px 0 12px">Not on the seat list? Type it here. The launch team can add the seat once the person joins.</p>' + pilihKursiKosong('id_kursi', false)) +
       '<label class="isian"><span>WhatsApp' + (isLT() ? '' : ' (can be added later)') + '</span><input name="whatsapp" inputmode="tel" autocomplete="off" placeholder="08..."' + (isLT() ? ' required' : '') + '></label>' +
-      (pilihanAcara.length ? '<label class="saklar"><input type="checkbox" name="undang"><span>Also invite to a Wednesday event<br><span class="kecil">WhatsApp number is required when inviting.</span></span></label>' +
+      (pilihanAcara.length ? '<label class="saklar"><input type="checkbox" name="undang"><span>Start the invitation messages now<br><span class="kecil">Opens the messages for a Wednesday event. WhatsApp number is required.</span></span></label>' +
         '<div id="pil-acara" hidden style="margin:-4px 0 14px"></div>' : '') +
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<button class="tombol" type="submit">Add name</button>' +
@@ -642,7 +642,7 @@
         var tombol = f.querySelector('[type=submit]');
         tombol.disabled = true;
         var idEv = cek && cek.checked ? evForm : '';
-        var data = { id_kursi: x.id_kursi || (f.id_kursi ? f.id_kursi.value : ''), nama: f.nama.value, bisnis: f.bisnis.value, whatsapp: f.whatsapp.value, id_event: idEv || '' };
+        var data = { id_kursi: x.id_kursi || (f.id_kursi ? f.id_kursi.value : ''), nama: f.nama.value, bisnis: f.bisnis.value, whatsapp: f.whatsapp.value };
         var r = await api('tambahCalon', data);
         tombol.disabled = false;
         var salah = el.querySelector('#salah');
@@ -651,9 +651,9 @@
           if (r.duplikat) t += ' (' + r.duplikat.nama_depan + (r.duplikat.tahap ? ', stage ' + lblTahap(r.duplikat.tahap) + ', PIC ' + (r.duplikat.pic || 'none yet') : '') + ')';
           salah.textContent = t; salah.hidden = false; return;
         }
-        if (r.id_undangan) {
-          var e2 = pilihanAcara.filter(function (z) { return z.id_event === idEv; })[0];
-          lembarKirim(f.nama.value.trim().split(/\s+/)[0], f.whatsapp.value, e2, id ? x.bidang : '', f.bisnis.value, r.id_orang);
+        if (idEv) {
+          // Langsung ke pesan pembuka. Undangan baru tercatat saat link Form dikirim.
+          lembarUndangan({ id: r.id_orang, nama: f.nama.value.trim(), wa: String(f.whatsapp.value || ''), acara: pilihanAcara, idEv: idEv, tercatat: false, bidang: id ? x.bidang : '', bisnis: f.bisnis.value, segarkan: segarkan });
         } else {
           tutupLembar();
           toast(!id ? 'Name added to the list' : x.status === 'kosong' ? 'The ' + x.bidang + ' seat now has a prospect' : 'Name added to the ' + x.bidang + ' seat', !!id && x.status === 'kosong');
@@ -819,40 +819,66 @@
 
   /* Lembar undangan: pilih acara, kedekatan, dan langkah pesan, lalu salin atau kirim.
      opsi: {id, nama, wa, bidang, bisnis, acara[], idEv, tercatat, segarkan} */
-  /* Pesan mana yang sudah dikirim ke seseorang untuk satu acara. Disimpan di perangkat ini saja, hanya untuk penanda dan langkah berikutnya. */
-  function kunciPesan(idOrang, idEv) { return 'optima_pesan_' + idOrang + '_' + idEv; }
-  function pesanTerkirim(idOrang, idEv) {
-    try { var a = JSON.parse(ambil(kunciPesan(idOrang, idEv)) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+  /* Pesan mana yang sudah dikirim ke seseorang. Disimpan di perangkat ini saja, untuk penanda dan langkah berikutnya. Kedaluwarsa 10 hari. */
+  function kunciPesan(idOrang) { return 'optima_pesan_' + idOrang; }
+  function pesanTerkirim(idOrang) {
+    try {
+      var d = JSON.parse(ambil(kunciPesan(idOrang)) || 'null');
+      return d && Array.isArray(d.s) && Date.now() - d.t < 10 * 864e5 ? d.s : [];
+    } catch (e) { return []; }
   }
-  function tandaiPesan(idOrang, idEv, langkah) {
-    var a = pesanTerkirim(idOrang, idEv);
-    if (a.indexOf(langkah) < 0) { a.push(langkah); simpan(kunciPesan(idOrang, idEv), JSON.stringify(a)); }
+  function tandaiPesan(idOrang, langkah) {
+    var a = pesanTerkirim(idOrang);
+    if (a.indexOf(langkah) < 0) a.push(langkah);
+    simpan(kunciPesan(idOrang), JSON.stringify({ s: a, t: Date.now() }));
   }
-  function langkahBerikut(idOrang, idEv, terdaftar) {
+  function langkahBerikut(idOrang, terdaftar) {
     if (terdaftar) return 3;
-    var a = pesanTerkirim(idOrang, idEv);
+    var a = pesanTerkirim(idOrang);
     return a.length ? Math.min(Math.max.apply(null, a) + 1, 3) : 0;
+  }
+  /* Link yang sering dibagikan, bisa disalin kapan saja. */
+  function infoZoomRabu() {
+    var A = S.atur;
+    if (!A.tautan_zoom_bod) return '';
+    return A.tautan_zoom_bod + (A.zoom_bod_id ? '\n\nMeeting ID: ' + A.zoom_bod_id : '') + (A.zoom_bod_kode ? '\nPasscode: ' + A.zoom_bod_kode : '');
+  }
+  function kartuLinkBagi() {
+    var form = S.atur.tautan_form ? urlFormUndangan() : '', zoom = infoZoomRabu();
+    function baris(judul, ada, kosong, id) {
+      return '<li><div class="utama"><b>' + judul + '</b><span>' + (ada ? 'Ready to copy' : kosong) + '</span></div>' + (ada ? '<button class="tombol kecil kedua" type="button" data-salin-link="' + id + '">Copy</button>' : '') + '</li>';
+    }
+    return '<div class="judul-bagian"><h2>Links to share</h2></div><section class="kartu"><ul class="daftar">' +
+      baris('Guest registration Form', form, 'Not set yet. The LDC adds it in Settings.', 'form') +
+      baris('Wednesday Zoom (link, ID, passcode)', zoom, 'Not set yet. The LDC adds it in Settings.', 'zoom') +
+      '</ul><p class="catatan-main">The Form link already has your name filled in as the inviter. Guests get the Zoom details the day before from the launch team, so share it yourself only when needed.</p></section>';
+  }
+  function pasangLinkBagi(el) {
+    el.querySelectorAll('[data-salin-link]').forEach(function (b) {
+      b.onclick = function () { salinTeks(b.dataset.salinLink === 'form' ? urlFormUndangan() : infoZoomRabu()); toast(b.dataset.salinLink === 'form' ? 'Form link copied.' : 'Zoom details copied.'); };
+    });
   }
   function lembarUndangan(o) {
     var depan = o.nama.split(/\s+/)[0];
-    var st = { dekat: 'teman', bahasa: 'id', langkah: o.langkahAwal || 0, balasan: false, idEv: o.idEv || (o.acara[0] && o.acara[0].id_event), tercatat: !!o.tercatat, wa: o.wa || '' };
+    var st = { dekat: 'teman', bahasa: 'id', langkah: o.langkahAwal !== undefined ? o.langkahAwal : (o.id ? langkahBerikut(o.id, false) : 0), balasan: false, idEv: o.idEv || (o.acara[0] && o.acara[0].id_event), tercatat: !!o.tercatat, wa: o.wa || '' };
     var bidang = o.bidang && !/^Undecided/.test(o.bidang) ? o.bidang : '';
     function acaraDipilih() { return o.acara.filter(function (z) { return z.id_event === st.idEv; })[0]; }
     bukaLembar(
       '<h2>Invite ' + esc(depan) + '</h2>' +
-      '<p class="kecil" id="u-info" style="margin:4px 0 12px">' + (st.tercatat ? 'Invitation recorded. Send the messages in order, one at a time.' : 'Pick the event and how close you are. The invitation is recorded when a message is copied or sent.') + '</p>' +
+      '<p class="kecil" id="u-info" style="margin:4px 0 12px">' + (st.tercatat ? 'Invitation recorded. Send the messages in order, one at a time.' : 'Pick the event and how close you are. The invitation is recorded when message 3, with the Form link, is copied or sent.') + '</p>' +
       '<p class="kecil" style="margin-bottom:6px">Which Wednesday?</p><div id="u-ev" style="margin-bottom:12px"></div>' +
       (st.wa ? '' : '<label class="isian"><span>WhatsApp ' + esc(depan) + '</span><input id="u-wa" inputmode="tel" placeholder="08..." autocomplete="off"></label>') +
       '<p class="kecil" style="margin-bottom:6px">How close are you to ' + esc(depan) + '?</p><div class="pilihan" id="u-dekat" style="margin-bottom:12px">' + KEDEKATAN.map(function (g) {
         return '<button type="button" data-dekat="' + g[0] + '" aria-pressed="' + (g[0] === st.dekat) + '">' + g[1] + '</button>';
       }).join('') + '<button type="button" id="u-bhs" class="bahasa" aria-label="Switch message language">ID | EN</button></div>' +
       '<div class="seg langkah-seg" id="u-langkah">' + LANGKAH.map(function (g, i) {
-        return '<button type="button" data-langkah="' + i + '" aria-selected="' + (i === st.langkah) + '"><b>' + g[0] + (o.id && pesanTerkirim(o.id, st.idEv).indexOf(i) >= 0 ? ' \u2713' : '') + '</b><span>' + g[1] + '</span></button>';
+        return '<button type="button" data-langkah="' + i + '" aria-selected="' + (i === st.langkah) + '"><b>' + g[0] + (o.id && pesanTerkirim(o.id).indexOf(i) >= 0 ? ' \u2713' : '') + '</b><span>' + g[1] + '</span></button>';
       }).join('') + '</div>' +
       '<p class="kecil redup" id="u-petunjuk" style="margin:8px 2px"></p>' +
       '<textarea id="u-pesan" class="pesan-undangan" rows="8"></textarea>' +
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<div class="baris-tombol" style="margin-top:10px"><button class="tombol" id="u-wa-buka">Open WhatsApp</button><button class="tombol kedua" id="u-salin">Copy message</button></div>' +
+      '<div class="baris-tombol" style="margin-top:8px"><button class="tombol kecil kedua" id="u-link-form" type="button">Copy Form link</button>' + (S.atur.tautan_zoom_bod ? '<button class="tombol kecil kedua" id="u-link-zoom" type="button">Copy Zoom details</button>' : '') + '</div>' +
       '<details class="lipat" id="u-balasan" style="margin-top:14px"><summary><span>If they hesitate or ask</span><em>replies</em></summary><div id="u-balasan-isi"></div></details>',
       function (el) {
         var ta = el.querySelector('#u-pesan');
@@ -881,19 +907,29 @@
         el.querySelectorAll('[data-langkah]').forEach(function (b) { b.onclick = function () { st.langkah = Number(b.dataset.langkah); tanda('#u-langkah', 'data-langkah', st.langkah); segarPesan(); }; });
         el.querySelector('#u-bhs').onclick = function () { st.bahasa = st.bahasa === 'id' ? 'en' : 'id'; this.textContent = st.bahasa === 'id' ? 'ID | EN' : 'EN | ID'; segarPesan(); };
         segarPesan();
+        /* Pesan 1 dan 2 hanya disimpan nomornya. Undangan tercatat saat pesan 3 (link Form) dikirim atau disalin. */
         async function catat() {
-          if (st.tercatat) return true;
           var kolom = el.querySelector('#u-wa'), wa = kolom ? kolom.value : st.wa;
           var s = el.querySelector('#salah');
-          if (!wa) { s.textContent = 'Enter the WhatsApp number first.'; s.hidden = false; return false; }
-          var r = await api('undang', { id_orang: o.id, id_event: st.idEv, whatsapp: kolom ? wa : '' });
+          if (!st.tercatat && !wa) { s.textContent = 'Enter the WhatsApp number first.'; s.hidden = false; return false; }
+          if (st.tercatat) return true;
+          var mencatat = st.langkah >= 2;
+          if (!mencatat && (st.nomorSimpan || !kolom)) return true;   // nomor sudah tersimpan, tidak ada yang dicatat
+          var r = await api('undang', { id_orang: o.id, id_event: st.idEv, whatsapp: kolom ? wa : '', catat: mencatat });
           if (!r.ok) { s.textContent = r.pesan; s.hidden = false; return false; }
-          s.hidden = true; st.tercatat = true; st.wa = wa;
-          el.querySelector('#u-info').textContent = 'Invitation recorded. Send the messages in order, one at a time.';
-          gambarAcara();
-          if (o.segarkan) o.segarkan();
+          s.hidden = true; st.wa = wa; st.nomorSimpan = true;
+          if (kolom) { var k0 = kolom.closest('label'); if (k0) k0.hidden = true; }
+          if (mencatat) {
+            st.tercatat = true;
+            el.querySelector('#u-info').textContent = 'Invitation recorded. Send the remaining messages in order, one at a time.';
+            gambarAcara();
+            if (o.segarkan) o.segarkan();
+          }
           return true;
         }
+        el.querySelector('#u-link-form').onclick = function () { salinTeks(urlFormUndangan()); toast('Form link copied.'); };
+        var lz = el.querySelector('#u-link-zoom');
+        if (lz) lz.onclick = function () { salinTeks(infoZoomRabu()); toast('Zoom details copied.'); };
         el.querySelector('#u-salin').onclick = async function () {
           if (!(await catat())) return;
           salinTeks(ta.value, ta); toast('Message copied. Paste it in WhatsApp.'); tandaKirim();
@@ -909,7 +945,8 @@
         };
         function tandaKirim() {
           if (!o.id) return;
-          tandaiPesan(o.id, st.idEv, st.langkah);
+          tandaiPesan(o.id, st.langkah);
+          if (o.segarkan && st.tercatat === false) o.segarkan();
           var tombol = el.querySelector('[data-langkah="' + st.langkah + '"] b');
           if (tombol && tombol.textContent.indexOf('\u2713') < 0) tombol.textContent += ' \u2713';
         }
@@ -1199,7 +1236,7 @@
     bukaLembar('<h2>Invite ' + esc(depan) + '</h2><p class="kecil" style="margin:6px 0 14px">' + esc(u.bidang) + '</p>' +
       '<div class="pilihan kolom">' +
       (!acara.length && u.tahap === 'Listed' && !u.status_undangan ? '<p class="kecil redup" style="margin-bottom:8px">No Wednesday meetings are open yet, so a coffee session is the way to invite for now.</p>' : '') +
-      (lanjut ? '<button type="button" id="p-lanjut"><b>Continue the invitation messages</b><small>' + esc((u.acara_detail.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + tglPendek(u.acara_detail.tanggal) + ' · ' + (u.status_undangan === 'Terdaftar' ? 'registered, send the last message' : 'next: ' + ['opener', 'invitation details', 'Form link', 'after sign-up'][langkahBerikut(u.id_orang, u.acara_detail.id_event, false)])) + '</small></button>' : '') +
+      (lanjut ? '<button type="button" id="p-lanjut"><b>Continue the invitation messages</b><small>' + esc((u.acara_detail.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + tglPendek(u.acara_detail.tanggal) + ' · ' + (u.status_undangan === 'Terdaftar' ? 'registered, send the last message' : 'next: ' + ['opener', 'invitation details', 'Form link', 'after sign-up'][langkahBerikut(u.id_orang, false)])) + '</small></button>' : '') +
       (bisaKunjung ? '<button type="button" id="p-kunjung"><b>Visit a Wednesday meeting</b><small>BOD or Lunch Networking, then a coffee session</small></button>' : '') +
       (bisaKopi ? '<button type="button" id="p-kopi"><b>' + (u.tahap === 'Coffee_Scheduled' ? 'Coffee session booked' : 'Coffee session straight away') + '</b><small>' + (u.tahap === 'Coffee_Scheduled' ? 'See the time, confirm, or change it' : '30 minutes 1 on 1 with Coach Dedy, no visit needed') + '</small></button>' : '') +
       '</div>',
@@ -1207,7 +1244,7 @@
         var lj = el.querySelector('#p-lanjut');
         if (lj) lj.onclick = function () {
           var ed = u.acara_detail, daftar = u.status_undangan === 'Terdaftar';
-          lembarUndangan({ id: u.id_orang, nama: u.nama, wa: u.whatsapp, acara: [ed], idEv: ed.id_event, tercatat: true, bidang: u.bidang, bisnis: u.bisnis, segarkan: segarkan, langkahAwal: langkahBerikut(u.id_orang, ed.id_event, daftar) });
+          lembarUndangan({ id: u.id_orang, nama: u.nama, wa: u.whatsapp, acara: [ed], idEv: ed.id_event, tercatat: true, bidang: u.bidang, bisnis: u.bisnis, segarkan: segarkan, langkahAwal: langkahBerikut(u.id_orang, daftar) });
         };
         var k = el.querySelector('#p-kunjung');
         if (k) k.onclick = function () { lembarUndang(u.id_orang, u.nama, u.whatsapp, acara, segarkan, u.bidang, u.bisnis); };
@@ -1240,11 +1277,11 @@
     function baris(u) {
       var bisa = !u.status_undangan && u.tahap === 'Listed';
       var ketuk = !bisa && ['Invited', 'Attended', 'Coffee_Scheduled'].indexOf(u.tahap) >= 0;
-      var kirim = u.id_event_undangan && u.tahap === 'Invited' ? pesanTerkirim(u.id_orang, u.id_event_undangan).length : 0;
-      var info = u.tahap === 'Coffee_Scheduled' && u.jadwal_cs ? ' · Coffee ' + jamCS(u.jadwal_cs).hari + ' ' + jamCS(u.jadwal_cs).jam : (u.tanggal_undangan ? ' · ' + esc(u.acara_undangan) + ', ' + esc(tglPendek(u.tanggal_undangan)) + (kirim ? ' · ' + kirim + ' of 4 messages sent' : '') : '');
+      var kirim = pesanTerkirim(u.id_orang).length;
+      var info = u.tahap === 'Coffee_Scheduled' && u.jadwal_cs ? ' · Coffee ' + jamCS(u.jadwal_cs).hari + ' ' + jamCS(u.jadwal_cs).jam : (u.tanggal_undangan ? ' · ' + esc(u.acara_undangan) + ', ' + esc(tglPendek(u.tanggal_undangan)) : '') + (kirim && (bisa || u.tahap === 'Invited') ? ' · ' + kirim + ' of 4 messages sent' : '');
       var isiBaris = '<div class="utama"><b>' + esc(u.nama) + '</b><span>' + esc(u.bidang) + info + '</span></div>';
       return '<li>' + (ketuk ? '<button class="ketuk" data-buka="' + esc(u.id_orang) + '" style="flex:1;min-width:0">' + isiBaris + '</button>' : isiBaris) + ikonWa(u.whatsapp, u.nama) +
-        (bisa ? '<button class="tombol kecil" data-undang="' + esc(u.id_orang) + '">Invite</button>' : chipUndangan(u)) + '</li>';
+        (bisa ? '<button class="tombol kecil" data-undang="' + esc(u.id_orang) + '">' + (kirim ? 'Continue' : 'Invite') + '</button>' : chipUndangan(u)) + '</li>';
     }
     function cariU(id) { return us.usulan.filter(function (u) { return u.id_orang === id; })[0]; }
     isi.innerHTML = '<div class="sapa"><h1>My list</h1><p class="kecil">Names I want to invite. ' + st.nama_daftar + ' of ' + st.target_nama_maks + ' (minimum ' + st.target_nama_min + ').</p></div>' +
@@ -1275,10 +1312,12 @@
     }).join('');
     isi.innerHTML = '<div class="sapa"><h1>This week</h1><p class="kecil">' + ((tm.acara_ronde || []).length ? 'Visitors registered for Wednesday, with their classification. Phone numbers are not shown.' : 'No Wednesday meetings are scheduled yet. They appear here once the launch team adds them.') + '</p></div>' +
       (prog ? '<div class="judul-bagian"><h2>Wednesday program</h2><span class="kecil">' + tm.acara_ronde.length + ' sessions</span></div><section class="kartu"><ul class="daftar">' + prog + '</ul></section>' : '') +
+      kartuLinkBagi() +
       '<div class="judul-bagian"><h2>Invited by me</h2><span class="kecil">' + saya.length + '</span></div>' +
       '<section class="kartu">' + (saya.length ? '<ul class="daftar">' + saya.map(baris).join('') + '</ul>' : '<p class="kosong-isi">None of my invitees are registered yet. Check "My list" for who still needs a reminder.</p>') + '</section>' +
       '<div class="judul-bagian"><h2>Other Visitors</h2><span class="kecil">' + lain.length + '</span></div>' +
       '<section class="kartu">' + (lain.length ? '<ul class="daftar">' + lain.map(baris).join('') + '</ul><p class="catatan-main">Know their classification before Wednesday, so you can greet and connect them.</p>' : '<p class="kosong-isi">No other Visitors registered yet.</p>') + '</section>';
+    pasangLinkBagi(isi);
   }
 
   function lembarUndang(id, nama, wa, acara, segarkan, bidang, bisnis) {

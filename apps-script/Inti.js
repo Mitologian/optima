@@ -943,6 +943,8 @@ var Inti = (function () {
         if (kembar) gagal('This number is already used by ' + namaDepan(kembar) + ' on the chapter list.');
         k.ubah('Master', calon, { whatsapp_norm: wa, terakhir_diubah: k.now.toISOString() });
       }
+      // Pesan pembuka dan pesan detail acara belum mengundang: hanya menyimpan nomor. Undangan tercatat saat link Form dikirim.
+      if (b.catat === false) return { nomor_tersimpan: !!(calon && teks(calon.whatsapp_norm)) };
       return { id_undangan: buatUndangan(k, b.id_orang, b.id_event).id_undangan };
     },
 

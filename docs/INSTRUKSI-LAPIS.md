@@ -247,3 +247,8 @@ Coach Dedy menguji Form: pilihan "Diundang oleh" tidak memuat nama LDC dan LT (D
 - Catatan Lapis soal acara jenis lain benar. Kini acara yang bukan BOD, Lunch Networking, atau ESM dibuat dengan `tampil_di_form` = FALSE oleh `tambahAcara`, dan `api_segarkanJendelaForm_()` menyembunyikannya dari Form (baris lama yang TRUE ikut dimatikan).
 - Kartu "No inviter" di app kini memuat LDC dan LT di pilihan pengundang (sebelumnya hanya member), dan menyarankan pengundang dari undangan lain milik orang yang sama.
 - Masih mohon Lapis: saat normalisasi Form membuat baris `Undangan` baru untuk tamu yang sudah punya `Undangan` dengan pengundang (mis. diundang lewat app, lalu mendaftar ke acara lain dengan memilih "Tidak Ada"), warisi `id_pengundang` dari undangan terakhir tamu itu, sama seperti yang sudah dilakukan untuk `Responses.id_pengundang`.
+
+## S. Menyusul: undangan tercatat saat link Form dikirim (15 Oktober 2026)
+
+- Perubahan kecil di `Inti.js`: aksi `undang` menerima `catat: false` (hanya menyimpan nomor WhatsApp, tidak membuat baris `Undangan`). App memakainya untuk pesan 1 (tanya kabar) dan pesan 2 (detail acara). Baris `Undangan` baru dibuat saat pesan 3 (link Form) dikirim. Menambah nama dengan centang undang tidak lagi membuat `Undangan` langsung. Perlu naik versi. Tidak ada kolom, tab, atau pemicu baru.
+- `usulanSaya` kini juga mengembalikan `id_event_undangan` dan `acara_detail` (ringkasan acara dari undangan terakhir).

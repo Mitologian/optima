@@ -107,7 +107,7 @@ var Tiruan = (function () {
     for (var i = 0; i < 8; i++) {
       var r = rabuBerikut(now, i);
       ev.push({ id_event: 'E' + (i * 2 + 1), tanggal: tanggal(r), jam_mulai: '07:00', jam_selesai: '09:00', nama_acara: 'Wednesday BOD', jenis: 'BOD', mode: i % 3 === 2 ? 'Onsite' : 'Online', lokasi: i % 3 === 2 ? 'South Jakarta' : 'Zoom', kapasitas: 60, status: 'Terbuka', tampil_di_form: 'TRUE',
-        pembicara: i === 0 ? 'Coach Dedy Dahlan: Why one seat per classification matters' : '', poster: i === 0 ? POSTER_CONTOH : '' });
+        pembicara: i === 0 ? 'Coach Dedy Dahlan, Launch Director Consultant BNI' : '', judul_topik: i === 0 ? 'Why one seat per classification matters' : '', biaya: i % 3 === 2 ? 'Rp 175.000 for members and visitors (snack and beverages)' : '', poster: i === 0 ? POSTER_CONTOH : '' });
       ev.push({ id_event: 'E' + (i * 2 + 2), tanggal: tanggal(r), jam_mulai: '12:00', jam_selesai: '13:30', nama_acara: 'Lunch Networking', jenis: 'Lunch Networking', mode: 'Onsite', lokasi: 'South Jakarta', kapasitas: 20, status: 'Terbuka', tampil_di_form: 'TRUE' });
     }
     var lewat = new Date(rabuBerikut(now, 0).getTime() - 7 * HARI);

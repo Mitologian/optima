@@ -335,7 +335,7 @@ var Inti = (function () {
       return {
         id_event: teks(e.id_event), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai), jam_selesai: jamEv(e.jam_selesai),
         nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi),
-        pembicara: teks(e.pembicara), poster: teks(e.poster), di_form: !!buka[teks(e.id_event)]
+        pembicara: teks(e.pembicara), poster: teks(e.poster), pembuka: teks(e.pembuka), judul_topik: teks(e.judul_topik), biaya: teks(e.biaya), tautan_lokasi: teks(e.tautan_lokasi), di_form: !!buka[teks(e.id_event)]
       };
     }).sort(function (a, b) { return (a.tanggal + a.jam_mulai) < (b.tanggal + b.jam_mulai) ? -1 : 1; });
   }
@@ -562,6 +562,31 @@ var Inti = (function () {
     });
   }
   function wajibLT(k) { if (!k.isLT()) gagal('This feature is for the launch team only.'); }
+  /* Isi acara yang berubah tiap pekan: kalimat pembuka, judul topik, pembicara, biaya, tautan peta. Dipakai tambahAcara dan ubahAcara. */
+  function isiAcara(b, ubah) {
+    if (b.pembicara !== undefined) {
+      var pembicara = teks(b.pembicara);
+      if (pembicara.length > 240) gagal('The speaker line is too long (240 characters at most).');
+      ubah.pembicara = pembicara;
+    }
+    if (b.pembuka !== undefined) {
+      var pembuka = teks(b.pembuka);
+      if (pembuka.length > 700) gagal('The opening text is too long (700 characters at most).');
+      ubah.pembuka = pembuka;
+    }
+    if (b.judul_topik !== undefined) {
+      var judul = teks(b.judul_topik);
+      if (judul.length > 120) gagal('The topic title is too long (120 characters at most).');
+      ubah.judul_topik = judul;
+    }
+    if (b.biaya !== undefined) {
+      var biaya = teks(b.biaya);
+      if (biaya.length > 120) gagal('The fee line is too long (120 characters at most).');
+      ubah.biaya = biaya;
+    }
+    if (b.tautan_lokasi !== undefined) ubah.tautan_lokasi = tautanAman(b.tautan_lokasi);
+    return ubah;
+  }
   function wajibLDC(k) { if (!k.isLDC()) gagal('This feature is for the LDC only.'); }
 
 
@@ -2046,11 +2071,7 @@ var Inti = (function () {
       var e = k.tab('Events').filter(function (x) { return teks(x.id_event) === teks(b.id_event); })[0];
       if (!e) gagal('Event not found.');
       var ubah = {};
-      if (b.pembicara !== undefined) {
-        var pembicara = teks(b.pembicara);
-        if (pembicara.length > 120) gagal('The speaker line is too long (120 characters at most).');
-        ubah.pembicara = pembicara;
-      }
+      isiAcara(b, ubah);
       if (b.poster !== undefined) ubah.poster = tautanAman(b.poster);
       if (b.tanggal !== undefined) {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(teks(b.tanggal)) || !tgl(b.tanggal)) gagal('Enter the date.');
@@ -2076,7 +2097,7 @@ var Inti = (function () {
       k.ubah('Events', e, ubah);
       if (ubah.tanggal && teks(e.jenis) === 'ESM' && teks(e.status) !== 'Batal') aturPengaturan(k, 'tanggal_esm', ubah.tanggal);
       k.log('ubahAcara', teks(e.id_event) + ': ' + Object.keys(ubah).join(', '));
-      return { pembicara: teks(e.pembicara), poster: teks(e.poster), status: teks(e.status) };
+      return { pembicara: teks(e.pembicara), poster: teks(e.poster), status: teks(e.status), pembuka: teks(e.pembuka), judul_topik: teks(e.judul_topik), biaya: teks(e.biaya), tautan_lokasi: teks(e.tautan_lokasi) };
     },
 
     /* LDC menggeser semua acara yang belum lewat (mulai dari tanggal tertentu) sekian hari maju atau mundur, misalnya saat ESM berubah.
@@ -2121,6 +2142,7 @@ var Inti = (function () {
       var mode = teks(b.mode) === 'Online' ? 'Online' : 'Onsite';
       var lokasi = teks(b.lokasi).slice(0, 120);
       var kap = parseInt(b.kapasitas, 10);
+      var tambahan = isiAcara(b, {});
       var ulang = Math.min(Math.max(parseInt(b.ulang, 10) || 1, 1), 12);
       var ada = {};
       k.tab('Events').forEach(function (e) { if (teks(e.status) !== 'Batal' && tgl(e.tanggal)) ada[teks(e.jenis) + '|' + isoTanggal(tgl(e.tanggal)) + '|' + jamEv(e.jam_mulai)] = true; });
@@ -2129,6 +2151,7 @@ var Inti = (function () {
         var hari = isoTanggal(new Date(awal.getTime() + 7 * i * HARI));
         if (ada[jenis + '|' + hari + '|' + mulai]) { dilewati++; continue; }
         var ev = { id_event: idBaru(k.tab('Events'), 'id_event', 'E', 4), tanggal: hari, jam_mulai: mulai, jam_selesai: selesai, nama_acara: nama, jenis: jenis, mode: mode, lokasi: lokasi, kapasitas: isNaN(kap) ? '' : kap, status: 'Terbuka', tampil_di_form: JENIS_FORM.indexOf(jenis) >= 0 ? 'TRUE' : 'FALSE', pembicara: '', poster: '' };
+        Object.keys(tambahan).forEach(function (f) { ev[f] = tambahan[f]; });
         k.tambah('Events', ev);
         dibuat.push(ev.id_event);
       }
@@ -2182,7 +2205,7 @@ var Inti = (function () {
       var r = batasRonde(n);
       var acaraRonde = Object.keys(acara).map(function (id) {
         var e = acara[id];
-        return { id_event: id, tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai), jam_selesai: jamEv(e.jam_selesai), nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi), pembicara: teks(e.pembicara), poster: teks(e.poster) };
+        return { id_event: id, tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai), jam_selesai: jamEv(e.jam_selesai), nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi), pembicara: teks(e.pembicara), poster: teks(e.poster), judul_topik: teks(e.judul_topik) };
       }).sort(function (a, b) { return (a.tanggal + a.jam_mulai) < (b.tanggal + b.jam_mulai) ? -1 : 1; });
       return { ronde: { mulai: r.mulai.toISOString(), selesai: r.selesai.toISOString() }, acara_ronde: acaraRonde, tamu: tamu.sort(function (a, b) { return (a.tanggal + a.jam_mulai + a.nama) < (b.tanggal + b.jam_mulai + b.nama) ? -1 : 1; }) };
     },
@@ -2288,7 +2311,6 @@ var Inti = (function () {
         if (teks(slot.status) !== 'Kosong') gagal('That time was just taken. Pick another one.');
         waktu = waktuSlot(slot);
       } else {
-        if (!lt) gagal('Pick one of the open times.');
         waktu = tgl(b.waktu);
         if (!waktu) gagal('Enter the date and time of the coffee session.');
       }
@@ -2300,14 +2322,17 @@ var Inti = (function () {
         if (dobel) gagal('This WhatsApp number is already on the chapter list.');
         k.ubah('Master', o, { whatsapp_norm: waBaru });
       }
+      // Waktu baru dari anggota: dipegang Coach Dedy (LDC), karena anggota sudah mengonfirmasi waktunya lebih dulu lewat WhatsApp.
+      var ldcRow = k.tab('Master').filter(function (r) { return teks(r.kategori) === 'LDC'; })[0];
+      var picBaru = teks(b.pic) || (lt ? k.saya.id_orang : (ldcRow ? teks(ldcRow.id_orang) : k.saya.id_orang));
       lepasSlot(k, o);
       if (slot) k.ubah('Jadwal_CS', slot, { status: 'Terisi', id_orang: teks(o.id_orang), dipesan_oleh: k.saya.id_orang });
-      else k.tambah('Jadwal_CS', { id_slot: idBaru(k.tab('Jadwal_CS'), 'id_slot', 'S', 4), tanggal: isoTanggal(waktu), jam: jamWIB(waktu), PIC: teks(b.pic) || k.saya.id_orang, tempat: teks(b.tempat) || 'Zoom', status: 'Terisi', id_orang: teks(o.id_orang), dipesan_oleh: k.saya.id_orang });
+      else k.tambah('Jadwal_CS', { id_slot: idBaru(k.tab('Jadwal_CS'), 'id_slot', 'S', 4), tanggal: isoTanggal(waktu), jam: jamWIB(waktu), PIC: picBaru, tempat: teks(b.tempat) || 'Zoom', status: 'Terisi', id_orang: teks(o.id_orang), dipesan_oleh: k.saya.id_orang });
       var ubah = { tahap: 'Coffee_Scheduled', jadwal_cs: waktu.toISOString(), tanggal_sentuh: k.now.toISOString(), terakhir_diubah: k.now.toISOString() };
-      if (!teks(o.PIC)) ubah.PIC = slot ? teks(slot.PIC) : k.saya.id_orang;
+      if (!teks(o.PIC)) ubah.PIC = slot ? teks(slot.PIC) : picBaru;
       k.ubah('Master', o, ubah);
       k.log('pesanSlot', namaDepan(o) + ' ' + waktu.toISOString());
-      return { waktu: waktu.toISOString(), tempat: slot ? (teks(slot.tempat) || 'Zoom') : (teks(b.tempat) || 'Zoom'), pic: namaDepan(k.orang(slot ? slot.PIC : (teks(b.pic) || k.saya.id_orang))) };
+      return { waktu: waktu.toISOString(), tempat: slot ? (teks(slot.tempat) || 'Zoom') : (teks(b.tempat) || 'Zoom'), pic: namaDepan(k.orang(slot ? slot.PIC : picBaru)) };
     },
 
     batalSlot: function (k, b) {

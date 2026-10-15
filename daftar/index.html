@@ -129,7 +129,7 @@ button.kirim[disabled] { opacity: .6; }
       var a = r.acara || info.acara.filter(function (e) { return e.id_event === f.acara.value; })[0];
       $isi.innerHTML = '<div class="selesai"><h2>Terima kasih, ' + esc((r.nama || f.nama.value).trim().split(/\s+/)[0]) + '!</h2>' +
         '<p>Anda sudah terdaftar di <b>' + esc(a ? judulAcara(a) : 'acara kami') + '</b>' + (a ? ',<br><b>' + esc(tanggalLengkap(a.tanggal)) + '</b>, pukul <b>' + esc(jamAcara(a)) + '</b>.' : '.') + '</p>' +
-        '<p>Link Zoom dan detail acara kami kirim lewat WhatsApp sehari sebelum acara. Pastikan nomor WhatsApp Anda aktif.</p>' +
+        '<p>Terima kasih telah mengonfirmasi kehadiran Anda dengan mengisi form ini. Kami akan mengirimkan link Zoom dan detail yang dibutuhkan lewat WhatsApp sebelum acara. Mohon pastikan nomor WhatsApp Anda aktif.</p>' +
         (r.pengundang ? '<p class="kecil">Undangan dari ' + esc(r.pengundang) + '.</p>' : '') + '</div>';
       window.scrollTo(0, 0);
     };

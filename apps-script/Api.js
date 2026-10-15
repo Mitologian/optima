@@ -74,7 +74,7 @@ var TAB_BARU_ = {
   Pengumuman: ['id_pengumuman', 'tanggal_tayang', 'tanggal_berakhir', 'judul', 'isi', 'poster', 'dibuat_oleh', 'status']
 };
 var KOLOM_BARU_ = {
-  Events: ['pembicara', 'poster'],
+  Events: ['pembicara', 'poster', 'pembuka', 'judul_topik', 'biaya', 'tautan_lokasi'],
   Master: ['driver', 'tim', 'kode_ajak'],
   Undangan: ['konfirmasi_oleh', 'konfirmasi_waktu', 'konfirmasi_acara']
 };

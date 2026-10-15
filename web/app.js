@@ -620,8 +620,7 @@
         : '<label class="isian"><span>Classification (their type of business)</span><input name="bisnis" required autocomplete="off" placeholder="Example: Halal catering"></label>' +
           '<p class="kecil" style="margin:-6px 0 12px">Not on the seat list? Type it here. The launch team can add the seat once the person joins.</p>' + pilihKursiKosong('id_kursi', false)) +
       '<label class="isian"><span>WhatsApp' + (isLT() ? '' : ' (can be added later)') + '</span><input name="whatsapp" inputmode="tel" autocomplete="off" placeholder="08..."' + (isLT() ? ' required' : '') + '></label>' +
-      (pilihanAcara.length ? '<label class="saklar"><input type="checkbox" name="undang"><span>Start the invitation messages now<br><span class="kecil">Opens the messages for a Wednesday event. WhatsApp number is required.</span></span></label>' +
-        '<div id="pil-acara" hidden style="margin:-4px 0 14px"></div>' : '') +
+      '<label class="saklar"><input type="checkbox" name="undang"><span>Invite right away<br><span class="kecil">Choose BOD, Lunch Networking or a coffee session after adding. WhatsApp number is required.</span></span></label>' +
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<button class="tombol" type="submit">Add name</button>' +
     '</form>';
@@ -633,15 +632,12 @@
     bukaLembar(html, function (el) {
       var f = el.querySelector('#f-calon');
       var cek = f.querySelector('[name=undang]');
-      var pil = el.querySelector('#pil-acara');
-      if (cek) cek.onchange = function () { pil.hidden = !cek.checked; f.whatsapp.required = cek.checked || isLT(); };
-      var evForm = pilihanAcara.length ? pilihanAcara[0].id_event : '';
-      if (pil) kalender(pil, pilihanAcara.map(itemAcara), { pilih: evForm, onPick: function (k) { evForm = k; } });
+      if (cek) cek.onchange = function () { f.whatsapp.required = cek.checked || isLT(); };
       f.onsubmit = async function (e) {
         e.preventDefault();
         var tombol = f.querySelector('[type=submit]');
         tombol.disabled = true;
-        var idEv = cek && cek.checked ? evForm : '';
+        var langsung = !!(cek && cek.checked);
         var data = { id_kursi: x.id_kursi || (f.id_kursi ? f.id_kursi.value : ''), nama: f.nama.value, bisnis: f.bisnis.value, whatsapp: f.whatsapp.value };
         var r = await api('tambahCalon', data);
         tombol.disabled = false;
@@ -651,9 +647,9 @@
           if (r.duplikat) t += ' (' + r.duplikat.nama_depan + (r.duplikat.tahap ? ', stage ' + lblTahap(r.duplikat.tahap) + ', PIC ' + (r.duplikat.pic || 'none yet') : '') + ')';
           salah.textContent = t; salah.hidden = false; return;
         }
-        if (idEv) {
-          // Langsung ke pesan pembuka. Undangan baru tercatat saat link Form dikirim.
-          lembarUndangan({ id: r.id_orang, nama: f.nama.value.trim(), wa: String(f.whatsapp.value || ''), acara: pilihanAcara, idEv: idEv, tercatat: false, bidang: id ? x.bidang : '', bisnis: f.bisnis.value, segarkan: segarkan });
+        if (langsung) {
+          // Langsung ke pilihan undangan. Undangan baru tercatat saat pesan dikirim.
+          lembarPilihUndang({ id_orang: r.id_orang, nama: f.nama.value.trim(), whatsapp: String(f.whatsapp.value || ''), bidang: id ? x.bidang : '', bisnis: f.bisnis.value, tahap: 'Listed', status_undangan: '' }, pilihanAcara, segarkan);
         } else {
           tutupLembar();
           toast(!id ? 'Name added to the list' : x.status === 'kosong' ? 'The ' + x.bidang + ' seat now has a prospect' : 'Name added to the ' + x.bidang + ' seat', !!id && x.status === 'kosong');
@@ -719,46 +715,30 @@
   }
 
   /* ---------- templat pesan undangan ----------
-     Mengikuti panduan "Let's Invite Visitor": 4 pesan berurutan (pembuka, undangan, daftar, setelah daftar)
-     dan balasan untuk keraguan. Gaya bahasa mengikuti kedekatan member dengan tamunya. */
+     Sapaan pembuka (dari panduan "Let's Invite Visitor") ada di daftar calon, dan balasan untuk keraguan.
+     Undangan BOD dan Lunch Networking memakai templat tetap yang diisi dari detail acara. */
   var HARI_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   var BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   function tglID(iso) { var w = wib(iso); return HARI_ID[w.getUTCDay()] + ', ' + w.getUTCDate() + ' ' + BULAN_ID[w.getUTCMonth()]; }
   var KEDEKATAN = [['dekat', 'Close friend'], ['teman', 'Friend'], ['kenal', 'Acquaintance']];
-  var LANGKAH = [['1', 'Opener'], ['2', 'Invite'], ['3', 'Register'], ['4', 'After sign-up']];
   var PRONOMINA = { dekat: { aku: 'gue', kamu: 'lu' }, teman: { aku: 'aku', kamu: 'kamu' }, kenal: { aku: 'saya', kamu: 'Anda' } };
   var PESAN_ID = {
     dekat: [
-      function (d) { return 'Halo ' + d.tamu + ', lu bisnisnya di bidang ' + d.bidang + ' kan ya?\n\nGue mau ngajak lu ketemu teman-teman pebisnis gue, sesama owner, yang menurut gue cocok banget buat bisnis lu. Kita lagi cari pebisnis di bidang ' + d.bidang + ' kayak lu, gue rasa lu bakal nemu banyak peluang di sana. Ikut yuk, gue kenalin.'; },
-      function (d) { return d.hari + ' ada pertemuan ' + d.acara + ' ' + d.tempat + ', jam ' + d.jam + ', bareng komunitas owner bisnis Jakarta. Isinya networking dan tukar peluang bisnis antar anggota. Acaranya invitation only, tapi gue ada di sana, jadi bisa ajak lu kalau mau.'; },
-      function (d) { return 'Buat daftar jadi visitor, isi form ini ya (1 menit): ' + d.form + '\nPakai nomor WA ini biar gue bisa kabarin detailnya. Nanti gue pastiin lu dapat seat.'; },
-      function (d) { return 'Sampai ketemu ya! Nanti di sana gue kenalin ke teman-teman owner lain, semoga nambah network lu dan bantu ' + d.bisnis + ' makin luas jangkauannya!'; }
+      function (d) { return 'Halo ' + d.tamu + ', lu bisnisnya di bidang ' + d.bidang + ' kan ya?\n\nGue mau ngajak lu ketemu teman-teman pebisnis gue, sesama owner, yang menurut gue cocok banget buat bisnis lu. Kita lagi cari pebisnis di bidang ' + d.bidang + ' kayak lu, gue rasa lu bakal nemu banyak peluang di sana. Ikut yuk, gue kenalin.'; }
     ],
     teman: [
-      function (d) { return 'Halo ' + d.tamu + ', bisnismu di bidang ' + d.bidang + ' kan ya?\n\nAku mau kenalin kamu sama teman-teman pebisnisku. Mereka circle business owners yang saling support satu sama lain. Kayaknya bisa ada peluang kolaborasi sama kamu.'; },
-      function (d) { return d.hari + ' ada pertemuan ' + d.acara + ' ' + d.tempat + ', pukul ' + d.jam + ', bareng komunitas owner bisnis Jakarta. Fokusnya networking dan tukar peluang bisnis antar anggota. Acaranya invitation only, tapi aku ada di sana, jadi bisa ajak kamu kalau mau.'; },
-      function (d) { return 'Untuk daftar sebagai visitor, isi form ini ya (1 menit): ' + d.form + '\nPakai nomor WhatsApp ini supaya aku bisa kabari detailnya. Nanti aku pastikan kamu dapat seat.'; },
-      function (d) { return 'Sampai ketemu ya! Nanti di sana aku kenalin ke teman-teman business owners lain, semoga nambah networkmu dan bantu ' + d.bisnis + ' makin luas jangkauannya!'; }
+      function (d) { return 'Halo ' + d.tamu + ', bisnismu di bidang ' + d.bidang + ' kan ya?\n\nAku mau kenalin kamu sama teman-teman pebisnisku. Mereka circle business owners yang saling support satu sama lain. Kayaknya bisa ada peluang kolaborasi sama kamu.'; }
     ],
     kenal: [
-      function (d) { return 'Selamat ' + d.salam + ' ' + d.tamu + ', bisnis Anda di bidang ' + d.bidang + ', benar?\n\nSaya ingin memperkenalkan Anda dengan rekan-rekan pemilik bisnis lintas industri yang saling mendukung. Kami sedang mencari pebisnis di bidang ' + d.bidang + ', dan menurut saya Anda cocok bergabung dalam pertemuan kami.'; },
-      function (d) { return 'Pertemuan ' + d.acara + ' kami diadakan ' + d.hari + ', pukul ' + d.jam + ', ' + d.tempat + ', bersama komunitas pemilik bisnis Jakarta. Fokusnya networking dan pertukaran peluang bisnis antar anggota. Acara ini hanya dengan undangan, dan saya dengan senang hati mengajak Anda.'; },
-      function (d) { return 'Untuk mendaftar sebagai tamu, mohon isi form berikut (sekitar 1 menit): ' + d.form + '\nMohon gunakan nomor WhatsApp ini agar detail acara dapat kami kirimkan. Saya akan memastikan Anda mendapat tempat.'; },
-      function (d) { return 'Terima kasih sudah mendaftar. Sampai bertemu! Di sana saya akan memperkenalkan Anda kepada pemilik bisnis lain, semoga menambah jaringan dan membantu ' + d.bisnis + ' menjangkau lebih luas.'; }
+      function (d) { return 'Selamat ' + d.salam + ' ' + d.tamu + ', bisnis Anda di bidang ' + d.bidang + ', benar?\n\nSaya ingin memperkenalkan Anda dengan rekan-rekan pemilik bisnis lintas industri yang saling mendukung. Kami sedang mencari pebisnis di bidang ' + d.bidang + ', dan menurut saya Anda cocok bergabung dalam pertemuan kami.'; }
     ]
   };
   var PESAN_EN = {
     santai: [
-      function (d) { return 'Hi ' + d.tamu + ', your business is in ' + d.bidang + ', right?\n\nI would love to introduce you to my circle of business owners. We support each other, and I think there is real potential to work together.'; },
-      function (d) { return d.hari + ' we have ' + d.acara + ' ' + d.tempat + ', at ' + d.jam + ', with a community of Jakarta business owners. It is about networking and sharing business opportunities. It is invitation only, but I will be there, so I can bring you along.'; },
-      function (d) { return 'To register as a visitor, fill in this form (1 minute): ' + d.form + '\nPlease use this WhatsApp number so I can send you the details. I will make sure you get a seat.'; },
-      function (d) { return 'See you there! I will introduce you to the other business owners, and hopefully it grows your network and helps ' + d.bisnis + ' reach further.'; }
+      function (d) { return 'Hi ' + d.tamu + ', your business is in ' + d.bidang + ', right?\n\nI would love to introduce you to my circle of business owners. We support each other, and I think there is real potential to work together.'; }
     ],
     formal: [
-      function (d) { return 'Good ' + (d.salamEn) + ' ' + d.tamu + ', your business is in ' + d.bidang + ', correct?\n\nI would like to introduce you to a community of business owners across industries who support one another. We are looking for ' + d.bidang + ' professionals, and I believe you would be a good fit.'; },
-      function (d) { return 'Our ' + d.acara + ' takes place ' + d.hari + ' at ' + d.jam + ', ' + d.tempat + ', with Jakarta business owners. The focus is networking and exchanging business opportunities. It is by invitation only, and I would be glad to invite you.'; },
-      function (d) { return 'To register as a guest, please fill in this form (about 1 minute): ' + d.form + '\nPlease use this WhatsApp number so the event details can reach you. I will make sure a seat is reserved for you.'; },
-      function (d) { return 'Thank you for registering. I look forward to seeing you. I will introduce you to other business owners, and I hope it widens your network and helps ' + d.bisnis + ' grow.'; }
+      function (d) { return 'Good ' + (d.salamEn) + ' ' + d.tamu + ', your business is in ' + d.bidang + ', correct?\n\nI would like to introduce you to a community of business owners across industries who support one another. We are looking for ' + d.bidang + ' professionals, and I believe you would be a good fit.'; }
     ]
   };
   var BALASAN = [
@@ -786,20 +766,7 @@
     var p = PRONOMINA[kedekatan];
     return b[1].replace(/\{Aku\}/g, p.aku.charAt(0).toUpperCase() + p.aku.slice(1)).replace(/\{aku\}/g, p.aku).replace(/\{kamu\}/g, p.kamu);
   }
-  function dataPesan(namaTamu, e, bidang, bisnis) {
-    var id = true;
-    var jam = Number((e.jam_mulai || '12').split(/[:.]/)[0]);
-    return {
-      tamu: namaTamu, saya: S.profil.nama_depan, chapter: S.atur.nama_chapter, acara: e.nama_acara,
-      bidang: bidang || bisnis || 'bisnis', bisnisNama: bisnis || '',
-      salam: jam < 11 ? 'pagi' : jam < 15 ? 'siang' : 'sore', salamEn: jam < 12 ? 'morning' : 'afternoon',
-      form: urlFormUndangan(), jam: e.jam_mulai, hariID: tglID(e.tanggal), hariEn: tglHari(e.tanggal),
-      tempatID: e.mode === 'Online' ? 'online lewat ' + (e.lokasi || 'Zoom') : 'di ' + (e.lokasi || 'lokasi yang akan dikabari'),
-      tempatEn: e.mode === 'Online' ? 'online via ' + (e.lokasi || 'Zoom') : 'at ' + (e.lokasi || 'a location to be confirmed')
-    };
-  }
-  /* Tautan Form dengan nama pengundang sudah terisi, bila kolom Form dan alamat panjangnya sudah diatur di Settings. */
-  /* Acara yang bisa dipilih untuk mengundang: BOD dan Lunch Networking yang sedang tampil di Form (terdekat). Bila tidak ada yang bertanda, semuanya. */
+  /* Acara yang bisa dipilih untuk mengundang: BOD dan Lunch Networking yang sedang tampil di halaman pendaftaran (terdekat). Bila tidak ada yang bertanda, semuanya. */
   function acaraUndang(daftar) {
     var semua = (daftar || []).filter(function (e) { return e.jenis === 'BOD' || e.jenis === 'Lunch Networking'; });
     var buka = semua.filter(function (e) { return e.di_form; });
@@ -814,157 +781,137 @@
     if (Api.tiruan) u.searchParams.set('tiruan', '1');
     return u.href;
   }
-  function buatPesan(bahasa, kedekatan, langkah, namaTamu, e, bidang, bisnis) {
-    var d = dataPesan(namaTamu, e, bidang, bisnis);
-    d.bisnis = bahasa === 'en' ? (d.bisnisNama || 'your business') : (d.bisnisNama ? 'bisnis ' + d.bisnisNama : (kedekatan === 'kenal' ? 'bisnis Anda' : kedekatan === 'dekat' ? 'bisnis lu' : 'bisnismu'));
-    if (bahasa === 'id') { d.hari = d.hariID; d.tempat = d.tempatID; return PESAN_ID[kedekatan][langkah](d); }
-    d.hari = d.hariEn; d.tempat = d.tempatEn;
-    return PESAN_EN[kedekatan === 'kenal' ? 'formal' : 'santai'][langkah](d);
+  function buatSapaan(bahasa, kedekatan, namaTamu, bidang) {
+    var sl = salamSekarang();
+    var d = { tamu: namaTamu, bidang: bidang || (bahasa === 'en' ? 'business' : 'bisnis'), salam: sl.id, salamEn: sl.en };
+    return bahasa === 'id' ? PESAN_ID[kedekatan][0](d) : PESAN_EN[kedekatan === 'kenal' ? 'formal' : 'santai'][0](d);
   }
   function salinTeks(teksnya, ta) {
     function cadangan() { var x = document.createElement('textarea'); x.value = teksnya; x.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(x); x.select(); try { document.execCommand('copy'); } catch (e) {} x.remove(); }
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(teksnya).catch(cadangan); else cadangan();
   }
 
-  /* Lembar undangan: pilih acara, kedekatan, dan langkah pesan, lalu salin atau kirim.
-     opsi: {id, nama, wa, bidang, bisnis, acara[], idEv, tercatat, segarkan} */
-  /* Pesan mana yang sudah dikirim ke seseorang. Disimpan di perangkat ini saja, untuk penanda dan langkah berikutnya. Kedaluwarsa 10 hari. */
-  function kunciPesan(idOrang) { return 'optima_pesan_' + idOrang; }
-  function pesanTerkirim(idOrang) {
-    try {
-      var d = JSON.parse(ambil(kunciPesan(idOrang)) || 'null');
-      return d && Array.isArray(d.s) && Date.now() - d.t < 10 * 864e5 ? d.s : [];
-    } catch (e) { return []; }
-  }
-  function tandaiPesan(idOrang, langkah) {
-    var a = pesanTerkirim(idOrang);
-    if (a.indexOf(langkah) < 0) a.push(langkah);
-    simpan(kunciPesan(idOrang), JSON.stringify({ s: a, t: Date.now() }));
-  }
-  function langkahBerikut(idOrang, terdaftar) {
-    if (terdaftar) return 3;
-    var a = pesanTerkirim(idOrang);
-    return a.length ? Math.min(Math.max.apply(null, a) + 1, 3) : 0;
-  }
   /* Link yang sering dibagikan, bisa disalin kapan saja. */
   function infoZoomRabu() {
     var A = S.atur;
     if (!A.tautan_zoom_bod) return '';
     return A.tautan_zoom_bod + (A.zoom_bod_id ? '\n\nMeeting ID: ' + A.zoom_bod_id : '') + (A.zoom_bod_kode ? '\nPasscode: ' + A.zoom_bod_kode : '');
   }
-  /* Teks yang menyertai poster saat diteruskan lewat WhatsApp. */
-  function teksPoster(acara) {
-    var daftar = acaraUndang(acara).slice(0, 3);
-    var baris = daftar.map(function (e) { return '\u2022 ' + tglIDPenuh(e.tanggal) + ' \u00b7 ' + (e.jenis === 'BOD' ? 'Exclusive Business Opportunity Day' : 'Lunch Networking') + ' ' + e.jam_mulai + (e.jam_selesai ? ' - ' + e.jam_selesai : '') + ' WIB' + (e.mode === 'Online' ? ' (online via ' + (e.lokasi || 'Zoom') + ')' : (e.lokasi ? ' (' + e.lokasi + ')' : '')); });
-    return 'Halo! Saya mengundang Anda ke Business Owners Meeting and Networking BNI ' + (S.atur.nama_chapter || 'Optima') + ':\n\n' + (baris.length ? baris.join('\n') + '\n\n' : '') +
-      'Daftar di sini (sekitar 1 menit): ' + urlFormUndangan() + '\n\nSetelah mendaftar, link Zoom dan detail acara kami kirim lewat WhatsApp sehari sebelum acara.\n\nSalam,\n' + (S.profil ? S.profil.nama : '');
-  }
   var ACARA_BAGI = [];
+  function linkAcara(e) { var u = urlFormUndangan(); return u + (u.indexOf('?') > 0 ? '&' : '?') + 'e=' + encodeURIComponent(e.id_event); }
   function kartuLinkBagi() {
     var zoom = infoZoomRabu();
     function baris(judul, ket, ada, id) {
-      return '<li><div class="utama"><b>' + judul + '</b><span>' + (ada ? ket : 'Not set yet. The LDC adds it in Settings.') + '</span></div>' + (ada ? '<button class="tombol kecil kedua" type="button" data-salin-link="' + id + '">Copy</button>' : '') + '</li>';
+      return '<li><div class="utama"><b>' + judul + '</b><span>' + (ada ? ket : 'Not set yet. The LDC adds it in Settings.') + '</span></div>' + (ada ? '<button class="tombol kecil kedua" type="button" data-salin-link="' + esc(id) + '">Copy</button>' : '') + '</li>';
     }
+    var pesanAcara = acaraUndang(ACARA_BAGI).slice(0, 4).map(function (e) {
+      return baris((e.jenis === 'BOD' ? 'BOD' : 'Lunch Networking') + ' invitation, ' + esc(tglPendek(e.tanggal)), 'Ready to paste under the poster you forward.', true, 'ev:' + e.id_event);
+    }).join('');
     return '<div class="judul-bagian"><h2>Links to share</h2></div><section class="kartu"><ul class="daftar">' +
+      pesanAcara +
       baris('My registration link', 'Personal. Guests who register here appear in your list.', true, 'form') +
       (isLT() ? baris('General link', 'No name attached. Guests type who invited them. For group broadcasts.', true, 'umum') : '') +
-      baris('Caption for the poster', 'Ready to paste under the poster you forward.', true, 'poster') +
       (zoom || isLT() ? baris('Wednesday Zoom', 'Link, ID and passcode for registered guests.', zoom, 'zoom') : '') +
-      '</ul><p class="catatan-main">Forward the poster with the caption. Guests who register through your link are recorded under your name.</p></section>';
+      '</ul><p class="catatan-main">Forward the poster with the invitation text. Guests who register through your link are recorded under your name.</p></section>';
   }
   function pasangLinkBagi(el) {
     el.querySelectorAll('[data-salin-link]').forEach(function (b) {
       b.onclick = function () {
-        var j = b.dataset.salinLink;
-        salinTeks(j === 'form' ? urlFormUndangan() : j === 'umum' ? urlFormUndangan(true) : j === 'poster' ? teksPoster(ACARA_BAGI) : infoZoomRabu());
-        toast(j === 'form' || j === 'umum' ? 'Registration link copied.' : j === 'poster' ? 'Caption copied.' : 'Zoom details copied.');
+        var j = b.dataset.salinLink, ev = j.indexOf('ev:') === 0 ? ACARA_BAGI.filter(function (e) { return e.id_event === j.slice(3); })[0] : null;
+        salinTeks(ev ? pesanUndanganAcara(ev, linkAcara(ev)) : j === 'form' ? urlFormUndangan() : j === 'umum' ? urlFormUndangan(true) : infoZoomRabu());
+        toast(ev ? 'Invitation text copied.' : j === 'zoom' ? 'Zoom details copied.' : 'Registration link copied.');
       };
     });
   }
+
+  /* ---------- templat undangan BOD dan Lunch Networking ----------
+     Struktur tetap, isinya dari detail acara: kalimat pembuka, judul topik, pembicara, jam, tempat, biaya (hanya bila diisi), tautan peta. */
+  var HARI_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var BULAN_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function tglEnPenuh(iso) { var w = wib(iso); return HARI_EN[w.getUTCDay()] + ', ' + w.getUTCDate() + ' ' + BULAN_EN[w.getUTCMonth()] + ' ' + w.getUTCFullYear(); }
+  function jamEn(j) {
+    var p = String(j || '').split(/[:.]/), h = Number(p[0]) || 0, m = p[1] || '00';
+    return { t: (h % 12 || 12) + '.' + m, ap: h >= 12 ? 'PM' : 'AM' };
+  }
+  function rentangJamEn(mulai, selesai) {
+    var a = jamEn(mulai);
+    if (!selesai) return a.t + ' ' + a.ap;
+    var z = jamEn(selesai);
+    return a.ap === z.ap ? a.t + ' - ' + z.t + ' ' + z.ap : a.t + ' ' + a.ap + ' - ' + z.t + ' ' + z.ap;
+  }
+  var PEMBUKA_BOD = "Great networking isn't luck. It's built with purpose. Come and see how.";
+  var PEMBUKA_LUNCH = "Hello business owners!\n\nWe're inviting business owners, professionals, and decision makers around Jabodetabek to join our casual networking session.\n\nExchange insights, opportunities, and collaboration potential with business leaders across industries.\n\nSeats are limited, and attendance is by invitation.";
+  function pesanUndanganAcara(e, tautan) {
+    var online = e.mode === 'Online';
+    var tempat = online ? 'Online via ' + (e.lokasi || 'Zoom') : (e.lokasi || 'Venue to be announced');
+    var pembicara = String(e.pembicara || '').split(/[\n;]+/).map(function (x) { return x.trim(); }).filter(Boolean);
+    var peta = !online && e.tautan_lokasi ? '\n' + e.tautan_lokasi : '';
+    if (e.jenis === 'BOD') {
+      return (e.pembuka || PEMBUKA_BOD) + '\n\n' +
+        (e.judul_topik ? '*' + e.judul_topik + '*\n' : '') + tautan + '\n\n' +
+        (pembicara.length ? 'Listen to insights for business owners, with:\n\n' + pembicara.map(function (x) { return '- *' + x + '*'; }).join('\n') + '\n\n' : '') +
+        '🗓️ ' + tglEnPenuh(e.tanggal).replace(/, (\d+ \w+ \d+)$/, ', *$1*') + ', at ' + rentangJamEn(e.jam_mulai, e.jam_selesai) + ' (WIB)\n\n' +
+        '📍 *' + tempat + '*' + peta + '\n\n' +
+        (e.biaya ? '🏷️ ' + e.biaya + '\n\n' : '') +
+        '*Limited seat. You must be invited to join.*\nGet yours from the person sharing this information with you, or go to the link above to see if invites are still available for you.';
+    }
+    return (e.pembuka || PEMBUKA_LUNCH) + '\n\n' +
+      '📅 ' + tglEnPenuh(e.tanggal) + '\n' +
+      '⏰ ' + rentangJamEn(e.jam_mulai, e.jam_selesai) + '\n' +
+      '📍 ' + tempat + peta + '\n' +
+      (e.biaya ? '🏷️ ' + e.biaya + '\n' : '') + '\n' +
+      'Register here: ' + tautan + '\n\n' +
+      "Great networking isn't luck, it's built with purpose. Come see for yourself!";
+  }
+
+  /* Lembar undangan ke BOD atau Lunch Networking: pilih tanggal, satu pesan dengan tautan pribadi, kirim lewat WhatsApp.
+     Undangan tercatat saat pesan dikirim atau disalin. opsi: {id, nama, wa, bidang, bisnis, acara[], idEv, tercatat, segarkan} */
   function lembarUndangan(o) {
     var depan = o.nama.split(/\s+/)[0];
-    var st = { dekat: 'teman', bahasa: 'id', langkah: o.langkahAwal !== undefined ? o.langkahAwal : (o.id ? langkahBerikut(o.id, false) : 0), balasan: false, idEv: o.idEv || (o.acara[0] && o.acara[0].id_event), tercatat: !!o.tercatat, wa: o.wa || '' };
-    var bidang = o.bidang && !/^Undecided/.test(o.bidang) ? o.bidang : '';
+    var st = { idEv: o.idEv || (o.acara[0] && o.acara[0].id_event), tercatat: !!o.tercatat, wa: o.wa || '' };
+    var jenisNama = o.acara[0] && o.acara[0].jenis === 'BOD' ? 'BOD' : 'Lunch Networking';
     function acaraDipilih() { return o.acara.filter(function (z) { return z.id_event === st.idEv; })[0]; }
     bukaLembar(
-      '<h2>Invite ' + esc(depan) + '</h2>' +
-      '<p class="kecil" id="u-info" style="margin:4px 0 12px">' + (st.tercatat ? 'Invitation recorded. Send the messages in order, one at a time.' : 'Pick the event and how close you are. The invitation is recorded when message 3, with the Form link, is copied or sent.') + '</p>' +
-      '<p class="kecil" style="margin-bottom:6px">Which Wednesday?</p><div id="u-ev" style="margin-bottom:12px"></div>' +
+      '<h2>Invite ' + esc(depan) + ' to ' + jenisNama + '</h2>' +
+      '<p class="kecil" id="u-info" style="margin:4px 0 12px">' + (st.tercatat ? 'Invitation recorded. The message can be sent again if needed.' : 'Pick the date, then send the message. The invitation is recorded when it is sent.') + '</p>' +
+      '<div id="u-ev" style="margin-bottom:12px"></div>' +
       (st.wa ? '' : '<label class="isian"><span>WhatsApp ' + esc(depan) + '</span><input id="u-wa" inputmode="tel" placeholder="08..." autocomplete="off"></label>') +
-      '<p class="kecil" style="margin-bottom:6px">How close are you to ' + esc(depan) + '?</p><div class="pilihan" id="u-dekat" style="margin-bottom:12px">' + KEDEKATAN.map(function (g) {
-        return '<button type="button" data-dekat="' + g[0] + '" aria-pressed="' + (g[0] === st.dekat) + '">' + g[1] + '</button>';
-      }).join('') + '<button type="button" id="u-bhs" class="bahasa" aria-label="Switch message language">ID | EN</button></div>' +
-      '<div class="seg langkah-seg" id="u-langkah">' + LANGKAH.map(function (g, i) {
-        return '<button type="button" data-langkah="' + i + '" aria-selected="' + (i === st.langkah) + '"><b>' + g[0] + (o.id && pesanTerkirim(o.id).indexOf(i) >= 0 ? ' \u2713' : '') + '</b><span>' + g[1] + '</span></button>';
-      }).join('') + '</div>' +
-      '<p class="kecil redup" id="u-petunjuk" style="margin:8px 2px"></p>' +
-      '<textarea id="u-pesan" class="pesan-undangan" rows="8"></textarea>' +
+      '<textarea id="u-pesan" class="pesan-undangan" rows="12"></textarea>' +
+      '<p class="kecil redup" style="margin:6px 2px 0">The text can be edited. The link is personal: ' + esc(depan) + ' shows up in My list as soon as the registration is filled in.</p>' +
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<div class="baris-tombol" style="margin-top:10px"><button class="tombol" id="u-wa-buka">Open WhatsApp</button><button class="tombol kedua" id="u-salin">Copy message</button></div>' +
-      '<div class="baris-tombol" style="margin-top:8px"><button class="tombol kecil kedua" id="u-link-form" type="button">Copy registration link</button>' + (S.atur.tautan_zoom_bod ? '<button class="tombol kecil kedua" id="u-link-zoom" type="button">Copy Zoom details</button>' : '') + '</div>' +
-      '<p class="kecil redup" id="u-manual-bag" style="margin:10px 2px 0"' + (st.tercatat ? ' hidden' : '') + '>Sent your own message with the Form link? <button type="button" id="u-manual" class="tautan-tombol">Mark as invited</button></p>' +
-      '<details class="lipat" id="u-balasan" style="margin-top:14px"><summary><span>If they hesitate or ask</span><em>replies</em></summary><div id="u-balasan-isi"></div></details>',
+      '<p class="kecil redup" id="u-manual-bag" style="margin:10px 2px 0"' + (st.tercatat ? ' hidden' : '') + '>Sent your own message with the link? <button type="button" id="u-manual" class="tautan-tombol">Mark as invited</button>' +
+      ' · <button type="button" id="u-sapa" class="tautan-tombol">Need an opener? Say hi first</button></p>',
       function (el) {
         var ta = el.querySelector('#u-pesan');
-        var petunjuk = ['Start the conversation. Wait for a reply before sending the next one.', 'Share the details of the event.', 'Send the registration link. It is yours, so the guest shows up in your list by itself once they register.', 'Send this after they have registered.'];
-        function segarPesan() {
-          var e = acaraDipilih();
-          if (e) ta.value = buatPesan(st.bahasa, st.dekat, st.langkah, depan, e, bidang, o.bisnis);
-          el.querySelector('#u-petunjuk').textContent = 'Message ' + (st.langkah + 1) + ' of 4. ' + petunjuk[st.langkah];
-          var wadah = el.querySelector('#u-balasan');
-          wadah.hidden = st.bahasa !== 'id';
-          el.querySelector('#u-balasan-isi').innerHTML = BALASAN.map(function (b, i) {
-            return '<div class="balasan"><b>' + esc(b[0]) + '</b><p>' + esc(balasanTeks(b, st.dekat)).replace(/\n/g, '<br>') + '</p><button type="button" class="tombol kecil kedua" data-salin-balasan="' + i + '">Copy</button></div>';
-          }).join('');
-          el.querySelectorAll('[data-salin-balasan]').forEach(function (b) {
-            b.onclick = function () { salinTeks(balasanTeks(BALASAN[Number(b.dataset.salinBalasan)], st.dekat), ta); toast('Reply copied.'); };
-          });
-        }
-        function tanda(wadah, atr, nilai) { el.querySelectorAll(wadah + ' [' + atr + ']').forEach(function (b) { var a = b.hasAttribute('aria-selected') ? 'aria-selected' : 'aria-pressed'; b.setAttribute(a, b.getAttribute(atr) === String(nilai)); }); }
+        function segarPesan() { var e = acaraDipilih(); if (e) ta.value = pesanUndanganAcara(e, linkAcara(e)); }
         function gambarAcara() {
           var w = el.querySelector('#u-ev');
           if (st.tercatat) { var e = acaraDipilih(), it = e ? itemAcara(e) : null; w.innerHTML = it ? '<div class="kal-tetap"><b>' + esc(tglHari(e.tanggal)) + ' · ' + esc(it.judul) + '</b><small>' + esc(it.sub) + '</small></div>' : ''; return; }
           kalender(w, o.acara.map(itemAcara), { pilih: st.idEv, onPick: function (k) { st.idEv = k; segarPesan(); } });
         }
         gambarAcara();
-        el.querySelectorAll('[data-dekat]').forEach(function (b) { b.onclick = function () { st.dekat = b.dataset.dekat; tanda('#u-dekat', 'data-dekat', st.dekat); segarPesan(); }; });
-        el.querySelectorAll('[data-langkah]').forEach(function (b) { b.onclick = function () { st.langkah = Number(b.dataset.langkah); tanda('#u-langkah', 'data-langkah', st.langkah); segarPesan(); }; });
-        el.querySelector('#u-bhs').onclick = function () { st.bahasa = st.bahasa === 'id' ? 'en' : 'id'; this.textContent = st.bahasa === 'id' ? 'ID | EN' : 'EN | ID'; segarPesan(); };
         segarPesan();
-        /* Pesan 1 dan 2 hanya disimpan nomornya. Undangan tercatat saat pesan 3 (link Form) dikirim atau disalin. */
-        async function catat(paksa) {
+        async function catat() {
           var kolom = el.querySelector('#u-wa'), wa = kolom ? kolom.value : st.wa;
           var s = el.querySelector('#salah');
-          if (!st.tercatat && !wa) { s.textContent = 'Enter the WhatsApp number first.'; s.hidden = false; return false; }
           if (st.tercatat) return true;
-          var mencatat = paksa === true || st.langkah >= 2;
-          if (!mencatat && (st.nomorSimpan || !kolom)) return true;   // nomor sudah tersimpan, tidak ada yang dicatat
-          var r = await api('undang', { id_orang: o.id, id_event: st.idEv, whatsapp: kolom ? wa : '', catat: mencatat });
+          if (!wa) { s.textContent = 'Enter the WhatsApp number first.'; s.hidden = false; return false; }
+          var r = await api('undang', { id_orang: o.id, id_event: st.idEv, whatsapp: kolom ? wa : '', catat: true });
           if (!r.ok) { s.textContent = r.pesan; s.hidden = false; return false; }
-          s.hidden = true; st.wa = wa; st.nomorSimpan = true;
+          s.hidden = true; st.wa = wa; st.tercatat = true;
           if (kolom) { var k0 = kolom.closest('label'); if (k0) k0.hidden = true; }
-          if (mencatat) {
-            st.tercatat = true;
-            el.querySelector('#u-info').textContent = 'Invitation recorded. Send the remaining messages in order, one at a time.';
-            gambarAcara();
-            if (o.segarkan) o.segarkan();
-          }
+          el.querySelector('#u-info').textContent = 'Invitation recorded. The message can be sent again if needed.';
+          el.querySelector('#u-manual-bag').hidden = true;
+          gambarAcara();
+          if (o.segarkan) o.segarkan();
           return true;
         }
-        el.querySelector('#u-manual').onclick = async function () {
-          var ok = await catat(true);
-          if (!ok) return;
-          tandaiPesan(o.id, 2);
-          el.querySelector('#u-manual-bag').hidden = true;
-          var t3 = el.querySelector('[data-langkah="2"] b'); if (t3 && t3.textContent.indexOf('\u2713') < 0) t3.textContent += ' \u2713';
-          toast('Marked as invited.');
-        };
-        el.querySelector('#u-link-form').onclick = function () { salinTeks(urlFormUndangan()); toast('Registration link copied.'); };
-        var lz = el.querySelector('#u-link-zoom');
-        if (lz) lz.onclick = function () { salinTeks(infoZoomRabu()); toast('Zoom details copied.'); };
+        el.querySelector('#u-manual').onclick = async function () { if (await catat()) toast('Marked as invited.'); };
+        el.querySelector('#u-sapa').onclick = function () { lembarSapa({ id: o.id, nama: o.nama, wa: st.wa, bidang: o.bidang, bisnis: o.bisnis, segarkan: o.segarkan }); };
         el.querySelector('#u-salin').onclick = async function () {
           if (!(await catat())) return;
-          salinTeks(ta.value, ta); toast('Message copied. Paste it in WhatsApp.'); tandaKirim();
+          salinTeks(ta.value, ta); toast('Message copied. Paste it in WhatsApp.');
         };
         el.querySelector('#u-wa-buka').onclick = async function () {
           // Jendela dibuka sekarang, saat ketukan masih dihitung. Membuka sesudah menunggu server sering diblokir browser HP.
@@ -973,20 +920,58 @@
           var nomor = String(st.wa).replace(/\D/g, '').replace(/^620/, '62').replace(/^0/, '62');
           var url = waLink(nomor, ta.value);
           if (jendela) jendela.location.href = url; else location.href = url;
-          tandaKirim();
         };
-        function tandaKirim() {
-          if (!o.id) return;
-          tandaiPesan(o.id, st.langkah);
-          if (o.segarkan && st.tercatat === false) o.segarkan();
-          var tombol = el.querySelector('[data-langkah="' + st.langkah + '"] b');
-          if (tombol && tombol.textContent.indexOf('\u2713') < 0) tombol.textContent += ' \u2713';
-        }
       });
   }
 
-  function lembarKirim(namaTamu, wa, e, bidang, bisnis, idOrang) {
-    lembarUndangan({ id: idOrang, nama: namaTamu, wa: String(wa || ''), acara: [e], idEv: e.id_event, tercatat: true, bidang: bidang, bisnis: bisnis });
+  /* Sapaan pembuka untuk calon: dibuka dari daftar nama, belum mengundang ke acara apa pun. opsi: {id, nama, wa, bidang, bisnis, segarkan} */
+  function lembarSapa(o) {
+    var depan = o.nama.split(/\s+/)[0];
+    var bidang = o.bidang && !/^Undecided/.test(o.bidang) ? o.bidang : (o.bisnis || '');
+    var st = { dekat: 'teman', bahasa: 'id', wa: o.wa || '' };
+    bukaLembar(
+      '<h2>Say hi to ' + esc(depan) + '</h2>' +
+      '<p class="kecil" style="margin:4px 0 12px">A friendly opener to start the conversation. Nothing is recorded. Invite ' + esc(depan) + ' when the time is right.</p>' +
+      (st.wa ? '' : '<label class="isian"><span>WhatsApp ' + esc(depan) + '</span><input id="s-wa" inputmode="tel" placeholder="08..." autocomplete="off"></label>') +
+      '<p class="kecil" style="margin-bottom:6px">How close are you to ' + esc(depan) + '?</p><div class="pilihan" id="s-dekat" style="margin-bottom:12px">' + KEDEKATAN.map(function (g) {
+        return '<button type="button" data-dekat="' + g[0] + '" aria-pressed="' + (g[0] === st.dekat) + '">' + g[1] + '</button>';
+      }).join('') + '<button type="button" id="s-bhs" class="bahasa" aria-label="Switch message language">ID | EN</button></div>' +
+      '<textarea id="s-pesan" class="pesan-undangan" rows="7"></textarea>' +
+      '<p class="pesan-salah" id="salah" hidden></p>' +
+      '<div class="baris-tombol" style="margin-top:10px"><button class="tombol" id="s-wa-buka">Open WhatsApp</button><button class="tombol kedua" id="s-salin">Copy message</button></div>' +
+      '<details class="lipat" id="s-balasan" style="margin-top:14px"><summary><span>If they hesitate or ask</span><em>replies</em></summary><div id="s-balasan-isi"></div></details>',
+      function (el) {
+        var ta = el.querySelector('#s-pesan');
+        function segar() {
+          ta.value = buatSapaan(st.bahasa, st.dekat, depan, bidang);
+          el.querySelector('#s-balasan').hidden = st.bahasa !== 'id';
+          el.querySelector('#s-balasan-isi').innerHTML = BALASAN.map(function (b, i) {
+            return '<div class="balasan"><b>' + esc(b[0]) + '</b><p>' + esc(balasanTeks(b, st.dekat)).replace(/\n/g, '<br>') + '</p><button type="button" class="tombol kecil kedua" data-salin-balasan="' + i + '">Copy</button></div>';
+          }).join('');
+          el.querySelectorAll('[data-salin-balasan]').forEach(function (b) { b.onclick = function () { salinTeks(balasanTeks(BALASAN[Number(b.dataset.salinBalasan)], st.dekat), ta); toast('Reply copied.'); }; });
+        }
+        segar();
+        el.querySelectorAll('[data-dekat]').forEach(function (b) {
+          b.onclick = function () { st.dekat = b.dataset.dekat; el.querySelectorAll('[data-dekat]').forEach(function (z) { z.setAttribute('aria-pressed', z === b); }); segar(); };
+        });
+        el.querySelector('#s-bhs').onclick = function () { st.bahasa = st.bahasa === 'id' ? 'en' : 'id'; this.textContent = st.bahasa === 'id' ? 'ID | EN' : 'EN | ID'; segar(); };
+        el.querySelector('#s-salin').onclick = function () { salinTeks(ta.value, ta); toast('Message copied. Paste it in WhatsApp.'); };
+        el.querySelector('#s-wa-buka').onclick = async function () {
+          var kolom = el.querySelector('#s-wa'), wa = kolom ? kolom.value : st.wa;
+          var s = el.querySelector('#salah');
+          var nomor = String(wa).replace(/\D/g, '').replace(/^620/, '62').replace(/^0/, '62');
+          if (!nomor) { s.textContent = 'Enter the WhatsApp number first.'; s.hidden = false; return; }
+          var jendela = window.open('about:blank', '_blank');
+          if (kolom && o.id) {
+            var r = await api('undang', { id_orang: o.id, whatsapp: wa, catat: false });
+            if (!r.ok) { if (jendela) jendela.close(); s.textContent = r.pesan; s.hidden = false; return; }
+            st.wa = wa; var k0 = kolom.closest('label'); if (k0) k0.hidden = true;
+            if (o.segarkan) o.segarkan();
+          }
+          var url = waLink(nomor, ta.value);
+          if (jendela) jendela.location.href = url; else location.href = url;
+        };
+      });
   }
 
   /* ---------- coffee session: templat dan lembar pemesanan ----------
@@ -1078,7 +1063,7 @@
     var st = { dekat: 'teman', bahasa: 'id', langkah: dipesan ? 2 : 0, pilih: o.idSlot || (dipesan ? '' : ''), lain: '', wa: o.whatsapp || '' };
     if (!st.pilih && !dipesan && kosong.length) st.pilih = kosong[0].id_slot;
     function waktuDipilih() {
-      if (st.pilih === 'lain') return st.lain ? { waktu: new Date(st.lain + ':00+07:00').toISOString(), tempat: 'Zoom', pic: S.profil.nama_depan, pic_id: S.profil.id_orang, pic_ldc: isLDC() } : null;
+      if (st.pilih === 'lain') return st.lain ? { waktu: new Date(st.lain + ':00+07:00').toISOString(), tempat: 'Zoom', pic: isLT() ? S.profil.nama_depan : 'Coach Dedy', pic_id: isLT() ? S.profil.id_orang : '', pic_ldc: isLT() ? isLDC() : true } : null;
       var s = kosong.filter(function (z) { return z.id_slot === st.pilih; })[0];
       return s || dipesan;
     }
@@ -1090,8 +1075,8 @@
         : 'A 30 minute chat with Coach Dedy, supported by the launch team. No Wednesday visit needed first. Book the time once ' + esc(depan) + ' says yes.') + '</p>' +
       (dipesan ? '<details class="lipat" style="margin-bottom:12px"><summary><span>Change time</span><em>' + kosong.length + ' open</em></summary>' : '<p class="kecil" style="margin-bottom:6px">Open times</p>') +
       '<div id="k-slot" style="margin-bottom:10px"></div>' +
-      (isLT() ? '<div class="pilihan" style="margin-bottom:12px"><button type="button" id="k-lain-tombol" aria-pressed="' + (st.pilih === 'lain') + '">Other time (outside the open slots)</button></div>' : '') +
-      (kosong.length ? '' : '<p class="kecil redup" style="margin:-6px 0 12px">' + (isLT() ? 'No open times. Open some in Team, Schedule, or use Other time.' : 'No open times yet. Ask Coach Dedy or the launch team to open some.') + '</p>') +
+      '<div class="pilihan" style="margin-bottom:12px"><button type="button" id="k-lain-tombol" aria-pressed="' + (st.pilih === 'lain') + '">Another time (already agreed with ' + esc(depan) + ')</button></div>' +
+      (kosong.length ? '' : '<p class="kecil redup" style="margin:-6px 0 12px">No open times. Use "Another time" once ' + esc(depan) + ' has agreed on a time with Coach Dedy.</p>') +
       '<label class="isian" id="k-lain" hidden><span>Date and time (WIB)</span><input type="datetime-local" id="k-lain-in"></label>' +
       (dipesan ? '<button class="tombol" id="k-pesan-slot">Move booking to this time</button><button class="tombol kedua" id="k-batal" style="margin-top:8px">Cancel booking</button></details>' : '') +
       (st.wa ? '' : '<label class="isian"><span>WhatsApp ' + esc(depan) + '</span><input id="k-wa" inputmode="tel" placeholder="08..." autocomplete="off"></label>') +
@@ -1259,22 +1244,27 @@
       });
   }
 
-  /* Pilihan undang untuk anggota: kunjungan Rabu atau langsung coffee session */
+  /* Pilihan undang untuk anggota: BOD, Lunch Networking, atau langsung coffee session */
   function lembarPilihUndang(u, acara, segarkan) {
-    var bisaKunjung = !u.status_undangan && u.tahap === 'Listed' && acara.length > 0;
+    var bod = acara.filter(function (e) { return e.jenis === 'BOD'; }), lunch = acara.filter(function (e) { return e.jenis === 'Lunch Networking'; });
+    var belum = !u.status_undangan && u.tahap === 'Listed';
     var bisaKopi = ['Listed', 'Invited', 'Attended', 'Coffee_Scheduled'].indexOf(u.tahap) >= 0;
-    var lanjut = ['Diundang', 'Terdaftar'].indexOf(u.status_undangan) >= 0 && ['Listed', 'Invited'].indexOf(u.tahap) >= 0 && u.acara_detail;
+    var ulang = ['Diundang', 'Terdaftar'].indexOf(u.status_undangan) >= 0 && ['Listed', 'Invited'].indexOf(u.tahap) >= 0 && u.acara_detail;
     var depan = u.nama.split(/\s+/)[0];
+    function ringkas(l) { return l.length === 1 ? tglHari(l[0].tanggal) + ' ' + l[0].jam_mulai : l.length + ' dates open'; }
     bukaLembar('<h2>Invite ' + esc(depan) + '</h2><p class="kecil" style="margin:6px 0 14px">' + esc(u.bidang) + '</p>' +
       '<div class="pilihan kolom">' +
-      (!acara.length && u.tahap === 'Listed' && !u.status_undangan ? '<p class="kecil redup" style="margin-bottom:8px">No Wednesday meetings are open yet, so a coffee session is the way to invite for now.</p>' : '') +
-      (lanjut ? '<button type="button" id="p-lanjut"><b>Continue the invitation messages</b><small>' + esc((u.acara_detail.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + tglPendek(u.acara_detail.tanggal) + ' · ' + (u.status_undangan === 'Terdaftar' ? 'registered, send the last message' : 'next: ' + ['opener', 'invitation details', 'Form link', 'after sign-up'][langkahBerikut(u.id_orang, false)])) + '</small></button>' : '') +
-      (bisaKunjung ? '<button type="button" id="p-kunjung"><b>Visit a Wednesday meeting</b><small>BOD or Lunch Networking, then a coffee session</small></button>' : '') +
-      (bisaKopi ? '<button type="button" id="p-kopi"><b>' + (u.tahap === 'Coffee_Scheduled' ? 'Coffee session booked' : 'Coffee session straight away') + '</b><small>' + (u.tahap === 'Coffee_Scheduled' ? 'See the time, confirm, or change it' : '30 minutes 1 on 1 with Coach Dedy, no visit needed') + '</small></button>' : '') +
+      (ulang ? '<button type="button" id="p-lanjut"><b>Send the invitation again</b><small>' + esc((u.acara_detail.jenis === 'BOD' ? 'BOD' : 'Lunch Networking') + ' ' + tglPendek(u.acara_detail.tanggal) + ' · ' + (u.status_undangan === 'Terdaftar' ? 'registered' : 'not registered yet')) + '</small></button>' : '') +
+      (belum && bod.length ? '<button type="button" id="p-bod"><b>BOD</b><small>Wednesday morning · ' + esc(ringkas(bod)) + '</small></button>' : '') +
+      (belum && lunch.length ? '<button type="button" id="p-lunch"><b>Lunch Networking</b><small>Wednesday lunch · ' + esc(ringkas(lunch)) + '</small></button>' : '') +
+      (bisaKopi ? '<button type="button" id="p-kopi"><b>' + (u.tahap === 'Coffee_Scheduled' ? 'Coffee session booked' : 'Coffee session') + '</b><small>' + (u.tahap === 'Coffee_Scheduled' ? 'See the time, confirm, or change it' : '30 minutes 1 on 1 with Coach Dedy or the launch team') + '</small></button>' : '') +
       '</div>' +
-      '<p class="kecil redup" style="margin:12px 2px 0"><button type="button" class="tautan-tombol" id="p-ubah">Edit name or number</button>' +
+      (belum && !bod.length && !lunch.length ? '<p class="kecil redup" style="margin:10px 2px 0">No Wednesday events are open yet. A coffee session works for now.</p>' : '') +
+      '<p class="kecil redup" style="margin:12px 2px 0"><button type="button" class="tautan-tombol" id="p-sapa">Say hi first</button> · <button type="button" class="tautan-tombol" id="p-ubah">Edit name or number</button>' +
       (u.status_undangan === 'Diundang' ? ' · <button type="button" class="tautan-tombol" id="p-ganti">Change event</button> · <button type="button" class="tautan-tombol" id="p-batal">Cancel invitation</button>' : '') + '</p>',
       function (el) {
+        var dasar = { id: u.id_orang, nama: u.nama, wa: u.whatsapp, bidang: u.bidang, bisnis: u.bisnis, segarkan: segarkan };
+        el.querySelector('#p-sapa').onclick = function () { lembarSapa(dasar); };
         el.querySelector('#p-ubah').onclick = function () { lembarUbahCalon(u, segarkan); };
         var pg = el.querySelector('#p-ganti'), pb = el.querySelector('#p-batal');
         if (pg) pg.onclick = function () { u.id_event_undangan = u.id_event_undangan || (u.acara_detail && u.acara_detail.id_event); lembarGantiAcara(u, acara, segarkan); };
@@ -1282,16 +1272,16 @@
           if (!confirm('Cancel the invitation for ' + u.nama.split(/\s+/)[0] + '? They go back to Ready to invite.')) return;
           var h = await api('ubahUndangan', { id_orang: u.id_orang, aksi: 'batal' });
           if (!h.ok) return toast(h.pesan);
-          simpan(kunciPesan(u.id_orang), null);
           tutupLembar(); toast('Invitation cancelled.'); if (segarkan) segarkan();
         };
+        function buka(id, daftar, tercatat) { return function () { lembarUndangan(Object.assign({}, dasar, { acara: daftar, idEv: id, tercatat: tercatat })); }; }
         var lj = el.querySelector('#p-lanjut');
-        if (lj) lj.onclick = function () {
-          var ed = u.acara_detail, daftar = u.status_undangan === 'Terdaftar';
-          lembarUndangan({ id: u.id_orang, nama: u.nama, wa: u.whatsapp, acara: [ed], idEv: ed.id_event, tercatat: true, bidang: u.bidang, bisnis: u.bisnis, segarkan: segarkan, langkahAwal: langkahBerikut(u.id_orang, daftar) });
-        };
-        var k = el.querySelector('#p-kunjung');
-        if (k) k.onclick = function () { lembarUndang(u.id_orang, u.nama, u.whatsapp, acara, segarkan, u.bidang, u.bisnis); };
+        if (lj) {
+          var ed = acara.filter(function (e) { return e.id_event === u.acara_detail.id_event; })[0] || u.acara_detail;
+          lj.onclick = buka(ed.id_event, [ed], true);
+        }
+        var kb = el.querySelector('#p-bod'); if (kb) kb.onclick = buka(bod[0].id_event, bod, false);
+        var kl = el.querySelector('#p-lunch'); if (kl) kl.onclick = buka(lunch[0].id_event, lunch, false);
         var c = el.querySelector('#p-kopi');
         if (c) c.onclick = function () { lembarKopi({ id_orang: u.id_orang, nama: u.nama, whatsapp: u.whatsapp, bidang: u.bidang, bisnis: u.bisnis, segarkan: segarkan }); };
       });
@@ -1321,11 +1311,10 @@
     function baris(u) {
       var bisa = !u.status_undangan && u.tahap === 'Listed';
       var ketuk = !bisa && ['Invited', 'Attended', 'Coffee_Scheduled'].indexOf(u.tahap) >= 0;
-      var kirim = pesanTerkirim(u.id_orang).length;
-      var info = u.tahap === 'Coffee_Scheduled' && u.jadwal_cs ? ' · Coffee ' + jamCS(u.jadwal_cs).hari + ' ' + jamCS(u.jadwal_cs).jam : (u.tanggal_undangan ? ' · ' + esc(u.acara_undangan) + ', ' + esc(tglPendek(u.tanggal_undangan)) : '') + (kirim && (bisa || u.tahap === 'Invited') ? ' · ' + kirim + ' of 4 messages sent' : '');
+      var info = u.tahap === 'Coffee_Scheduled' && u.jadwal_cs ? ' · Coffee ' + jamCS(u.jadwal_cs).hari + ' ' + jamCS(u.jadwal_cs).jam : (u.tanggal_undangan ? ' · ' + esc(u.acara_undangan) + ', ' + esc(tglPendek(u.tanggal_undangan)) : '');
       var isiBaris = '<div class="utama"><b>' + esc(u.nama) + '</b><span>' + esc(u.bidang) + info + '</span></div>';
       return '<li>' + (ketuk ? '<button class="ketuk" data-buka="' + esc(u.id_orang) + '" style="flex:1;min-width:0">' + isiBaris + '</button>' : isiBaris) + ikonWa(u.whatsapp, u.nama) +
-        (bisa ? '<button class="tombol kecil" data-undang="' + esc(u.id_orang) + '">' + (kirim ? 'Continue' : 'Invite') + '</button>' : chipUndangan(u)) + '</li>';
+        (bisa ? '<button class="tombol kecil" data-undang="' + esc(u.id_orang) + '">' + 'Invite' + '</button>' : chipUndangan(u)) + '</li>';
     }
     function cariU(id) { return us.usulan.filter(function (u) { return u.id_orang === id; })[0]; }
     isi.innerHTML = '<div class="sapa"><h1>My list</h1><p class="kecil">Names I want to invite. ' + st.nama_daftar + ' of ' + st.target_nama_maks + ' (minimum ' + st.target_nama_min + ').</p></div>' +
@@ -1353,7 +1342,7 @@
     var prog = (tm.acara_ronde || []).map(function (e) {
       return '<li class="program"><div class="utama"><b>' + esc(e.jenis === 'BOD' ? 'BOD' : e.nama_acara) + ' · ' + esc(e.jam_mulai) + (e.jam_selesai ? ' to ' + esc(e.jam_selesai) : '') + '</b>' +
         '<span>' + esc(e.mode === 'Online' ? 'Online, ' + (e.lokasi || 'Zoom') : (e.lokasi || 'Onsite')) + '</span>' +
-        '<span>' + (e.pembicara ? 'Speaker: ' + esc(e.pembicara) : 'Speaker to be announced') + '</span>' + kartuPoster(e.poster) + '</div></li>';
+        '<span>' + (e.judul_topik || e.pembicara ? esc([e.judul_topik, e.pembicara ? 'with ' + e.pembicara.replace(/[\n;]+/g, ', ') : ''].filter(Boolean).join(' ')) : 'Speaker to be announced') + '</span>' + kartuPoster(e.poster) + '</div></li>';
     }).join('');
     isi.innerHTML = '<div class="sapa"><h1>This week</h1><p class="kecil">' + ((tm.acara_ronde || []).length ? 'Visitors registered for Wednesday, with their classification. Phone numbers are not shown.' : 'No Wednesday meetings are scheduled yet. They appear here once the launch team adds them.') + '</p></div>' +
       kartuLinkBagi() +
@@ -1363,11 +1352,6 @@
       '<div class="judul-bagian"><h2>Other Visitors</h2><span class="kecil">' + lain.length + '</span></div>' +
       '<section class="kartu">' + (lain.length ? '<ul class="daftar">' + lain.map(baris).join('') + '</ul><p class="catatan-main">Know their classification before Wednesday, so you can greet and connect them.</p>' : '<p class="kosong-isi">No other Visitors registered yet.</p>') + '</section>';
     pasangLinkBagi(isi);
-  }
-
-  function lembarUndang(id, nama, wa, acara, segarkan, bidang, bisnis) {
-    if (!acara.length) return toast('No Wednesday events are open yet.');
-    lembarUndangan({ id: id, nama: nama, wa: wa, acara: acara, segarkan: segarkan, bidang: bidang, bisnis: bisnis });
   }
 
   /* ---------- PAPAN ---------- */
@@ -1934,7 +1918,12 @@
       '<label class="isian"><span>End</span><input name="jam_selesai" type="time" value="' + esc(e.jam_selesai) + '"></label></div>' +
       '<label class="isian"><span>Format</span><select name="mode"><option' + (e.mode !== 'Online' ? ' selected' : '') + '>Onsite</option><option' + (e.mode === 'Online' ? ' selected' : '') + '>Online</option></select></label>' +
       '<label class="isian"><span>Location or link</span><input name="lokasi" maxlength="120" value="' + esc(e.lokasi) + '" placeholder="Venue name or Zoom"></label>' +
-      '<label class="isian"><span>Speaker and topic</span><input name="pembicara" maxlength="120" value="' + esc(e.pembicara) + '" placeholder="Name: topic"></label>' +
+      (e.jenis === 'BOD' || e.jenis === 'Lunch Networking' ? '<p class="kecil" style="margin:6px 0 8px">Used in the invitation text members send. Leave a field empty to skip it.</p>' +
+        '<label class="isian"><span>Opening sentences' + (e.jenis === 'BOD' ? ' (above the topic)' : ' (replaces the default intro)') + '</span><textarea name="pembuka" rows="4" maxlength="700" placeholder="' + esc(e.jenis === 'BOD' ? PEMBUKA_BOD : 'Default intro is used when empty') + '">' + esc(e.pembuka) + '</textarea></label>' +
+        (e.jenis === 'BOD' ? '<label class="isian"><span>Topic title</span><input name="judul_topik" maxlength="120" value="' + esc(e.judul_topik) + '" placeholder="The Speed of Trust in Challenging Times"></label>' : '') : '') +
+      '<label class="isian"><span>Speakers (one per line, with title)</span><textarea name="pembicara" rows="2" maxlength="240" placeholder="Grace Hakim, National Director BNI Indonesia">' + esc(e.pembicara) + '</textarea></label>' +
+      '<label class="isian"><span>Fee (leave empty if free)</span><input name="biaya" maxlength="120" value="' + esc(e.biaya) + '" placeholder="Rp 175.000 for members and visitors (snack and beverages)"></label>' +
+      '<label class="isian"><span>Map link (optional)</span><input name="tautan_lokasi" type="url" placeholder="https://maps.app.goo.gl/..." value="' + esc(e.tautan_lokasi) + '"></label>' +
       '<label class="isian"><span>Poster link (optional)</span><input name="poster" type="url" placeholder="https://" value="' + esc(e.poster) + '"></label>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save</button></form>' +
       '<div class="baris-tombol"><button class="tombol kedua" id="a-batal">Cancel this event</button></div>',
@@ -1942,7 +1931,7 @@
         el.querySelector('#f-a').onsubmit = async function (ev) {
           ev.preventDefault();
           var f = ev.target, sl = el.querySelector('#salah');
-          var r = await api('ubahAcara', { id_event: e.id_event, tanggal: f.tanggal.value, jam_mulai: f.jam_mulai.value, jam_selesai: f.jam_selesai.value, mode: f.mode.value, lokasi: f.lokasi.value, pembicara: f.pembicara.value, poster: f.poster.value.trim() });
+          var r = await api('ubahAcara', { id_event: e.id_event, tanggal: f.tanggal.value, jam_mulai: f.jam_mulai.value, jam_selesai: f.jam_selesai.value, mode: f.mode.value, lokasi: f.lokasi.value, pembicara: f.pembicara.value, biaya: f.biaya.value, tautan_lokasi: f.tautan_lokasi.value.trim(), pembuka: f.pembuka ? f.pembuka.value : undefined, judul_topik: f.judul_topik ? f.judul_topik.value : undefined, poster: f.poster.value.trim() });
           if (!r.ok) { sl.textContent = r.pesan; sl.hidden = false; return; }
           tutupLembar(); toast('Event saved.'); segarkan();
         };

@@ -879,6 +879,7 @@
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<div class="baris-tombol" style="margin-top:10px"><button class="tombol" id="u-wa-buka">Open WhatsApp</button><button class="tombol kedua" id="u-salin">Copy message</button></div>' +
       '<div class="baris-tombol" style="margin-top:8px"><button class="tombol kecil kedua" id="u-link-form" type="button">Copy Form link</button>' + (S.atur.tautan_zoom_bod ? '<button class="tombol kecil kedua" id="u-link-zoom" type="button">Copy Zoom details</button>' : '') + '</div>' +
+      '<p class="kecil redup" id="u-manual-bag" style="margin:10px 2px 0"' + (st.tercatat ? ' hidden' : '') + '>Sent your own message with the Form link? <button type="button" id="u-manual" class="tautan-tombol">Mark as invited</button></p>' +
       '<details class="lipat" id="u-balasan" style="margin-top:14px"><summary><span>If they hesitate or ask</span><em>replies</em></summary><div id="u-balasan-isi"></div></details>',
       function (el) {
         var ta = el.querySelector('#u-pesan');
@@ -908,12 +909,12 @@
         el.querySelector('#u-bhs').onclick = function () { st.bahasa = st.bahasa === 'id' ? 'en' : 'id'; this.textContent = st.bahasa === 'id' ? 'ID | EN' : 'EN | ID'; segarPesan(); };
         segarPesan();
         /* Pesan 1 dan 2 hanya disimpan nomornya. Undangan tercatat saat pesan 3 (link Form) dikirim atau disalin. */
-        async function catat() {
+        async function catat(paksa) {
           var kolom = el.querySelector('#u-wa'), wa = kolom ? kolom.value : st.wa;
           var s = el.querySelector('#salah');
           if (!st.tercatat && !wa) { s.textContent = 'Enter the WhatsApp number first.'; s.hidden = false; return false; }
           if (st.tercatat) return true;
-          var mencatat = st.langkah >= 2;
+          var mencatat = paksa === true || st.langkah >= 2;
           if (!mencatat && (st.nomorSimpan || !kolom)) return true;   // nomor sudah tersimpan, tidak ada yang dicatat
           var r = await api('undang', { id_orang: o.id, id_event: st.idEv, whatsapp: kolom ? wa : '', catat: mencatat });
           if (!r.ok) { s.textContent = r.pesan; s.hidden = false; return false; }
@@ -927,6 +928,14 @@
           }
           return true;
         }
+        el.querySelector('#u-manual').onclick = async function () {
+          var ok = await catat(true);
+          if (!ok) return;
+          tandaiPesan(o.id, 2);
+          el.querySelector('#u-manual-bag').hidden = true;
+          var t3 = el.querySelector('[data-langkah="2"] b'); if (t3 && t3.textContent.indexOf('\u2713') < 0) t3.textContent += ' \u2713';
+          toast('Marked as invited.');
+        };
         el.querySelector('#u-link-form').onclick = function () { salinTeks(urlFormUndangan()); toast('Form link copied.'); };
         var lz = el.querySelector('#u-link-zoom');
         if (lz) lz.onclick = function () { salinTeks(infoZoomRabu()); toast('Zoom details copied.'); };
@@ -1463,7 +1472,7 @@
         return '<section class="kartu" data-und="' + esc(t.id_undangan) + '" style="box-shadow:none"><h3>' + esc(t.nama) + '</h3>' +
           '<p class="kecil">' + (t.bidang ? esc(t.bidang) + ' · ' : '') + esc(labelAcaraCek(t.acara)) + ' · signed up with "No one" as inviter</p>' +
           '<label class="isian"><span>Who invited them?</span><select name="peng"><option value="">Choose a person</option>' + opsiPeng(t.saran ? t.saran.id_orang : '') + '</select></label>' +
-          (t.saran ? '<p class="kecil redup" style="margin-top:-6px">Suggested from an earlier invitation: ' + esc(t.saran.nama) + '.</p>' : '') +
+          (t.saran ? '<p class="kecil redup" style="margin-top:-6px">Suggested ' + (t.saran.alasan === 'list' ? 'because ' + esc(t.saran.nama) + ' added this name to their list' : 'from an earlier invitation') + ': ' + esc(t.saran.nama) + '.</p>' : '') +
           '<p class="pesan-salah" hidden></p>' +
           '<div class="baris-tombol"><button class="tombol kecil" data-p="set">Set inviter</button><button class="tombol kecil kedua" data-p="walkin">Walk-in, no inviter</button></div></section>';
       }).join('');

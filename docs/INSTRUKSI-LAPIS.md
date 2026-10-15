@@ -252,3 +252,5 @@ Coach Dedy menguji Form: pilihan "Diundang oleh" tidak memuat nama LDC dan LT (D
 
 - Perubahan kecil di `Inti.js`: aksi `undang` menerima `catat: false` (hanya menyimpan nomor WhatsApp, tidak membuat baris `Undangan`). App memakainya untuk pesan 1 (tanya kabar) dan pesan 2 (detail acara). Baris `Undangan` baru dibuat saat pesan 3 (link Form) dikirim. Menambah nama dengan centang undang tidak lagi membuat `Undangan` langsung. Perlu naik versi. Tidak ada kolom, tab, atau pemicu baru.
 - `usulanSaya` kini juga mengembalikan `id_event_undangan` dan `acara_detail` (ringkasan acara dari undangan terakhir).
+
+- Tambahan untuk normalisasi Form (member mengundang dengan pesan sendiri): bila baris `Responses` cocok dengan baris `Master` yang belum punya `Undangan`, buat `Undangan` baru dengan `id_pengundang` dari kolom "Diundang oleh" bila valid, dan bila isinya "Tidak Ada", pakai `Master.diajukan_oleh` (orang yang mendaftarkan nama itu di My list) sebagai cadangan. Kartu "No inviter" di app kini juga menyarankan `diajukan_oleh` bila tidak ada undangan lain.

@@ -495,3 +495,5 @@ li.ketuk[data-o] { cursor: pointer; }
 .dampak-baris b.unggul { color: var(--merah); }
 .dampak-nama .sub { display: block; font-size: 11px; font-weight: 500; color: var(--abu); }
 .pilih-tim { font: inherit; font-size: 13px; padding: 6px 8px; border: 1px solid var(--garis); border-radius: 8px; background: var(--kartu); max-width: 112px; }
+
+.tautan-tombol { font: inherit; font-weight: 700; color: var(--merah); text-decoration: underline; padding: 0 2px; }

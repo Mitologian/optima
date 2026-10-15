@@ -1338,7 +1338,8 @@ var Inti = (function () {
         // Saran: pengundang dari undangan lain milik orang yang sama (yang paling baru), bila ada.
         var lain = k.undanganAktif().filter(function (v) { return teks(v.id_orang_calon) === teks(o.id_orang) && teks(v.id_undangan) !== teks(u.id_undangan) && teks(v.id_pengundang) && teks(v.id_pengundang) !== 'Walk-in' && k.orang(teks(v.id_pengundang)); })
           .sort(function (a, b) { return (tgl(b.tanggal) ? tgl(b.tanggal).getTime() : 0) - (tgl(a.tanggal) ? tgl(a.tanggal).getTime() : 0); })[0];
-        return { id_undangan: teks(u.id_undangan), id_orang: teks(o.id_orang), nama: teks(o.nama), bidang: x ? x.bidang : (teks(o.bisnis) || ''), acara: infoAcara(u.id_event), waktu: t ? t.toISOString() : '', saran: lain ? { id_orang: teks(lain.id_pengundang), nama: namaTampil(k.orang(teks(lain.id_pengundang))) } : null };
+        return { id_undangan: teks(u.id_undangan), id_orang: teks(o.id_orang), nama: teks(o.nama), bidang: x ? x.bidang : (teks(o.bisnis) || ''), acara: infoAcara(u.id_event), waktu: t ? t.toISOString() : '', saran: lain ? { id_orang: teks(lain.id_pengundang), nama: namaTampil(k.orang(teks(lain.id_pengundang))), alasan: 'invitation' }
+            : (k.orang(teks(o.diajukan_oleh)) ? { id_orang: teks(o.diajukan_oleh), nama: namaTampil(k.orang(teks(o.diajukan_oleh))), alasan: 'list' } : null) };
       });
       return { perlu_cek: cek, tanpa_pengundang: tanpa, jumlah: cek.length + tanpa.length };
     },

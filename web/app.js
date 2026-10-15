@@ -1373,7 +1373,8 @@
     var h = await Promise.all([api('perluCek'), api('anggota')]);
     var pc = h[0], ang = h[1];
     if (!pc.ok) { bukaLembar('<p class="kosong-isi">' + esc(pc.pesan) + '</p>'); return; }
-    var opsi = (ang.anggota || []).map(function (a) { return '<option value="' + esc(a.id_orang) + '">' + esc(a.nama) + '</option>'; }).join('');
+    var semuaPeng = (ang.anggota || []).concat(ang.pendiri || []).sort(function (a, b) { return a.nama < b.nama ? -1 : 1; });
+    function opsiPeng(pilih) { return semuaPeng.map(function (a) { return '<option value="' + esc(a.id_orang) + '"' + (a.id_orang === pilih ? ' selected' : '') + '>' + esc(a.nama) + '</option>'; }).join(''); }
     var html = '<h2>Form sign-ups</h2><p class="kecil" style="margin:6px 0 12px">Decide each one to keep the guest list accurate.</p>';
     if (!pc.jumlah) html += '<p class="kosong-isi">All sign-ups are handled.</p>';
     if (pc.perlu_cek.length) {
@@ -1393,7 +1394,8 @@
       html += '<div class="judul-bagian"><h2>No inviter</h2><span class="kecil">' + pc.tanpa_pengundang.length + '</span></div>' + pc.tanpa_pengundang.map(function (t) {
         return '<section class="kartu" data-und="' + esc(t.id_undangan) + '" style="box-shadow:none"><h3>' + esc(t.nama) + '</h3>' +
           '<p class="kecil">' + (t.bidang ? esc(t.bidang) + ' · ' : '') + esc(labelAcaraCek(t.acara)) + ' · signed up with "No one" as inviter</p>' +
-          '<label class="isian"><span>Who invited them?</span><select name="peng"><option value="">Choose a person</option>' + opsi + '</select></label>' +
+          '<label class="isian"><span>Who invited them?</span><select name="peng"><option value="">Choose a person</option>' + opsiPeng(t.saran ? t.saran.id_orang : '') + '</select></label>' +
+          (t.saran ? '<p class="kecil redup" style="margin-top:-6px">Suggested from an earlier invitation: ' + esc(t.saran.nama) + '.</p>' : '') +
           '<p class="pesan-salah" hidden></p>' +
           '<div class="baris-tombol"><button class="tombol kecil" data-p="set">Set inviter</button><button class="tombol kecil kedua" data-p="walkin">Walk-in, no inviter</button></div></section>';
       }).join('');

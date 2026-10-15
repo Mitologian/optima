@@ -50,15 +50,15 @@ function api_sesudahTulis_(aksi, hasil) {
 
 /* Pilihan acara di Form hanya memuat acara terdekat (BOD pagi dan Lunch Networking siang Rabu berikutnya), bukan seluruh jadwal.
    Fungsi ini mengatur kolom Events.tampil_di_form menurut jam sekarang. Dipanggil tiap 5 menit dan setelah jadwal berubah.
-   Mengembalikan true bila ada baris yang berubah. */
+   Mengembalikan true bila ada baris yang berubah. Acara jenis lain disembunyikan dari Form. */
 function api_segarkanJendelaForm_() {
   var db = api_adaptor_({ paksa: true });
   var ev = db.baca('Events');
   var buka = Inti.jendelaForm(ev, new Date());
   var berubah = false;
   ev.forEach(function (e) {
-    if (Inti.JENIS_FORM.indexOf(String(e.jenis).trim()) < 0) return;
-    var mau = !!buka[String(e.id_event).trim()];
+    // Acara yang bukan BOD, Lunch Networking, atau ESM tidak pernah tampil di Form.
+    var mau = Inti.JENIS_FORM.indexOf(String(e.jenis).trim()) >= 0 && !!buka[String(e.id_event).trim()];
     var kini = e.tampil_di_form === true || String(e.tampil_di_form).toUpperCase() === 'TRUE';
     if (mau !== kini) { db.ubah('Events', e, { tampil_di_form: mau ? 'TRUE' : 'FALSE' }); berubah = true; }
   });

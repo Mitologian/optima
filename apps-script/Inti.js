@@ -1331,7 +1331,10 @@ var Inti = (function () {
         var o = k.orang(teks(u.id_orang_calon)) || {};
         var x = kursiById(k, o.id_kursi);
         var t = tgl(u.tanggal);
-        return { id_undangan: teks(u.id_undangan), id_orang: teks(o.id_orang), nama: teks(o.nama), bidang: x ? x.bidang : (teks(o.bisnis) || ''), acara: infoAcara(u.id_event), waktu: t ? t.toISOString() : '' };
+        // Saran: pengundang dari undangan lain milik orang yang sama (yang paling baru), bila ada.
+        var lain = k.undanganAktif().filter(function (v) { return teks(v.id_orang_calon) === teks(o.id_orang) && teks(v.id_undangan) !== teks(u.id_undangan) && teks(v.id_pengundang) && teks(v.id_pengundang) !== 'Walk-in' && k.orang(teks(v.id_pengundang)); })
+          .sort(function (a, b) { return (tgl(b.tanggal) ? tgl(b.tanggal).getTime() : 0) - (tgl(a.tanggal) ? tgl(a.tanggal).getTime() : 0); })[0];
+        return { id_undangan: teks(u.id_undangan), id_orang: teks(o.id_orang), nama: teks(o.nama), bidang: x ? x.bidang : (teks(o.bisnis) || ''), acara: infoAcara(u.id_event), waktu: t ? t.toISOString() : '', saran: lain ? { id_orang: teks(lain.id_pengundang), nama: namaTampil(k.orang(teks(lain.id_pengundang))) } : null };
       });
       return { perlu_cek: cek, tanpa_pengundang: tanpa, jumlah: cek.length + tanpa.length };
     },
@@ -1897,7 +1900,7 @@ var Inti = (function () {
       for (var i = 0; i < ulang; i++) {
         var hari = isoTanggal(new Date(awal.getTime() + 7 * i * HARI));
         if (ada[jenis + '|' + hari + '|' + mulai]) { dilewati++; continue; }
-        var ev = { id_event: idBaru(k.tab('Events'), 'id_event', 'E', 4), tanggal: hari, jam_mulai: mulai, jam_selesai: selesai, nama_acara: nama, jenis: jenis, mode: mode, lokasi: lokasi, kapasitas: isNaN(kap) ? '' : kap, status: 'Terbuka', tampil_di_form: 'TRUE', pembicara: '', poster: '' };
+        var ev = { id_event: idBaru(k.tab('Events'), 'id_event', 'E', 4), tanggal: hari, jam_mulai: mulai, jam_selesai: selesai, nama_acara: nama, jenis: jenis, mode: mode, lokasi: lokasi, kapasitas: isNaN(kap) ? '' : kap, status: 'Terbuka', tampil_di_form: JENIS_FORM.indexOf(jenis) >= 0 ? 'TRUE' : 'FALSE', pembicara: '', poster: '' };
         k.tambah('Events', ev);
         dibuat.push(ev.id_event);
       }

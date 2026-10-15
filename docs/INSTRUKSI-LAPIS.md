@@ -241,3 +241,9 @@ Coach Dedy menguji Form: pilihan "Diundang oleh" tidak memuat nama LDC dan LT (D
 1. Pilihan **"Diundang oleh"**: muat semua baris `Master` dengan `kategori` = `LDC` atau `LT`, ditambah yang `tahap` = `Anggota`, dengan teks = kolom `nama` (nama lengkap), diurutkan menurut abjad, ditambah satu pilihan `Tidak Ada`. Dugaan penyebab nama LDC dan LT tidak muncul: daftar sekarang hanya mengambil `tahap` = `Anggota`. Kabari format yang dipakai bila berbeda.
 2. Pilihan **"Acara yang diikuti"**: hanya acara dengan `tampil_di_form` = TRUE (jangan menyaring sendiri dengan aturan lain), dengan format label yang sama seperti sekarang supaya pemetaan label ke `id_event` di normalisasi tetap jalan. Bila tidak ada satu pun, isi satu pilihan penanda (mis. "Belum ada jadwal terdekat") karena Form tidak boleh kosong.
 3. Dari catatan versi 41 sebelumnya (tetap berlaku): alamat panjang Form dan kode kolom "Diundang oleh" (`entry.…`) untuk isi otomatis pengundang, dan isi `Responses.id_pengundang` dari `Undangan` saat tamu cocok dengan undangan yang sudah ada.
+
+## R. Menyusul: tindak lanjut versi 42 (15 Oktober 2026)
+
+- Catatan Lapis soal acara jenis lain benar. Kini acara yang bukan BOD, Lunch Networking, atau ESM dibuat dengan `tampil_di_form` = FALSE oleh `tambahAcara`, dan `api_segarkanJendelaForm_()` menyembunyikannya dari Form (baris lama yang TRUE ikut dimatikan).
+- Kartu "No inviter" di app kini memuat LDC dan LT di pilihan pengundang (sebelumnya hanya member), dan menyarankan pengundang dari undangan lain milik orang yang sama.
+- Masih mohon Lapis: saat normalisasi Form membuat baris `Undangan` baru untuk tamu yang sudah punya `Undangan` dengan pengundang (mis. diundang lewat app, lalu mendaftar ke acara lain dengan memilih "Tidak Ada"), warisi `id_pengundang` dari undangan terakhir tamu itu, sama seperti yang sudah dilakukan untuk `Responses.id_pengundang`.

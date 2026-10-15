@@ -806,11 +806,11 @@
     return buka.length ? buka : semua;
   }
   /* Tautan pendaftaran pribadi member: satu pintu ke database yang sama. Pengundang sudah terbawa di tautan. */
-  function urlFormUndangan() {
-    var kode = S.profil && S.profil.kode_ajak;
-    if (!kode) return S.atur.tautan_form || '(registration link)';
+  function urlFormUndangan(umum) {
+    var kode = umum ? '' : S.profil && S.profil.kode_ajak;
+    if (!kode && !umum) return S.atur.tautan_form || '(registration link)';
     var u = new URL('../daftar/', location.href);
-    u.searchParams.set('m', kode);
+    if (kode) u.searchParams.set('m', kode);
     if (Api.tiruan) u.searchParams.set('tiruan', '1');
     return u.href;
   }
@@ -867,6 +867,7 @@
     }
     return '<div class="judul-bagian"><h2>Links to share</h2></div><section class="kartu"><ul class="daftar">' +
       baris('My registration link', 'Personal. Guests who register here appear in your list.', true, 'form') +
+      baris('General link', 'No name attached. Guests type who invited them. Use it for group broadcasts.', true, 'umum') +
       baris('Caption for the poster', 'Ready to paste under the poster you forward.', true, 'poster') +
       baris('Wednesday Zoom (link, ID, passcode)', 'For guests who already registered.', zoom, 'zoom') +
       '</ul><p class="catatan-main">Forward the poster as usual, with the caption. Guests register on one page, and every guest who uses your link is recorded under your name automatically. Zoom details reach guests the day before from the launch team.</p></section>';
@@ -875,8 +876,8 @@
     el.querySelectorAll('[data-salin-link]').forEach(function (b) {
       b.onclick = function () {
         var j = b.dataset.salinLink;
-        salinTeks(j === 'form' ? urlFormUndangan() : j === 'poster' ? teksPoster(ACARA_BAGI) : infoZoomRabu());
-        toast(j === 'form' ? 'Registration link copied.' : j === 'poster' ? 'Caption copied.' : 'Zoom details copied.');
+        salinTeks(j === 'form' ? urlFormUndangan() : j === 'umum' ? urlFormUndangan(true) : j === 'poster' ? teksPoster(ACARA_BAGI) : infoZoomRabu());
+        toast(j === 'form' || j === 'umum' ? 'Registration link copied.' : j === 'poster' ? 'Caption copied.' : 'Zoom details copied.');
       };
     });
   }

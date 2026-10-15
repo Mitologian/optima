@@ -39,6 +39,7 @@ button.kirim[disabled] { opacity: .6; }
 .selesai h2 { font-size: 20px; margin: 0 0 8px; }
 .selesai p { margin: 0 0 10px; }
 .kecil { color: var(--abu); font-size: 13px; }
+.hasil{display:flex;flex-direction:column;gap:6px;margin-top:6px}.hasil button{text-align:left;padding:10px 12px;border:1px solid #ddd;border-radius:10px;background:#fff;font:inherit;cursor:pointer}.hasil button:hover{border-color:#c8102e}
 </style>
 </head>
 <body>
@@ -83,6 +84,7 @@ button.kirim[disabled] { opacity: .6; }
     if (!info.acara.some(function (e) { return e.id_event === pilih; })) pilih = info.acara[0].id_event;
     $isi.innerHTML =
       (info.pengundang ? '<div class="undang">Anda diundang oleh <b>' + esc(info.pengundang) + '</b>.</div>' : '') +
+      (info.pengundang ? '' : '<div class="isian" id="cari"><span>Siapa yang mengundang Anda? (boleh dikosongkan)</span><input type="text" id="cari-q" autocomplete="off" placeholder="Ketik nama pengundang" aria-label="Nama pengundang"><div id="cari-hasil" class="hasil"></div><small id="cari-pilih"></small></div>') +
       '<form id="f" novalidate autocomplete="on">' +
       '<h2>Pilih acara</h2>' + info.acara.map(function (e) {
         return '<label class="acara"><input type="radio" name="acara" value="' + esc(e.id_event) + '"' + (e.id_event === pilih ? ' checked' : '') + '><b>' + esc(judulAcara(e)) + '</b><span>' + esc(tanggalLengkap(e.tanggal) + ' · ' + jamAcara(e)) + '<br>' + esc(tempat(e)) + '</span></label>';
@@ -99,6 +101,23 @@ button.kirim[disabled] { opacity: .6; }
       '<button class="kirim" type="submit">Daftar</button>' +
       '</form>';
     var f = document.getElementById('f');
+    var cq = document.getElementById('cari-q'), tunda = null;
+    if (cq) {
+      var hasil = document.getElementById('cari-hasil'), pilihEl = document.getElementById('cari-pilih');
+      cq.oninput = function () {
+        m = ''; pilihEl.textContent = ''; clearTimeout(tunda);
+        var v = cq.value.trim();
+        if (v.length < 3) { hasil.innerHTML = ''; return; }
+        tunda = setTimeout(async function () {
+          var r = await panggil('cariPengundang', { q: v });
+          if (cq.value.trim() !== v) return;
+          hasil.innerHTML = r.ok && r.hasil.length ? r.hasil.map(function (h) { return '<button type="button" data-k="' + esc(h.kode) + '" data-n="' + esc(h.nama) + '">' + esc(h.nama) + '</button>'; }).join('') : '<small>Nama tidak ditemukan. Boleh dikosongkan.</small>';
+          hasil.querySelectorAll('button').forEach(function (bt) {
+            bt.onclick = function () { m = bt.dataset.k; cq.value = bt.dataset.n; hasil.innerHTML = ''; pilihEl.textContent = 'Pengundang: ' + bt.dataset.n; };
+          });
+        }, 250);
+      };
+    }
     f.onsubmit = async function (ev) {
       ev.preventDefault();
       var salah = document.getElementById('salah'), tombol = f.querySelector('button');

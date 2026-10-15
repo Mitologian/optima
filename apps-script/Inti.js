@@ -837,7 +837,7 @@ var Inti = (function () {
   /* ---------- aksi ---------- */
 
   /* Aksi yang boleh dipanggil tanpa kode akses (halaman pendaftaran tamu). Harus memeriksa semua masukan sendiri. */
-  var PUBLIK = { infoDaftar: 1, daftarTamu: 1 };
+  var PUBLIK = { infoDaftar: 1, daftarTamu: 1, cariPengundang: 1 };
   var HURUF_AJAK = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   function kodeAjakBaru(k) {
     var kode, ada = {};
@@ -1146,6 +1146,17 @@ var Inti = (function () {
           return { id_event: e.id_event, tanggal: e.tanggal, jam_mulai: e.jam_mulai, jam_selesai: e.jam_selesai, nama_acara: e.nama_acara, jenis: e.jenis, mode: e.mode, lokasi: e.lokasi };
         })
       };
+    },
+
+    /* Tautan umum (tanpa kode): tamu mengetik nama pengundang. Hanya nama dan kode ajak, maksimal 5 hasil, minimal 3 huruf. */
+    cariPengundang: function (k, b) {
+      var q = teks(b.q).toLowerCase().replace(/\s+/g, ' ');
+      if (q.length < 3) return { hasil: [] };
+      batasi(k, 'cari_semua', 600, 3600);
+      var hasil = k.tab('Master').filter(function (r) {
+        return (teks(r.tahap) === 'Anggota' || timPendiri(r)) && teks(r.nama).toLowerCase().indexOf(q) >= 0;
+      }).slice(0, 5).map(function (r) { return { nama: teks(r.nama), kode: pastikanKodeAjak(k, r) }; });
+      return { hasil: hasil };
     },
 
     daftarTamu: function (k, b) {
@@ -2377,7 +2388,7 @@ var Inti = (function () {
     }
   };
 
-  var TANPA_LOG = { infoDaftar: 1, masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1, orangSemua: 1, orangDetail: 1, acaraCheckin: 1, timPapan: 1, timDaftar: 1, bacaPengaturan: 1, lihatTab: 1 };
+  var TANPA_LOG = { infoDaftar: 1, cariPengundang: 1, masuk: 1, kursi: 1, kursiDetail: 1, acara: 1, usulanSaya: 1, undanganSaya: 1, papan: 1, calonSaya: 1, regroup: 1, daftarHadir: 1, anggota: 1, ringkas: 1, tamuPekanIni: 1, jadwalCS: 1, daftarAnggota: 1, slotCS: 1, pengumuman: 1, perluCek: 1, riwayatRonde: 1, kandidatDriver: 1, kontak: 1, orangSemua: 1, orangDetail: 1, acaraCheckin: 1, timPapan: 1, timDaftar: 1, bacaPengaturan: 1, lihatTab: 1 };
 
   /* Titik masuk tunggal. db = adaptor; badan = objek dari JSON. */
   function jalankan(db, badan, sekarang) {

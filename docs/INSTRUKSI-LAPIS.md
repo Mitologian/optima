@@ -274,3 +274,4 @@ Mohon dipertimbangkan Lapis (di sisi Form dan normalisasi):
 2. Dua aksi publik tanpa kode akses: `infoDaftar` dan `daftarTamu`. Pastikan deployment web app tetap "Anyone".
 3. Tamu mendaftar lewat `https://mitologian.github.io/optima/daftar/?m=<kode>` dan masuk ke sheet Undangan (status Terdaftar, sumber `daftar`) dan Master (Calon).
 4. Google Form dan `sinkronPilihan()` tidak lagi dipakai app. Boleh dibiarkan hidup sebagai cadangan, tetapi pendaftar Form tidak lagi diprioritaskan.
+5. Tambahan: aksi publik `cariPengundang` (ketik 3 huruf, maksimal 5 nama member/pendiri beserta kode ajak). Dipakai tautan umum `daftar/` tanpa `?m=`, sehingga tamu yang datang dari broadcast mengetik sendiri nama pengundang.

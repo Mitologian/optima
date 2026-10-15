@@ -276,3 +276,4 @@ Mohon dipertimbangkan Lapis (di sisi Form dan normalisasi):
 4. Google Form dan `sinkronPilihan()` tidak lagi dipakai app. Boleh dibiarkan hidup sebagai cadangan, tetapi pendaftar Form tidak lagi diprioritaskan.
 5. Tambahan: aksi publik `cariPengundang` (ketik 3 huruf, maksimal 5 nama member/pendiri beserta kode ajak). Dipakai tautan umum `daftar/` tanpa `?m=`, sehingga tamu yang datang dari broadcast mengetik sendiri nama pengundang.
 6. Tambahan: kolom Events baru `pembuka`, `judul_topik`, `biaya`, `tautan_lokasi` (ditambah otomatis). `pembicara` kini boleh beberapa baris (maksimal 240 karakter). Member boleh membuat waktu coffee session baru lewat `pesanSlot` dengan `waktu` (PIC otomatis LDC).
+7. Perubahan: ESM tidak lagi masuk jendela acara tamu (JENIS_FORM hanya BOD dan Lunch Networking). Halaman daftar hanya menampilkan BOD dan Lunch. ESM tetap acara wajib bagi member yang sudah bergabung. Tidak ada perubahan sheet.

@@ -696,7 +696,7 @@ var Inti = (function () {
   }
 
   /* ---------- pilihan acara di Form: hanya yang terdekat ---------- */
-  var JENIS_FORM = ['BOD', 'Lunch Networking', 'ESM'];
+  var JENIS_FORM = ['BOD', 'Lunch Networking'];   // ESM bukan untuk tamu: wajib bagi member yang sudah bergabung
   function mulaiAcara(e) {
     var t = tgl(e.tanggal);
     return t ? new Date(isoTanggal(t) + 'T' + (jamEv(e.jam_mulai) || '00:00') + ':00+07:00') : null;

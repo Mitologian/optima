@@ -1090,10 +1090,16 @@ var Inti = (function () {
       wajibLT(k);
       var semua = k.isLDC() && b.semua;
       var id = k.saya.id_orang;
+      // Undangan terakhir tiap calon: status (Diundang, Terdaftar, Hadir) dan acaranya, untuk dibaca sekali lirik di Interviews.
+      var undTerakhir = {};
+      k.undanganAktif().forEach(function (u) { var c = teks(u.id_orang_calon); if (!undTerakhir[c] || teks(u.tanggal) >= teks(undTerakhir[c].tanggal)) undTerakhir[c] = u; });
+      var evById = {}; k.tab('Events').forEach(function (e) { evById[teks(e.id_event)] = e; });
+      function statusU(r) { var u = undTerakhir[teks(r.id_orang)]; return u ? teks(u.status) : ''; }
+      function acaraU(r) { var u = undTerakhir[teks(r.id_orang)], e = u ? evById[teks(u.id_event)] : null; return e ? (teks(e.jenis) === 'BOD' ? 'BOD' : teks(e.nama_acara)) + ', ' + isoTanggal(tgl(e.tanggal)) : ''; }
       return {
         calon: k.tab('Master').filter(function (r) { return teks(r.kategori) === 'Calon' && TAHAP_LT.indexOf(teks(r.tahap)) >= 0; }).filter(function (r) { return semua || teks(r.PIC) === id || (!teks(r.PIC) && k.isLDC()); }).map(function (r) {
           var x = kursiById(k, r.id_kursi);
-          return { id_orang: teks(r.id_orang), nama: teks(r.nama), bisnis: teks(r.bisnis), id_kursi: x ? x.id_kursi : '', bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), whatsapp: teks(r.whatsapp_norm), hari_diam: k.hariDiam(r), pic: namaDepan(k.orang(r.PIC)) || 'None yet', jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '', alasan: teks(r.alasan_tidak_lanjut) };
+          return { id_orang: teks(r.id_orang), nama: teks(r.nama), bisnis: teks(r.bisnis), id_kursi: x ? x.id_kursi : '', bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), whatsapp: teks(r.whatsapp_norm), hari_diam: k.hariDiam(r), pic: namaDepan(k.orang(r.PIC)) || 'None yet', jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '', alasan: teks(r.alasan_tidak_lanjut), status_undangan: statusU(r), acara_undangan: acaraU(r) };
         }).sort(function (a, b) { return b.hari_diam - a.hari_diam; })
       };
     },

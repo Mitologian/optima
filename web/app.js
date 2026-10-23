@@ -21,8 +21,8 @@
   var BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var HARI = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   /* Label tampilan untuk nilai data. Nilai di sheet tidak berubah. */
-  var TAHAP_LABEL = { 'Listed': 'Listed', 'Invited': 'Invited', 'Coffee_Scheduled': 'Coffee scheduled', 'Attended': 'Attended', 'Coffee_Session': 'Coffee session done', 'Applied': 'Applied', 'Anggota': 'Joined', 'Joined_Other': 'Joined other chapter', 'Declined': 'Declined', 'Rejected': 'Rejected' };
-  var STATUS_UNDANGAN_LABEL = { 'Diundang': 'Invited', 'Terdaftar': 'Registered', 'Hadir': 'Attended', 'Bergabung': 'Joined', 'Batal': 'Cancelled' };
+  var TAHAP_LABEL = { 'Listed': 'Listed', 'Invited': 'Invited', 'Coffee_Scheduled': 'To interview', 'Attended': 'Present', 'Coffee_Session': 'Interviewed', 'Applied': 'Applied', 'Anggota': 'Joined', 'Joined_Other': 'Joined other chapter', 'Declined': 'Declined', 'Rejected': 'Rejected' };
+  var STATUS_UNDANGAN_LABEL = { 'Diundang': 'Invited', 'Terdaftar': 'Registered', 'Hadir': 'Present', 'Bergabung': 'Joined', 'Batal': 'Cancelled' };
   var JENIS_ANGGOTA_LABEL = { 'Founding': 'Founding', 'Core Group': 'Core Group', 'Anggota': 'Member' };
   var PERAN_LABEL = { 'Visitor': 'Visitor', 'Anggota': 'Member', 'LT': 'LT', 'LDC': 'LDC' };
   function lblTahap(t) { return TAHAP_LABEL[t] || t; }
@@ -980,6 +980,7 @@
   var LANGKAH_KOPI = [['1', 'Opener'], ['2', 'Ask a time'], ['3', 'Confirm']];
   var KOPI_ID = {
     dekat: {
+      pasca: 'Halo {tamu}, makasih ya udah dateng ke pertemuan kemarin! Gimana kesan lu? Kalau tertarik gabung, langkah berikutnya ngobrol santai sekitar 30 menit sama {rekanPendek} biar lu dapet gambaran lengkapnya. Kira-kira kapan lu ada waktu? Nanti gue atur.',
       rekanLdc: 'rekan gue, Coach Dedy Dahlan. Dia Launch Director Consultant untuk BNI, organisasi pemilik bisnis internasional',
       rekanLt: 'rekan gue, {pic}, dari tim peluncuran chapter BNI baru (organisasi pemilik bisnis internasional)',
       lain: ['Halo {tamu}, lu bisnisnya masih di bidang {bidang} kan?\n\nGue mau ngenalin lu sama {rekan}. Kita lagi ngumpulin pebisnis kredibel lintas industri di Jakarta buat komunitas pengusaha, dan lagi nyari pebisnis {bidang} kayak lu.',
@@ -989,6 +990,7 @@
       konfirmasi: 'Sip, sampai ketemu {hari} jam {jam} ya! Semoga bermanfaat, nambah network buat bisnis lu.{zoom}'
     },
     teman: {
+      pasca: 'Halo {tamu}, terima kasih sudah hadir di pertemuan kemarin! Gimana kesannya? Kalau kamu tertarik bergabung, langkah berikutnya ngobrol santai sekitar 30 menit dengan {rekanPendek} supaya kamu dapat gambaran lengkapnya. Kira-kira kapan kamu ada waktu? Nanti aku bantu atur.',
       rekanLdc: 'Coach Dedy Dahlan, Launch Director Consultant BNI, organisasi pemilik bisnis internasional',
       rekanLt: '{pic}, dari tim peluncuran chapter BNI baru',
       lain: ['Halo {tamu}, kita lagi ngumpulin business owners kredibel lintas industri di Jakarta dan Jabodetabek nih. Aku jadi ingat kamu. Bisnismu masih di bidang {bidang} kan?\n\nAku kenalin sama {rekan} ya, aku rasa kamu cocok.',
@@ -998,6 +1000,7 @@
       konfirmasi: 'Sip, sampai ketemu {hari} pukul {jam} ya! Semoga bermanfaat dan nambah network buat bisnismu.{zoom}'
     },
     kenal: {
+      pasca: 'Selamat {salam} {tamu}, terima kasih telah hadir di pertemuan kami. Bagaimana kesan Anda? Bila Anda tertarik untuk bergabung, langkah berikutnya adalah berbincang sekitar 30 menit dengan {rekanPendek} agar Anda mendapat gambaran yang lengkap. Kapan kira-kira Anda memiliki waktu? Kami akan mengaturnya.',
       rekanLdc: 'rekan saya, Coach Dedy Dahlan, Launch Director Consultant BNI, organisasi pemilik bisnis internasional',
       rekanLt: 'rekan saya, {pic}, dari tim peluncuran chapter BNI baru',
       lain: ['Selamat {salam} {tamu}, bisnis Anda di bidang {bidang}, benar?\n\nSaya ingin memperkenalkan Anda dengan {rekan}. Kami sedang mengumpulkan pemilik bisnis kredibel lintas industri di Jakarta, dan sedang mencari pebisnis di bidang {bidang}. Menurut saya Anda cocok.',
@@ -1009,6 +1012,7 @@
   };
   var KOPI_EN = {
     santai: {
+      pasca: 'Hi {tamu}, thanks for coming to the meeting! What did you think? If you are interested in joining, the next step is a relaxed 30 minute chat with {rekanPendek} so you get the full picture. When would you have time? I will set it up.',
       rekanLdc: 'Coach Dedy Dahlan, Launch Director Consultant for BNI, an international business owners organization',
       rekanLt: '{pic} from the launch team of a new BNI chapter',
       lain: ['Hi {tamu}, your business is still in {bidang}, right?\n\nI would love to introduce you to {rekan}. We are gathering credible business owners across industries in Jakarta, and we are looking for someone in {bidang} like you.',
@@ -1018,6 +1022,7 @@
       konfirmasi: 'Great, see you {hari} at {jam}! Hope it is useful and grows your network.{zoom}'
     },
     formal: {
+      pasca: 'Good {salamEn} {tamu}, thank you for attending our meeting. We hope you found it valuable. If you are interested in joining, the next step is a 30 minute conversation with {rekanPendek} to give you the full picture. When would you be available? We will arrange it.',
       rekanLdc: 'my colleague, Coach Dedy Dahlan, Launch Director Consultant for BNI, an international business owners organization',
       rekanLt: 'my colleague, {pic}, from the launch team of a new BNI chapter',
       lain: ['Good {salamEn} {tamu}, your business is in {bidang}, correct?\n\nI would like to introduce you to {rekan}. We are bringing together credible business owners across industries in Jakarta and are looking for a {bidang} professional. I believe you would be a good fit.',
@@ -1030,12 +1035,14 @@
   function isiToken(t, d) { return t.replace(/\{(\w+)\}/g, function (m, k) { return d[k] !== undefined ? d[k] : m; }); }
   function salamSekarang() { var j = wib(new Date().toISOString()).getUTCHours(); return { id: j < 11 ? 'pagi' : j < 15 ? 'siang' : j < 18 ? 'sore' : 'malam', en: j < 12 ? 'morning' : j < 18 ? 'afternoon' : 'evening' }; }
   // w = {waktu, tempat, pic, pic_id, pic_ldc} atau null bila belum ada jam
-  function buatPesanKopi(bahasa, kedekatan, langkah, namaTamu, bidang, w) {
+  function buatPesanKopi(bahasa, kedekatan, langkah, namaTamu, bidang, w) {   // langkah: 0, 1, 2 atau 'pasca'
     var set = bahasa === 'id' ? KOPI_ID[kedekatan] : KOPI_EN[kedekatan === 'kenal' ? 'formal' : 'santai'];
     var diri = w ? w.pic_id === S.profil.id_orang : isLDC();
     var ldc = w ? w.pic_ldc : true;
-    var zoomUrl = S.atur.tautan_zoom_cs;
-    var zoom = w && w.tempat === 'Zoom' && zoomUrl ? (bahasa === 'id' ? '\n\nLink Zoom: ' : '\n\nZoom link: ') + zoomUrl : '';
+    // Link Zoom coffee session mengikuti Zoom Rabu bila tidak diisi sendiri. Bila sama dengan Zoom Rabu, Meeting ID dan Passcode ikut.
+    var zoomUrl = S.atur.tautan_zoom_cs || S.atur.tautan_zoom_bod;
+    var zoomRinci = zoomUrl && zoomUrl === S.atur.tautan_zoom_bod ? (S.atur.zoom_bod_id ? '\nMeeting ID: ' + S.atur.zoom_bod_id : '') + (S.atur.zoom_bod_kode ? '\nPasscode: ' + S.atur.zoom_bod_kode : '') : '';
+    var zoom = w && w.tempat === 'Zoom' && zoomUrl ? (bahasa === 'id' ? '\n\nLink Zoom: ' : '\n\nZoom link: ') + zoomUrl + zoomRinci : '';
     var s = salamSekarang();
     var d = {
       tamu: namaTamu, bidang: bidang || (bahasa === 'id' ? 'bisnis' : 'business'), pic: w ? w.pic : '', salam: s.id, salamEn: s.en, zoom: zoom,
@@ -1044,6 +1051,8 @@
       tempat: !w || w.tempat === 'Zoom' ? (bahasa === 'id' ? (kedekatan === 'kenal' ? 'melalui Zoom' : 'lewat Zoom') : 'over Zoom') : (bahasa === 'id' ? 'di ' : 'at ') + w.tempat
     };
     d.rekan = isiToken(ldc ? set.rekanLdc : set.rekanLt, d);
+    d.rekanPendek = ldc ? 'Coach Dedy Dahlan' : (w && w.pic ? w.pic : 'Coach Dedy Dahlan');
+    if (langkah === 'pasca') return isiToken(set.pasca, d);
     if (langkah === 2) return isiToken(set.konfirmasi, d);
     return isiToken(set[diri ? 'diri' : 'lain'][langkah], d);
   }
@@ -1060,7 +1069,9 @@
     var sekarang = Date.now();
     var dipesan = r.slot.filter(function (s) { return s.id_orang === o.id_orang && s.status === 'Terisi' && new Date(s.waktu).getTime() > sekarang; })[0] || null;
     var kosong = r.slot.filter(function (s) { return s.status === 'Kosong' && new Date(s.waktu).getTime() > sekarang; });
-    var st = { dekat: 'teman', bahasa: 'id', langkah: dipesan ? 2 : 0, pilih: o.idSlot || (dipesan ? '' : ''), lain: '', wa: o.whatsapp || '' };
+    var pasca = o.tahap === 'Attended';   // sudah hadir di Rabu: pesan setelah kunjungan, bukan pembuka dingin
+    var LANGKAH_PAKAI = pasca ? [['1', 'After visit'], ['2', 'Confirm']] : LANGKAH_KOPI;
+    var st = { dekat: 'teman', bahasa: 'id', langkah: dipesan ? LANGKAH_PAKAI.length - 1 : 0, pilih: o.idSlot || (dipesan ? '' : ''), lain: '', wa: o.whatsapp || '' };
     if (!st.pilih && !dipesan && kosong.length) st.pilih = kosong[0].id_slot;
     function waktuDipilih() {
       if (st.pilih === 'lain') return st.lain ? { waktu: new Date(st.lain + ':00+07:00').toISOString(), tempat: 'Zoom', pic: isLT() ? S.profil.nama_depan : 'Coach Dedy', pic_id: isLT() ? S.profil.id_orang : '', pic_ldc: isLT() ? isLDC() : true } : null;
@@ -1069,10 +1080,10 @@
     }
     var jd = dipesan ? jamCS(dipesan.waktu) : null;
     bukaLembar(
-      '<h2>Coffee session with ' + esc(depan) + '</h2>' +
+      '<h2>' + (pasca ? 'Interview with ' : 'Coffee session with ') + esc(depan) + '</h2>' +
       '<p class="kecil" id="k-info" style="margin:4px 0 12px">' + (dipesan
         ? 'Booked: <b>' + esc(jd.hari + ' ' + jd.jam) + '</b> · ' + esc(dipesan.tempat) + ' · with ' + esc(timSlot(dipesan)) + '. Send message 3 to confirm.'
-        : 'A 30 minute chat with Coach Dedy, supported by the launch team. No Wednesday visit needed first. Book the time once ' + esc(depan) + ' says yes.') + '</p>' +
+        : (pasca ? esc(depan) + ' came to a Wednesday meeting. Send the after-visit message, agree on a time, book it, then send the confirmation with the Zoom link.' : 'A 30 minute chat with Coach Dedy, supported by the launch team. No Wednesday visit needed first. Book the time once ' + esc(depan) + ' says yes.')) + '</p>' +
       (dipesan ? '<details class="lipat" style="margin-bottom:12px"><summary><span>Change time</span><em>' + kosong.length + ' open</em></summary>' : '<p class="kecil" style="margin-bottom:6px">Open times</p>') +
       '<div id="k-slot" style="margin-bottom:10px"></div>' +
       '<div class="pilihan" style="margin-bottom:12px"><button type="button" id="k-lain-tombol" aria-pressed="' + (st.pilih === 'lain') + '">Another time (already agreed with ' + esc(depan) + ')</button></div>' +
@@ -1083,7 +1094,7 @@
       '<p class="kecil" style="margin-bottom:6px">How close are you to ' + esc(depan) + '?</p><div class="pilihan" id="k-dekat" style="margin-bottom:12px">' + KEDEKATAN.map(function (g) {
         return '<button type="button" data-dekat="' + g[0] + '" aria-pressed="' + (g[0] === st.dekat) + '">' + g[1] + '</button>';
       }).join('') + '<button type="button" id="k-bhs" class="bahasa" aria-label="Switch message language">ID | EN</button></div>' +
-      '<div class="seg langkah-seg tiga" id="k-langkah">' + LANGKAH_KOPI.map(function (g, i) {
+      '<div class="seg langkah-seg ' + (pasca ? 'dua' : 'tiga') + '" id="k-langkah">' + LANGKAH_PAKAI.map(function (g, i) {
         return '<button type="button" data-langkah="' + i + '" aria-selected="' + (i === st.langkah) + '"><b>' + g[0] + '</b><span>' + g[1] + '</span></button>';
       }).join('') + '</div>' +
       '<p class="kecil redup" id="k-petunjuk" style="margin:8px 2px"></p>' +
@@ -1094,10 +1105,10 @@
       '<details class="lipat" style="margin-top:14px"><summary><span>If they hesitate or ask</span><em>replies</em></summary><div id="k-balasan"></div></details>',
       function (el) {
         var ta = el.querySelector('#k-pesan');
-        var petunjuk = ['Start the conversation. Wait for a reply before the next one.', 'Offer the time you picked above.', 'Send this after the time is booked.'];
+        var petunjuk = pasca ? ['Thank them for coming and ask when they have time for the interview.', 'Send this after the time is booked. It carries the time and the Zoom link.'] : ['Start the conversation. Wait for a reply before the next one.', 'Offer the time you picked above.', 'Send this after the time is booked.'];
         function segar() {
-          ta.value = buatPesanKopi(st.bahasa, st.dekat, st.langkah, depan, bidang, waktuDipilih());
-          el.querySelector('#k-petunjuk').textContent = 'Message ' + (st.langkah + 1) + ' of 3. ' + petunjuk[st.langkah];
+          ta.value = buatPesanKopi(st.bahasa, st.dekat, pasca ? (st.langkah === 0 ? 'pasca' : 2) : st.langkah, depan, bidang, waktuDipilih());
+          el.querySelector('#k-petunjuk').textContent = 'Message ' + (st.langkah + 1) + ' of ' + LANGKAH_PAKAI.length + '. ' + petunjuk[st.langkah];
           el.querySelector('#k-lain').hidden = st.pilih !== 'lain';
           var tb = el.querySelector('#k-pesan-slot');
           tb.disabled = !st.pilih || (st.pilih === 'lain' && !st.lain);
@@ -1191,7 +1202,7 @@
       b.onclick = async function () { var h = await api('tindakLanjut', { id_orang: b.dataset.selesai, tahap: 'Coffee_Session' }); if (!h.ok) return toast(h.pesan); toast('Moved to Interviewed. Record Applied or Declined in Interviews.'); segar(); };
     });
     w.querySelectorAll('[data-absen]').forEach(function (b) {
-      b.onclick = async function () { var h = await api('batalSlot', { id_orang: b.dataset.absen }); if (!h.ok) return toast(h.pesan); toast('Back to To schedule. Book a new time.'); segar(); };
+      b.onclick = async function () { var h = await api('batalSlot', { id_orang: b.dataset.absen }); if (!h.ok) return toast(h.pesan); toast('Back to Present. Set a new interview time.'); segar(); };
     });
   }
 
@@ -1283,7 +1294,7 @@
         var kb = el.querySelector('#p-bod'); if (kb) kb.onclick = buka(bod[0].id_event, bod, false);
         var kl = el.querySelector('#p-lunch'); if (kl) kl.onclick = buka(lunch[0].id_event, lunch, false);
         var c = el.querySelector('#p-kopi');
-        if (c) c.onclick = function () { lembarKopi({ id_orang: u.id_orang, nama: u.nama, whatsapp: u.whatsapp, bidang: u.bidang, bisnis: u.bisnis, segarkan: segarkan }); };
+        if (c) c.onclick = function () { lembarKopi({ id_orang: u.id_orang, nama: u.nama, whatsapp: u.whatsapp, bidang: u.bidang, bisnis: u.bisnis, tahap: u.tahap, segarkan: segarkan }); };
       });
   }
 
@@ -1291,10 +1302,10 @@
   function chipUndangan(u) {
     var st = u.status_undangan;
     if (u.tahap === 'Anggota') return '<span class="chip emas">Joined</span>';
-    if (u.tahap === 'Coffee_Scheduled') return '<span class="chip hijau">Coffee booked</span>';
+    if (u.tahap === 'Coffee_Scheduled') return '<span class="chip hijau">To interview</span>';
     if (u.tahap === 'Coffee_Session' || u.tahap === 'Applied') return '<span class="chip hijau">' + esc(lblTahap(u.tahap)) + '</span>';
     if (['Joined_Other', 'Declined', 'Rejected'].indexOf(u.tahap) >= 0) return '<span class="chip">Closed</span>';
-    if (st === 'Hadir') return '<span class="chip hijau">Attended</span>';
+    if (st === 'Hadir') return '<span class="chip hijau">Present</span>';
     if (st === 'Terdaftar') return '<span class="chip hijau">Registered</span>';
     if (st === 'Diundang') return '<span class="chip merah">Invited, not registered yet</span>';
     return '';
@@ -1334,7 +1345,7 @@
     var tm = hh[0]; ACARA_BAGI = hh[1] && hh[1].ok ? hh[1].acara : [];
     if (!tm.ok) { isi.innerHTML = '<p class="kosong-isi">' + esc(tm.pesan) + '</p>'; return; }
     function baris(g) {
-      var chip = g.bergabung ? '<span class="chip emas">Joined</span>' : g.status === 'Hadir' ? '<span class="chip hijau">Attended</span>' : '<span class="chip">Registered</span>';
+      var chip = g.bergabung ? '<span class="chip emas">Joined</span>' : g.status === 'Hadir' ? '<span class="chip hijau">Present</span>' : '<span class="chip">Registered</span>';
       return '<li><span class="lambang">' + inisial(g.nama) + '</span><div class="utama"><b>' + esc(g.nama) + '</b><span>' + esc(g.bidang) + ' · ' + esc(g.jenis === 'BOD' ? 'BOD' : 'Lunch') + ' ' + esc(g.jam_mulai) + ' · invited by ' + esc(g.saya ? 'me' : (g.pengundang || 'the chapter')) + '</span></div>' + chip + '</li>';
     }
     var saya = tm.tamu.filter(function (g) { return g.saya; });
@@ -1344,13 +1355,17 @@
         '<span>' + esc(e.mode === 'Online' ? 'Online, ' + (e.lokasi || 'Zoom') : (e.lokasi || 'Onsite')) + '</span>' +
         '<span>' + (e.judul_topik || e.pembicara ? esc([e.judul_topik, e.pembicara ? 'with ' + e.pembicara.replace(/[\n;]+/g, ', ') : ''].filter(Boolean).join(' ')) : 'Speaker to be announced') + '</span>' + kartuPoster(e.poster) + '</div></li>';
     }).join('');
+    var perAcara = {};
+    tm.tamu.forEach(function (g) { var kunci = g.tanggal + '|' + g.jam_mulai + '|' + g.jenis; (perAcara[kunci] = perAcara[kunci] || []).push(g); });
+    var daftarTamuPerAcara = Object.keys(perAcara).sort().map(function (kunci) {
+      var l = perAcara[kunci], g0 = l[0], milikku = l.filter(function (g) { return g.saya; }).length;
+      return '<div class="judul-bagian"><h2>' + esc((g0.jenis === 'BOD' ? 'BOD' : 'Lunch Networking') + ' · ' + tglPendek(g0.tanggal) + ' ' + g0.jam_mulai) + '</h2><span class="kecil">' + l.length + ' visitor' + (l.length > 1 ? 's' : '') + (milikku ? ' · ' + milikku + ' mine' : '') + '</span></div>' +
+        '<section class="kartu"><ul class="daftar">' + l.map(baris).join('') + '</ul></section>';
+    }).join('') || '<div class="judul-bagian"><h2>Visitors</h2><span class="kecil">0</span></div><section class="kartu"><p class="kosong-isi">No visitors registered yet. Guests show up here as soon as they sign up through a member link.</p></section>';
     isi.innerHTML = '<div class="sapa"><h1>This week</h1><p class="kecil">' + ((tm.acara_ronde || []).length ? 'Visitors registered for Wednesday, with their classification. Phone numbers are not shown.' : 'No Wednesday meetings are scheduled yet. They appear here once the launch team adds them.') + '</p></div>' +
       kartuLinkBagi() +
-      '<div class="judul-bagian"><h2>Invited by me</h2><span class="kecil">' + saya.length + '</span></div>' +
-      '<section class="kartu">' + (saya.length ? '<ul class="daftar">' + saya.map(baris).join('') + '</ul>' : '<p class="kosong-isi">None of my invitees are registered yet. Check "My list" for who still needs a reminder.</p>') + '</section>' +
-      (prog ? '<div class="judul-bagian"><h2>Wednesday program</h2><span class="kecil">' + tm.acara_ronde.length + ' sessions</span></div><section class="kartu"><ul class="daftar">' + prog + '</ul></section>' : '') +
-      '<div class="judul-bagian"><h2>Other Visitors</h2><span class="kecil">' + lain.length + '</span></div>' +
-      '<section class="kartu">' + (lain.length ? '<ul class="daftar">' + lain.map(baris).join('') + '</ul><p class="catatan-main">Know their classification before Wednesday, so you can greet and connect them.</p>' : '<p class="kosong-isi">No other Visitors registered yet.</p>') + '</section>';
+      daftarTamuPerAcara +
+      (prog ? '<div class="judul-bagian"><h2>Wednesday program</h2><span class="kecil">' + tm.acara_ronde.length + ' sessions</span></div><section class="kartu"><ul class="daftar">' + prog + '</ul></section>' : '');
     pasangLinkBagi(isi);
   }
 
@@ -1384,7 +1399,7 @@
     function kepala(kunci, label) {
       return '<button class="dampak-kepala' + (urutDampak === kunci ? ' aktif' : '') + '" data-urut="' + kunci + '" aria-pressed="' + (urutDampak === kunci) + '">' + label + '</button>';
     }
-    return '<section class="kartu"><div class="dampak"><div class="dampak-baris dampak-judul"><span>Name</span>' + kepala('undangan', 'Invites') + kepala('hadir', 'Attended') + kepala('bergabung', 'Joined') + '</div>' +
+    return '<section class="kartu"><div class="dampak"><div class="dampak-baris dampak-judul"><span>Name</span>' + kepala('undangan', 'Invites') + kepala('hadir', 'Present') + kepala('bergabung', 'Joined') + '</div>' +
       urut.map(function (d) {
         return '<div class="dampak-baris' + (d.saya ? ' saya' : '') + '"><span class="dampak-nama">' + esc(d.nama_depan) + (d.saya ? ' <span class="chip merah">me</span>' : '') + '</span><b>' + d.undangan + '</b><b>' + d.hadir + '</b><b>' + d.bergabung + '</b></div>';
       }).join('') + '</div></section>' +
@@ -1528,36 +1543,38 @@
 
   var semuaCalon = false;
   var segCalon = 'todo';
-  var SEG = { todo: ['To schedule', ['Listed', 'Invited', 'Attended']], cs: ['Coffee set', ['Coffee_Scheduled']], done: ['Interviewed', ['Coffee_Session', 'Applied']], hold: ['Closed', ['Joined_Other', 'Declined', 'Rejected']] };
+  var SEG = { todo: ['Prospect', ['Listed', 'Invited']], hadir: ['Present', ['Attended']], cs: ['To interview', ['Coffee_Scheduled', 'Coffee_Session']], done: ['Applied', ['Applied']], hold: ['Closed', ['Joined_Other', 'Declined', 'Rejected']] };
   async function subCalon(w) {
     var hh = await Promise.all([api('calonSaya', { semua: semuaCalon }), api('perluCek')]);
     var r = hh[0], pc = hh[1];
     if (!r.ok) { w.innerHTML = '<p class="kosong-isi">' + esc(r.pesan) + '</p>'; return; }
-    var per = { todo: [], cs: [], done: [], hold: [] };
+    var per = { todo: [], hadir: [], cs: [], done: [], hold: [] };
     r.calon.forEach(function (c) { Object.keys(SEG).forEach(function (k) { if (SEG[k][1].indexOf(c.tahap) >= 0) per[k].push(c); }); });
     per.cs.sort(function (a, b) { return (a.jadwal_cs || '') < (b.jadwal_cs || '') ? -1 : 1; });
     var info = {
-      todo: 'Step 1. Book a coffee session time. Visitors and direct invitations both start here.',
-      cs: 'Step 2. After the coffee session, tap Done.',
-      done: 'Step 3. Interview went well: tap Applied. Payment received: tap Joined. Not a fit: open the name and mark Declined or Rejected.',
+      todo: 'Invited or registered, not here yet. Mark them Present in Check-in on Wednesday. A prospect who wants to skip the visit can go straight to an interview: tap Set interview.',
+      hadir: 'Came to a Wednesday meeting. Tap Set interview: send the after-visit message, agree on a time, then confirm it with the Zoom link.',
+      cs: 'Interview is set. After the interview, accepted and the registration form is sent: tap Applied. Not a fit: open the name and mark Declined or Rejected.',
+      done: 'Applied and waiting for payment. Paid and in the group: tap Joined. The sponsoring member sees every step on their list.',
       hold: 'Joined another chapter, declined, or rejected. Reopen anyone who is ready again.'
     };
     function aksi(c) {
-      if (segCalon === 'todo') return '<button class="tombol kecil" data-aksi="jadwal" data-id="' + esc(c.id_orang) + '">Set coffee</button>';
-      if (segCalon === 'cs') return '<button class="tombol kecil" data-aksi="selesai" data-id="' + esc(c.id_orang) + '">Done</button>';
-      if (segCalon === 'done') return c.tahap === 'Applied' ? '<button class="tombol kecil" data-aksi="terima" data-id="' + esc(c.id_orang) + '">Joined</button>' : '<button class="tombol kecil" data-aksi="apply" data-id="' + esc(c.id_orang) + '">Applied</button>';
+      if (segCalon === 'todo' || segCalon === 'hadir') return '<button class="tombol kecil" data-aksi="jadwal" data-id="' + esc(c.id_orang) + '">Set interview</button>';
+      if (segCalon === 'cs') return '<button class="tombol kecil" data-aksi="apply" data-id="' + esc(c.id_orang) + '">Applied</button>';
+      if (segCalon === 'done') return '<button class="tombol kecil" data-aksi="terima" data-id="' + esc(c.id_orang) + '">Joined</button>';
       return '<button class="tombol kecil kedua" data-aksi="buka" data-id="' + esc(c.id_orang) + '">Reopen</button>';
     }
     function sub(c) {
-      if (segCalon === 'cs' && c.jadwal_cs) return jamCS(c.jadwal_cs).hari + ' ' + jamCS(c.jadwal_cs).jam;
-      if (segCalon === 'done') return c.tahap === 'Applied' ? 'Applied, waiting for payment' : 'Interviewed';
-      if (segCalon === 'done') return lblTahap(c.tahap);
+      var diam = c.hari_diam ? c.hari_diam + ' days idle' : 'today';
+      if (segCalon === 'cs') return (c.tahap === 'Coffee_Session' ? 'Interviewed' : (c.jadwal_cs ? jamCS(c.jadwal_cs).hari + ' ' + jamCS(c.jadwal_cs).jam : 'time not set'));
+      if (segCalon === 'done') return 'Waiting for payment';
       if (segCalon === 'hold') return lblTahap(c.tahap) + (c.alasan ? ': ' + c.alasan : '');
-      if (c.tahap === 'Attended') return 'Attended, ' + (c.hari_diam ? c.hari_diam + ' days idle' : 'today');
-      return (c.hari_diam ? c.hari_diam + ' days idle' : 'today') + (semuaCalon ? ' · PIC ' + c.pic : '');
+      if (segCalon === 'hadir') return 'Present' + (c.acara_undangan ? ' at ' + c.acara_undangan : '') + ' · ' + diam;
+      var st = c.status_undangan === 'Terdaftar' ? 'Registered for ' + c.acara_undangan : c.status_undangan === 'Diundang' ? 'Invited to ' + c.acara_undangan + ', not registered' : 'Not invited yet';
+      return st + ' · ' + diam + (semuaCalon ? ' · PIC ' + c.pic : '');
     }
     var daftar = per[segCalon];
-    w.innerHTML = kartuCek(pc) + '<div class="seg" role="tablist">' + Object.keys(SEG).map(function (k, i) {
+    w.innerHTML = kartuCek(pc) + '<div class="seg lima" role="tablist">' + Object.keys(SEG).map(function (k, i) {
         return '<button role="tab" data-seg="' + k + '" aria-selected="' + (k === segCalon) + '"><b>' + per[k].length + '</b><span>' + SEG[k][0] + '</span></button>';
       }).join('') + '</div>' +
       '<p class="kecil" style="margin:10px 2px">' + info[segCalon] + '</p>' +
@@ -1578,18 +1595,18 @@
     w.querySelectorAll('[data-aksi]').forEach(function (t) {
       t.onclick = async function () {
         var c = cari(t.dataset.id);
-        if (t.dataset.aksi === 'jadwal') return lembarKopi({ id_orang: c.id_orang, nama: c.nama, whatsapp: c.whatsapp, bidang: c.bidang, bisnis: c.bisnis, segarkan: function () { segCalon = 'cs'; subCalon(w); } });
+        if (t.dataset.aksi === 'jadwal') return lembarKopi({ id_orang: c.id_orang, nama: c.nama, whatsapp: c.whatsapp, bidang: c.bidang, bisnis: c.bisnis, tahap: c.tahap, segarkan: function () { segCalon = 'cs'; subCalon(w); } });
         if (t.dataset.aksi === 'apply') {
           var ha = await api('tindakLanjut', { id_orang: c.id_orang, tahap: 'Applied' });
           if (!ha.ok) return toast(ha.pesan);
-          toast(c.nama.split(/\s+/)[0] + ' applied. Tap Joined once payment is in.'); return subCalon(w);
+          toast(c.nama.split(/\s+/)[0] + ' applied. Tap Joined once payment is in.'); segCalon = 'done'; return subCalon(w);
         }
         if (t.dataset.aksi === 'terima') return lembarAnggota(c, function () { subCalon(w); });
         var tujuan = t.dataset.aksi === 'selesai' ? 'Coffee_Session' : 'Invited';
         var h = await api('tindakLanjut', { id_orang: c.id_orang, tahap: tujuan });
         if (!h.ok) return toast(h.pesan);
-        segCalon = tujuan === 'Coffee_Session' ? 'done' : 'todo';
-        toast(c.nama.split(/\s+/)[0] + (tujuan === 'Coffee_Session' ? ' moved to Interviewed' : ' is back in To schedule')); subCalon(w);
+        segCalon = tujuan === 'Coffee_Session' ? 'cs' : 'todo';
+        toast(c.nama.split(/\s+/)[0] + (tujuan === 'Coffee_Session' ? ' moved to Interviewed' : ' is back in Prospect')); subCalon(w);
       };
     });
   }
@@ -1601,7 +1618,7 @@
       '<div class="tajuk"><span class="lambang" style="width:52px;height:52px;font-size:20px">' + inisial(c.nama) + '</span><div><p class="kecil">' + esc(c.bidang) + '</p><h2>' + esc(c.nama) + '</h2>' + (c.bisnis ? '<p class="kecil">' + esc(c.bisnis) + '</p>' : '') + '</div></div>' +
       (c.whatsapp ? '<a class="tombol kedua" target="_blank" rel="noopener" href="' + esc(waLink(c.whatsapp)) + '" style="margin-bottom:14px">Chat on WhatsApp</a>' : '') +
       '<p class="kecil redup" style="margin:-4px 2px 12px"><button type="button" class="tautan-tombol" id="c-ubah">Edit name or number</button></p>' +
-      '<form id="f-tl"><p class="kecil" style="margin-bottom:4px">Current stage: <b>' + esc(lblTahap(c.tahap)) + '</b>. Change to:</p><p class="kecil redup" style="margin-bottom:8px">Flow: Invited, Attended, Coffee session, Applied, Joined. Exit: Declined, Rejected.</p>' +
+      '<form id="f-tl"><p class="kecil" style="margin-bottom:4px">Current stage: <b>' + esc(lblTahap(c.tahap)) + '</b>. Change to:</p><p class="kecil redup" style="margin-bottom:8px">Flow: Invited, Present, To interview, Applied, Joined. Exit: Declined, Rejected.</p>' +
       '<div class="pilihan" style="margin-bottom:14px">' + tahap.map(function (t) {
         return '<button type="button" data-tahap="' + t + '" aria-pressed="' + (t === c.tahap) + '">' + esc(lblTahap(t)) + '</button>';
       }).join('') + '</div>' +

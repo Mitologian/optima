@@ -339,6 +339,9 @@ details.lipat > :not(summary) { margin: 0 14px 14px; }
 
 /* ---------- segmen pipeline ---------- */
 .seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.seg.lima { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.seg.lima button { padding: 8px 2px; }
+.seg.lima button span { font-size: 10.5px; }
 .seg button { background: var(--kertas-2); border-radius: 12px; padding: 10px 6px; text-align: center; border: 1.5px solid transparent; }
 .seg button b { display: block; font-family: var(--huruf-judul); font-size: 20px; line-height: 1.1; }
 .seg button span { font-size: 10.5px; display: block; line-height: 1.15; color: var(--tinta-2); font-weight: 600; }
@@ -362,6 +365,7 @@ details.lipat > :not(summary) { margin: 0 14px 14px; }
 .balasan p { font-size: 13px; color: var(--tinta-2); margin: 4px 0 8px; }
 
 .langkah-seg.tiga { grid-template-columns: repeat(3, 1fr); }
+.langkah-seg.dua { grid-template-columns: repeat(2, 1fr); }
 .slot-pilih button small { display: block; font-size: 11px; font-weight: 500; color: var(--tinta-2); }
 .pilihan.kolom { flex-direction: column; }
 .pilihan.kolom button { text-align: left; padding: 12px 14px; }

@@ -284,3 +284,5 @@ Mohon dipertimbangkan Lapis (di sisi Form dan normalisasi):
 2. Tiga tab baru dibuat otomatis oleh script, hanya untuk dibaca: **Tim Peluncuran**, **Member**, **Visitor**. Disusun dari tab Master (tetap satu-satunya sumber data), diperbarui setelah aksi tulis (paling cepat tiap 20 detik) dan tiap 5 menit. Jangan diedit tangan, isinya ditimpa. Boleh dipindah urutannya, difilter, atau diberi tampilan lain di tab sendiri.
 3. Halaman `daftar/` kini mewajibkan email dan nama bisnis (server juga menolak bila kosong), dan membawa rincian acara (poster, topik, pembicara, biaya, tempat) lewat `infoDaftar`.
 4. Cek: buat satu member uji lewat People, lalu pastikan ia muncul di tab Member dan tidak di Visitor. Tambah satu calon, pastikan muncul di Visitor dengan status terbaca. Hapus baris ujinya di Master sesudahnya (tab tampilan ikut bersih pada penyegaran berikutnya).
+
+5. (24 Oktober 2026) Server: aksi calonSaya kini juga mengembalikan status_undangan dan acara_undangan. Tidak ada perubahan sheet. Gabung dengan versi sebelumnya dalam satu deploy.

@@ -228,5 +228,7 @@ var Tiruan = (function () {
   }
   async function fase() { await siapkan(); return data.Pengaturan.filter(function (r) { return r.kunci === 'fase'; })[0].nilai; }
 
-  return { panggil: panggil, setFase: setFase, fase: fase };
+  async function tampilan() { await siapkan(); return JSON.parse(JSON.stringify(Inti.tampilanSheet(db, new Date()))); }
+
+  return { panggil: panggil, setFase: setFase, fase: fase, tampilan: tampilan };
 })();

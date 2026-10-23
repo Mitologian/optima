@@ -218,7 +218,7 @@
     $app.innerHTML =
       '<header class="kepala"><div class="kepala-dalam">' +
         '<div class="merek"><b>BNI</b><span>' + esc(S.atur.nama_chapter) + '</span></div>' +
-        '<span class="fase">' + esc(S.profil.peran === 'LDC' ? 'LDC' : S.profil.peran === 'LT' ? 'Launch team' : 'Member') + '</span>' +
+        '<span class="fase">' + esc(S.profil.nama_depan || S.profil.nama || '') + '</span>' +
         '<button class="keluar" id="keluar" aria-label="Log out">Log out</button>' +
       '</div></header>' +
       '<main class="wadah" id="isi"><div class="muat" style="margin-top:22px"></div><div class="muat"></div></main>' +

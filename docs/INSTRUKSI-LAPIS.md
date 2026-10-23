@@ -277,3 +277,10 @@ Mohon dipertimbangkan Lapis (di sisi Form dan normalisasi):
 5. Tambahan: aksi publik `cariPengundang` (ketik 3 huruf, maksimal 5 nama member/pendiri beserta kode ajak). Dipakai tautan umum `daftar/` tanpa `?m=`, sehingga tamu yang datang dari broadcast mengetik sendiri nama pengundang.
 6. Tambahan: kolom Events baru `pembuka`, `judul_topik`, `biaya`, `tautan_lokasi` (ditambah otomatis). `pembicara` kini boleh beberapa baris (maksimal 240 karakter). Member boleh membuat waktu coffee session baru lewat `pesanSlot` dengan `waktu` (PIC otomatis LDC).
 7. Perubahan: ESM tidak lagi masuk jendela acara tamu (JENIS_FORM hanya BOD dan Lunch Networking). Halaman daftar hanya menampilkan BOD dan Lunch. ESM tetap acara wajib bagi member yang sudah bergabung. Tidak ada perubahan sheet.
+
+## V. Tab tampilan dan halaman daftar (23 Oktober 2026)
+
+1. Naikkan Apps Script (`Inti.js`, `Api.js`). Tidak ada pemicu baru: `api_panaskan_` (5 menit) yang sudah ada kini juga menyusun tab tampilan.
+2. Tiga tab baru dibuat otomatis oleh script, hanya untuk dibaca: **Tim Peluncuran**, **Member**, **Visitor**. Disusun dari tab Master (tetap satu-satunya sumber data), diperbarui setelah aksi tulis (paling cepat tiap 20 detik) dan tiap 5 menit. Jangan diedit tangan, isinya ditimpa. Boleh dipindah urutannya, difilter, atau diberi tampilan lain di tab sendiri.
+3. Halaman `daftar/` kini mewajibkan email dan nama bisnis (server juga menolak bila kosong), dan membawa rincian acara (poster, topik, pembicara, biaya, tempat) lewat `infoDaftar`.
+4. Cek: buat satu member uji lewat People, lalu pastikan ia muncul di tab Member dan tidak di Visitor. Tambah satu calon, pastikan muncul di Visitor dengan status terbaca. Hapus baris ujinya di Master sesudahnya (tab tampilan ikut bersih pada penyegaran berikutnya).

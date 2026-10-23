@@ -1168,7 +1168,7 @@ var Inti = (function () {
         chapter: teks(k.pengaturan().nama_chapter) || 'Optima',
         pengundang: peng ? teks(peng.nama) : '',
         acara: acaraBerikut(k).filter(function (e) { return e.di_form && JENIS_FORM.indexOf(e.jenis) >= 0; }).map(function (e) {
-          return { id_event: e.id_event, tanggal: e.tanggal, jam_mulai: e.jam_mulai, jam_selesai: e.jam_selesai, nama_acara: e.nama_acara, jenis: e.jenis, mode: e.mode, lokasi: e.lokasi };
+          return { id_event: e.id_event, tanggal: e.tanggal, jam_mulai: e.jam_mulai, jam_selesai: e.jam_selesai, nama_acara: e.nama_acara, jenis: e.jenis, mode: e.mode, lokasi: e.lokasi, pembuka: e.pembuka, judul_topik: e.judul_topik, pembicara: e.pembicara, biaya: e.biaya, tautan_lokasi: e.tautan_lokasi, poster: e.poster };
         })
       };
     },
@@ -1192,7 +1192,10 @@ var Inti = (function () {
       var wa = normWa(b.whatsapp);
       if (wa.length < 10 || wa.length > 15) gagal('Mohon isi nomor WhatsApp yang benar, misalnya 0812 3456 7890.');
       var email = teks(b.email);
-      if (email && (email.length > 80 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) gagal('Alamat email tampaknya belum benar.');
+      if (!email) gagal('Mohon isi alamat email.');
+      if (email.length > 80 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) gagal('Alamat email tampaknya belum benar.');
+      if (!teks(b.perusahaan)) gagal('Mohon isi nama bisnis atau perusahaan.');
+      if (!teks(b.usaha)) gagal('Mohon isi bidang usaha.');
       batasi(k, 'daftar_wa_' + wa, 5, 3600);
       batasi(k, 'daftar_semua', 400, 3600);
       var peng = teks(b.m) ? orangDariKodeAjak(k, b.m) : null;
@@ -2437,8 +2440,59 @@ var Inti = (function () {
     }
   }
 
+
+  /* ---------- tampilan sheet: tiga tab baca-saja (Tim Peluncuran, Member, Visitor) disusun dari Master ----------
+     Master tetap satu sumber data supaya app konsisten. Tab ini hanya untuk dibaca sekali lirik, ditulis ulang oleh Api.js. */
+  var STATUS_TAHAP = { Listed: 'Calon, belum diundang', Invited: 'Diundang', Coffee_Scheduled: 'Coffee session dijadwalkan', Attended: 'Sudah hadir', Coffee_Session: 'Sudah wawancara',
+    Applied: 'Melamar bergabung', Joined_Other: 'Bergabung di chapter lain', Declined: 'Menolak', Rejected: 'Tidak dilanjutkan chapter' };
+  function tanggalPendekSheet(iso) { var t = tgl(iso); return t ? isoTanggal(t) : teks(iso); }
+  function tampilanSheet(db, sekarang) {
+    var k = new Konteks(db, sekarang || new Date());
+    var kursi = {}; k.tab('Klasifikasi').forEach(function (r) { kursi[teks(r.id_kursi)] = teks(r.bidang); });
+    var acara = {}; k.tab('Events').forEach(function (e) { acara[teks(e.id_event)] = e; });
+    var akses = {}; k.tab('Akses').forEach(function (a) { akses[teks(a.id_orang)] = a; });
+    var undPer = {};
+    k.undanganAktif().forEach(function (u) { var id = teks(u.id_orang_calon); if (id) (undPer[id] = undPer[id] || []).push(u); });
+    function nama(id) { var o = teks(id) ? k.orang(id) : null; return o ? teks(o.nama) : ''; }
+    function lengkapSponsor(sp) { sp = teks(sp); if (!sp) return ''; if (sp === 'BNI') return 'BNI Indonesia'; var o = k.orang(sp); return o ? teks(o.nama) : (sp.indexOf(AWALAN_LUAR) === 0 ? sp.slice(AWALAN_LUAR.length) : sp); }
+    function urut(a, b) { return String(a[0]).toLowerCase() < String(b[0]).toLowerCase() ? -1 : 1; }
+    var orang = k.tab('Master');
+    var tim = [], member = [], visitor = [];
+    orang.forEach(function (o) {
+      var wa = teks(o.whatsapp_norm), bidang = teks(o.bisnis);
+      if (timPendiri(o)) {
+        var a = akses[teks(o.id_orang)];
+        tim.push([teks(o.nama), teks(o.kategori), wa, teks(o.email), teks(o.perusahaan), bidang, a ? (benar(a.aktif) ? 'Aktif' : 'Belum aktif') : 'Belum ada kode', teks(o.tanggal_masuk).slice(0, 10)]);
+      } else if (teks(o.tahap) === 'Anggota') {
+        var a2 = akses[teks(o.id_orang)];
+        member.push([teks(o.nama), teks(o.perusahaan), bidang, kursi[teks(o.id_kursi)] || '', wa, teks(o.email), lengkapSponsor(o.id_sponsor), a2 ? (benar(a2.aktif) ? 'Aktif' : 'Belum aktif') : 'Belum ada kode',
+          teks(o.jenis_anggota), teks(o.tim), tanggalPendekSheet(o.tanggal_bergabung)]);
+      } else if (teks(o.kategori) === 'Calon') {
+        var uds = (undPer[teks(o.id_orang)] || []).slice().sort(function (x, y) { return teks(x.tanggal) < teks(y.tanggal) ? -1 : 1; });
+        var u = uds[uds.length - 1];
+        var ev = u ? acara[teks(u.id_event)] : null;
+        var tahap = teks(o.tahap), status = STATUS_TAHAP[tahap] || tahap;
+        if (u && (tahap === 'Listed' || tahap === 'Invited' || tahap === 'Attended')) {
+          var st = teks(u.status);
+          status = st === 'Hadir' ? 'Hadir di acara' : st === 'Terdaftar' ? (teks(u.konfirmasi_oleh) ? 'Terdaftar, sudah dikonfirmasi' : 'Terdaftar, menunggu konfirmasi') : 'Diundang, belum mendaftar';
+        }
+        if (tahap === 'Coffee_Scheduled' && teks(o.jadwal_cs)) status += ' (' + teks(o.jadwal_cs).replace('T', ' ').slice(0, 16) + ' UTC)';
+        var peng = u && teks(u.id_pengundang) ? nama(u.id_pengundang) : nama(o.diajukan_oleh);
+        visitor.push([teks(o.nama), teks(o.perusahaan), bidang || (kursi[teks(o.id_kursi)] || ''), wa, teks(o.email), peng, status,
+          ev ? tanggalPendekSheet(ev.tanggal) + ' ' + (teks(ev.jenis) === 'BOD' ? 'BOD' : teks(ev.nama_acara)) : '', u && teks(u.konfirmasi_oleh) ? 'Sudah (' + nama(u.konfirmasi_oleh) + ')' : '', teks(o.sumber)]);
+      }
+    });
+    tim.sort(urut); member.sort(urut); visitor.sort(urut);
+    return {
+      tim: { tab: 'Tim Peluncuran', kolom: ['Nama lengkap', 'Peran', 'WhatsApp', 'Email', 'Nama bisnis', 'Bidang bisnis', 'Kode akses', 'Masuk'], baris: tim },
+      member: { tab: 'Member', kolom: ['Nama lengkap', 'Nama bisnis', 'Bidang bisnis', 'Seat', 'WhatsApp', 'Email', 'Sponsor', 'Kode akses', 'Jenis', 'Tim', 'Bergabung'], baris: member },
+      visitor: { tab: 'Visitor', kolom: ['Nama lengkap', 'Nama bisnis', 'Bidang bisnis', 'WhatsApp', 'Email', 'Diundang oleh', 'Status sekarang', 'Acara', 'Konfirmasi H-1', 'Sumber'], baris: visitor }
+    };
+  }
+
   return {
     jalankan: jalankan,
+    tampilanSheet: tampilanSheet,
     jendelaForm: jendelaForm,
     JENIS_FORM: JENIS_FORM,
     normWa: normWa,

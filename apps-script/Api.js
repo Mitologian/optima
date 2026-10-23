@@ -39,7 +39,12 @@ function doPost(e) {
 /* Aksi yang mengubah isi pilihan Form: acara dan daftar orang pada "Diundang oleh". */
 var AKSI_JADWAL_ = { tambahAcara: true, ubahAcara: true, geserAcara: true, tambahOrang: true, jadikanAnggota: true, ubahOrang: true };
 function api_sesudahTulis_(aksi, hasil) {
-  if (!AKSI_JADWAL_[aksi] || !hasil || hasil.ok !== true) return;
+  if (!hasil || hasil.ok !== true) return;
+  // Tab baca-saja (Tim Peluncuran, Member, Visitor) ikut diperbarui setelah aksi tulis, paling cepat tiap 20 detik. Pemicu 5 menit menjadi jaring pengaman.
+  try {
+    if (!Inti._tanpaLog[aksi]) api_segarkanTampilan_(false);
+  } catch (err) { console.warn('tampilan sheet gagal setelah ' + aksi + ': ' + err); }
+  if (!AKSI_JADWAL_[aksi]) return;
   try { api_segarkanJendelaForm_(); } catch (err) { console.warn('jendela Form gagal setelah ' + aksi + ': ' + err); }
   try {
     if (typeof sinkronPilihan === 'function') sinkronPilihan();
@@ -125,6 +130,41 @@ function api_panaskan_() {
   try {
     if (api_segarkanJendelaForm_() && typeof sinkronPilihan === 'function') sinkronPilihan();
   } catch (err) { console.warn('api_panaskan_ jendela Form: ' + err); }
+  try { api_segarkanTampilan_(true); } catch (err) { console.warn('api_panaskan_ tampilan sheet: ' + err); }
+}
+
+/* Tab baca-saja yang disusun dari Master: Tim Peluncuran (LDC dan LT), Member, dan Visitor (calon dan tamu), dengan nama lengkap,
+   bisnis, bidang, WhatsApp, email, sponsor atau pengundang, dan status sekarang. Master tetap satu-satunya sumber data. */
+function api_segarkanTampilan_(paksa) {
+  var cache = CacheService.getScriptCache();
+  if (!paksa && cache.get('tampilan_ts')) return false;
+  cache.put('tampilan_ts', '1', 20);
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty('DATA_SHEET_ID');
+  if (!id) return false;
+  var db = api_adaptor_({ paksa: !!paksa });
+  var t = Inti.tampilanSheet(db, new Date());
+  var ss = SpreadsheetApp.openById(id);
+  [['tim', '#1F6FEB'], ['member', '#C8102E'], ['visitor', '#D99A00']].forEach(function (x) { api_tulisTampilan_(ss, t[x[0]], x[1]); });
+  return true;
+}
+function api_tulisTampilan_(ss, t, warna) {
+  var sh = ss.getSheetByName(t.tab) || ss.insertSheet(t.tab);
+  var lebar = t.kolom.length, tinggi = t.baris.length + 1;
+  sh.clear();
+  var data = [t.kolom].concat(t.baris.map(function (r) { return r.map(function (v) { return v == null ? '' : String(v); }); }));
+  var lama = sh.getFilter(); if (lama) lama.remove();
+  var area = sh.getRange(1, 1, tinggi, lebar);
+  area.setNumberFormat('@');
+  area.setValues(data);
+  var kepala = sh.getRange(1, 1, 1, lebar);
+  kepala.setFontWeight('bold').setFontColor('#FFFFFF').setBackground('#C8102E');
+  kepala.setNote('Tab ini disusun otomatis dari data app (tab Master). Jangan diedit di sini, perubahan akan tertimpa.');
+  sh.setFrozenRows(1);
+  sh.setFrozenColumns(1);
+  sh.setTabColor(warna);
+  try { sh.autoResizeColumns(1, lebar); } catch (e) {}
+  if (tinggi > 1) { try { area.createFilter(); } catch (e) {} }
 }
 /* Pemicu onEdit terpasang: edit tangan di sheet langsung membersihkan simpanan. */
 function api_saatEdit_() { api_bersihkanCache_(); }

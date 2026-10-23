@@ -5,51 +5,79 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#C8102E">
 <meta name="robots" content="noindex">
-<title>Daftar Visitor BNI Optima</title>
+<title>Daftar Visitor BNI Optima Chapter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root { --kertas:#fff; --kertas-2:#F5F3F3; --tinta:#1A1718; --abu:#6F6768; --garis:#E8E2E2; --merah:#C8102E; --merah-muda:#FCE8EB; }
+:root { --kertas:#fff; --kertas-2:#F7F4F4; --tinta:#1A1718; --abu:#6F6768; --garis:#E8E2E2; --merah:#C8102E; --merah-tua:#8E0B20; --merah-muda:#FCE8EB; }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--kertas); color: var(--tinta); font: 16px/1.5 'Plus Jakarta Sans', system-ui, sans-serif; }
-.bungkus { max-width: 480px; margin: 0 auto; padding: 0 16px 48px; }
-header { padding: 26px 0 8px; }
-.merek { font: 800 13px Helvetica, Arial, sans-serif; letter-spacing: .06em; color: var(--merah); }
-h1 { font: 800 26px/1.15 Helvetica, Arial, sans-serif; margin: 4px 0 6px; }
-.sub { color: var(--abu); margin: 0 0 14px; font-size: 14px; }
-.undang { background: var(--merah-muda); border: 1px solid #F3C4CB; border-radius: 14px; padding: 12px 14px; margin: 6px 0 18px; font-size: 15px; }
-h2 { font: 700 15px Helvetica, Arial, sans-serif; margin: 18px 0 8px; }
+body { margin: 0; background: var(--kertas-2); color: var(--tinta); font: 16px/1.5 'Plus Jakarta Sans', system-ui, sans-serif; }
+.bungkus { max-width: 520px; margin: 0 auto; background: var(--kertas); min-height: 100vh; box-shadow: 0 0 40px rgba(0,0,0,.05); }
+.hero { position: relative; color: #fff; padding: 26px 20px 30px; background: linear-gradient(160deg, var(--merah) 0%, var(--merah-tua) 100%); overflow: hidden; }
+.hero::before { content: ''; position: absolute; inset: 0; background: url('hero.jpg') center/cover no-repeat; opacity: .28; mix-blend-mode: luminosity; }
+.hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,.08); }
+.hero > * { position: relative; z-index: 1; }
+.merek { display: flex; align-items: baseline; gap: 8px; font: 800 13px Helvetica, Arial, sans-serif; letter-spacing: .08em; }
+.merek b { font-size: 20px; letter-spacing: 0; }
+h1 { font: 800 28px/1.12 Helvetica, Arial, sans-serif; margin: 22px 0 8px; }
+.sub { margin: 0; font-size: 15px; opacity: .92; }
+.poin { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 14px 16px 4px; margin-top: -16px; position: relative; z-index: 2; }
+.poin div { background: #fff; border: 1px solid var(--garis); border-radius: 14px; padding: 10px 8px; text-align: center; font-size: 12px; line-height: 1.3; font-weight: 600; box-shadow: 0 6px 16px rgba(142,11,32,.08); }
+.poin i { display: block; font-style: normal; font-size: 20px; margin-bottom: 4px; }
+main { padding: 8px 16px 40px; }
+.undang { background: var(--merah-muda); border: 1px solid #F3C4CB; border-radius: 14px; padding: 12px 14px; margin: 12px 0 6px; font-size: 15px; }
+h2 { font: 700 16px Helvetica, Arial, sans-serif; margin: 22px 0 10px; }
 .acara { display: block; border: 1.5px solid var(--garis); border-radius: 14px; padding: 12px 14px; margin: 0 0 8px; cursor: pointer; }
 .acara input { position: absolute; opacity: 0; pointer-events: none; }
 .acara b { display: block; }
 .acara span { color: var(--abu); font-size: 14px; }
 .acara:has(input:checked) { border-color: var(--merah); background: var(--merah-muda); }
+.detail { border: 1.5px solid var(--garis); border-radius: 16px; overflow: hidden; margin: 4px 0 6px; }
+.detail img { display: block; width: 100%; height: auto; background: var(--kertas-2); }
+.detail .isi { padding: 14px; }
+.detail h3 { font: 800 18px/1.25 Helvetica, Arial, sans-serif; margin: 0 0 4px; }
+.detail .topik { font-weight: 600; color: var(--merah); margin: 0 0 8px; }
+.detail p { margin: 0 0 10px; font-size: 14.5px; }
+.detail .baris { display: flex; gap: 8px; font-size: 14px; margin: 3px 0; }
+.detail .baris em { font-style: normal; flex: 0 0 22px; }
+.detail a { color: var(--merah); font-weight: 600; }
+.pembicara { margin: 0 0 10px; padding: 0; list-style: none; font-size: 14px; }
+.pembicara li { padding: 6px 0; border-top: 1px solid var(--garis); }
 label.isian { display: block; margin: 0 0 12px; }
 label.isian > span { display: block; font-size: 14px; font-weight: 600; margin: 0 0 4px; }
 label.isian > small { display: block; color: var(--abu); font-size: 12px; margin-top: 3px; }
 input[type=text], input[type=tel], input[type=email] { width: 100%; font: inherit; padding: 12px; border: 1.5px solid var(--garis); border-radius: 12px; background: #fff; }
 input:focus { outline: 0; border-color: var(--merah); }
 .jebakan { position: absolute; left: -9999px; height: 0; overflow: hidden; }
-button.kirim { width: 100%; font: inherit; font-weight: 700; color: #fff; background: var(--merah); border: 0; border-radius: 12px; padding: 14px; margin-top: 6px; cursor: pointer; }
+button.kirim { width: 100%; font: inherit; font-weight: 700; color: #fff; background: var(--merah); border: 0; border-radius: 12px; padding: 15px; margin-top: 8px; cursor: pointer; box-shadow: 0 8px 18px rgba(200,16,46,.25); }
 button.kirim[disabled] { opacity: .6; }
 .salah { color: var(--merah); font-size: 14px; margin: 8px 0 0; }
-.selesai { border: 1.5px solid #E5B8BF; border-radius: 16px; padding: 18px; background: var(--merah-muda); }
+.selesai { border: 1.5px solid #E5B8BF; border-radius: 16px; padding: 18px; background: var(--merah-muda); margin-top: 16px; }
 .selesai h2 { font-size: 20px; margin: 0 0 8px; }
 .selesai p { margin: 0 0 10px; }
 .kecil { color: var(--abu); font-size: 13px; }
-.hasil{display:flex;flex-direction:column;gap:6px;margin-top:6px}.hasil button{text-align:left;padding:10px 12px;border:1px solid #ddd;border-radius:10px;background:#fff;font:inherit;cursor:pointer}.hasil button:hover{border-color:#c8102e}
+.hasil { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.hasil button { text-align: left; padding: 10px 12px; border: 1px solid #ddd; border-radius: 10px; background: #fff; font: inherit; cursor: pointer; }
+.hasil button:hover { border-color: var(--merah); }
+footer { padding: 18px 16px 30px; text-align: center; color: var(--abu); font-size: 12px; }
 </style>
 </head>
 <body>
 <div class="bungkus">
-<header>
-  <div class="merek">BNI CHAPTER</div>
-  <h1 id="judul">Daftar sebagai visitor</h1>
-  <p class="sub">Business Owners Meeting and Networking. Mengisi hanya sekitar satu menit.</p>
-</header>
+<section class="hero">
+  <div class="merek"><span>BNI</span><b>Optima Chapter</b></div>
+  <h1>Bergabung dengan jaringan pemilik bisnis</h1>
+  <p class="sub">Daftar sebagai visitor dan hadiri pertemuan Rabu kami. Mengisi hanya sekitar satu menit.</p>
+</section>
+<section class="poin" aria-label="Keunggulan">
+  <div><i>&#129309;</i>Kenal pemilik bisnis lintas industri</div>
+  <div><i>&#128161;</i>Tukar peluang dan kolaborasi</div>
+  <div><i>&#127903;</i>Hanya dengan undangan, kursi terbatas</div>
+</section>
 <main id="isi"><p class="kecil">Memuat jadwal...</p></main>
+<footer>BNI Optima Chapter. Data Anda hanya dipakai untuk keperluan pendaftaran acara ini.</footer>
 </div>
 <script src="../web/config.js"></script>
 <script>
@@ -59,11 +87,20 @@ button.kirim[disabled] { opacity: .6; }
   var HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   var BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   var $isi = document.getElementById('isi');
+  var DEFAULT_BOD = 'Pertemuan bisnis Rabu pagi untuk pemilik usaha. Dengarkan wawasan dari pembicara, kenali pemilik bisnis lintas industri, dan lihat bagaimana jaringan bisnis terbesar di dunia membantu membangun kepercayaan dan peluang usaha.';
+  var DEFAULT_LUNCH = 'Sesi networking santai untuk pemilik bisnis, profesional, dan pengambil keputusan di Jabodetabek. Bertukar wawasan, peluang, dan potensi kolaborasi dengan para pemimpin bisnis lintas industri.';
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function tanggalLengkap(iso) { var d = new Date(iso + 'T00:00:00Z'); return HARI[d.getUTCDay()] + ', ' + d.getUTCDate() + ' ' + BULAN[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); }
   function judulAcara(e) { return e.jenis === 'BOD' ? 'Exclusive Business Opportunity Day' : (e.nama_acara || 'Acara'); }
   function jamAcara(e) { return e.jam_mulai + (e.jam_selesai ? ' - ' + e.jam_selesai : '') + ' WIB'; }
   function tempat(e) { return e.mode === 'Online' ? 'Online via ' + (e.lokasi || 'Zoom') : (e.lokasi || 'Lokasi menyusul'); }
+  function urlGambar(u) {
+    u = String(u || '');
+    var m = u.match(/^https:\/\/drive\.google\.com\/file\/d\/([\w-]+)/) || u.match(/^https:\/\/drive\.google\.com\/open\?id=([\w-]+)/);
+    if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w1000';
+    return /^https:\/\//i.test(u) || /^data:image\//i.test(u) ? u : '';
+  }
+  function paragraf(t) { return String(t || '').split(/\n{2,}/).map(function (p) { return '<p>' + esc(p.trim()).replace(/\n/g, '<br>') + '</p>'; }).join(''); }
 
   async function panggil(action, data) {
     var badan = Object.assign({ action: action, kode: '' }, data || {});
@@ -75,6 +112,25 @@ button.kirim[disabled] { opacity: .6; }
   }
   function muat(src) { return new Promise(function (ok, gagal) { var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = gagal; document.head.appendChild(s); }); }
 
+  /* Kartu rincian acara yang dipilih: poster, judul, topik, deskripsi, pembicara, waktu, tempat, biaya. */
+  function rincianAcara(e) {
+    var gambar = urlGambar(e.poster);
+    var pembicara = String(e.pembicara || '').split(/[\n;]+/).map(function (x) { return x.trim(); }).filter(Boolean);
+    var deskripsi = e.pembuka || (e.jenis === 'BOD' ? DEFAULT_BOD : DEFAULT_LUNCH);
+    var peta = e.mode !== 'Online' && /^https:\/\//i.test(e.tautan_lokasi || '') ? ' <a href="' + esc(e.tautan_lokasi) + '" target="_blank" rel="noopener">Buka peta</a>' : '';
+    return '<div class="detail">' +
+      (gambar ? '<img src="' + esc(gambar) + '" alt="Poster ' + esc(judulAcara(e)) + '" onerror="this.remove()">' : '') +
+      '<div class="isi"><h3>' + esc(judulAcara(e)) + '</h3>' +
+      (e.judul_topik ? '<div class="topik">' + esc(e.judul_topik) + '</div>' : '') +
+      paragraf(deskripsi) +
+      (pembicara.length ? '<ul class="pembicara">' + pembicara.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '') +
+      '<div class="baris"><em>&#128197;</em><span>' + esc(tanggalLengkap(e.tanggal)) + '</span></div>' +
+      '<div class="baris"><em>&#9200;</em><span>' + esc(jamAcara(e)) + '</span></div>' +
+      '<div class="baris"><em>&#128205;</em><span>' + esc(tempat(e)) + peta + '</span></div>' +
+      (e.biaya ? '<div class="baris"><em>&#127991;</em><span>' + esc(e.biaya) + '</span></div>' : '') +
+      '</div></div>';
+  }
+
   function gambarForm(info) {
     var m = q.get('m') || '', pilih = q.get('e') || '';
     if (!info.acara.length) {
@@ -84,23 +140,31 @@ button.kirim[disabled] { opacity: .6; }
     if (!info.acara.some(function (e) { return e.id_event === pilih; })) pilih = info.acara[0].id_event;
     $isi.innerHTML =
       (info.pengundang ? '<div class="undang">Anda diundang oleh <b>' + esc(info.pengundang) + '</b>.</div>' : '') +
-      (info.pengundang ? '' : '<div class="isian" id="cari"><span>Siapa yang mengundang Anda? (boleh dikosongkan)</span><input type="text" id="cari-q" autocomplete="off" placeholder="Ketik nama pengundang" aria-label="Nama pengundang"><div id="cari-hasil" class="hasil"></div><small id="cari-pilih"></small></div>') +
       '<form id="f" novalidate autocomplete="on">' +
       '<h2>Pilih acara</h2>' + info.acara.map(function (e) {
         return '<label class="acara"><input type="radio" name="acara" value="' + esc(e.id_event) + '"' + (e.id_event === pilih ? ' checked' : '') + '><b>' + esc(judulAcara(e)) + '</b><span>' + esc(tanggalLengkap(e.tanggal) + ' · ' + jamAcara(e)) + '<br>' + esc(tempat(e)) + '</span></label>';
       }).join('') +
+      '<div id="rincian"></div>' +
+      (info.pengundang ? '' : '<div class="isian" id="cari"><span style="display:block;font-size:14px;font-weight:600;margin:14px 0 4px">Siapa yang mengundang Anda? (boleh dikosongkan)</span><input type="text" id="cari-q" autocomplete="off" placeholder="Ketik nama pengundang" aria-label="Nama pengundang"><div id="cari-hasil" class="hasil"></div><small id="cari-pilih" class="kecil"></small></div>') +
       '<h2>Data Anda</h2>' +
       '<label class="isian"><span>Nama lengkap</span><input type="text" name="nama" autocomplete="name" required></label>' +
       '<label class="isian"><span>Nomor WhatsApp</span><input type="tel" name="whatsapp" inputmode="tel" autocomplete="tel" placeholder="0812 3456 7890" required><small>Link Zoom dan detail acara dikirim ke nomor ini.</small></label>' +
+      '<label class="isian"><span>Email</span><input type="email" name="email" autocomplete="email" placeholder="nama@perusahaan.com" required></label>' +
+      '<label class="isian"><span>Nama bisnis atau perusahaan</span><input type="text" name="perusahaan" autocomplete="organization" required></label>' +
       '<label class="isian"><span>Bidang usaha</span><input type="text" name="usaha" placeholder="Contoh: katering, arsitek, percetakan" required></label>' +
-      '<label class="isian"><span>Nama perusahaan (boleh dikosongkan)</span><input type="text" name="perusahaan" autocomplete="organization"></label>' +
-      '<label class="isian"><span>Kota (boleh dikosongkan)</span><input type="text" name="kota" autocomplete="address-level2"></label>' +
-      '<label class="isian"><span>Email (boleh dikosongkan)</span><input type="email" name="email" autocomplete="email"></label>' +
+      '<label class="isian"><span>Kota</span><input type="text" name="kota" autocomplete="address-level2" placeholder="Boleh dikosongkan"></label>' +
       '<div class="jebakan" aria-hidden="true"><label>Situs <input type="text" name="situs" tabindex="-1" autocomplete="off"></label></div>' +
       '<p class="salah" id="salah" hidden></p>' +
       '<button class="kirim" type="submit">Daftar</button>' +
       '</form>';
     var f = document.getElementById('f');
+    function tampilRincian() {
+      var id = f.acara.value || pilih;
+      var e = info.acara.filter(function (z) { return z.id_event === id; })[0];
+      document.getElementById('rincian').innerHTML = e ? rincianAcara(e) : '';
+    }
+    tampilRincian();
+    f.querySelectorAll('input[name=acara]').forEach(function (r) { r.onchange = tampilRincian; });
     var cq = document.getElementById('cari-q'), tunda = null;
     if (cq) {
       var hasil = document.getElementById('cari-hasil'), pilihEl = document.getElementById('cari-pilih');
@@ -111,7 +175,7 @@ button.kirim[disabled] { opacity: .6; }
         tunda = setTimeout(async function () {
           var r = await panggil('cariPengundang', { q: v });
           if (cq.value.trim() !== v) return;
-          hasil.innerHTML = r.ok && r.hasil.length ? r.hasil.map(function (h) { return '<button type="button" data-k="' + esc(h.kode) + '" data-n="' + esc(h.nama) + '">' + esc(h.nama) + '</button>'; }).join('') : '<small>Nama tidak ditemukan. Boleh dikosongkan.</small>';
+          hasil.innerHTML = r.ok && r.hasil.length ? r.hasil.map(function (h) { return '<button type="button" data-k="' + esc(h.kode) + '" data-n="' + esc(h.nama) + '">' + esc(h.nama) + '</button>'; }).join('') : '<small class="kecil">Nama tidak ditemukan. Boleh dikosongkan.</small>';
           hasil.querySelectorAll('button').forEach(function (bt) {
             bt.onclick = function () { m = bt.dataset.k; cq.value = bt.dataset.n; hasil.innerHTML = ''; pilihEl.textContent = 'Pengundang: ' + bt.dataset.n; };
           });
@@ -120,9 +184,10 @@ button.kirim[disabled] { opacity: .6; }
     }
     f.onsubmit = async function (ev) {
       ev.preventDefault();
-      var salah = document.getElementById('salah'), tombol = f.querySelector('button');
+      var salah = document.getElementById('salah'), tombol = f.querySelector('button.kirim');
       salah.hidden = true;
-      if (!f.nama.value.trim() || !f.whatsapp.value.trim() || !f.usaha.value.trim()) { salah.textContent = 'Mohon isi nama, nomor WhatsApp, dan bidang usaha.'; salah.hidden = false; return; }
+      var kosong = ['nama', 'whatsapp', 'email', 'perusahaan', 'usaha'].filter(function (n) { return !f[n].value.trim(); });
+      if (kosong.length) { salah.textContent = 'Mohon lengkapi nama, nomor WhatsApp, email, nama bisnis, dan bidang usaha.'; salah.hidden = false; f[kosong[0]].focus(); return; }
       tombol.disabled = true; tombol.textContent = 'Mengirim...';
       var r = await panggil('daftarTamu', { m: m, id_event: f.acara.value, nama: f.nama.value, whatsapp: f.whatsapp.value, usaha: f.usaha.value, perusahaan: f.perusahaan.value, kota: f.kota.value, email: f.email.value, situs: f.situs.value });
       if (!r.ok) { salah.textContent = r.pesan || 'Pendaftaran belum berhasil. Silakan coba lagi.'; salah.hidden = false; tombol.disabled = false; tombol.textContent = 'Daftar'; return; }

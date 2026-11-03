@@ -298,6 +298,8 @@ label.isian > span { display: block; font-size: 13px; font-weight: 700; color: v
 .g-gerbang.lewat { stroke: var(--panel-teks); stroke-dasharray: none; opacity: .75; }
 .g-label { fill: color-mix(in srgb, var(--panel-teks) 60%, transparent); font-size: 10px; font-weight: 700; font-family: var(--huruf); }
 .g-label.lewat { fill: var(--panel-teks); }
+.g-rencana { fill: none; stroke: color-mix(in srgb, var(--panel-teks) 55%, transparent); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.g-esm { stroke: color-mix(in srgb, var(--panel-teks) 35%, transparent); stroke-width: 1; stroke-dasharray: 2 3; }
 .g-area { fill: color-mix(in srgb, var(--panel-teks) 18%, transparent); stroke: none; }
 .g-garis { fill: none; stroke: var(--panel-teks); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .g-ujung { fill: var(--panel-teks); stroke: var(--panel); stroke-width: 2; }

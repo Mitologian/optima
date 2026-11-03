@@ -305,12 +305,18 @@
   window.addEventListener('hashchange', rute);
 
   /* ---------- MISI ---------- */
+  /* Grafik pertumbuhan: sumbu waktu tetap dari awal chapter sampai Grand Launch. Garis anggota tumbuh ke kanan seiring waktu dan naik seiring
+     anggota baru, dibandingkan dengan jalur rencana (putus-putus) menuju gerbang ESM dan Grand Launch. */
   function grafikMisi(m) {
-    var data = m.riwayat && m.riwayat.length ? m.riwayat : [{ selesai: new Date().toISOString(), jumlah: m.anggota }];
-    var W = 320, H = 118, kiri = 8, kanan = 62, atas = 12, bawah = 24;
+    var W = 320, H = 132, kiri = 8, kanan = 62, atas = 18, bawah = 28;
+    var t = function (iso) { var d = new Date(iso).getTime(); return isNaN(d) ? null : d; };
+    var tNow = t(m.sekarang) || Date.now();
+    var t0 = t(m.mulai) || (tNow - 7 * 864e5);
+    var tEsm = m.tanggal_esm ? t(m.tanggal_esm + 'T00:00:00+07:00') : null;
+    var tLaunch = m.tanggal_launch ? t(m.tanggal_launch + 'T00:00:00+07:00') : null;
+    var t1 = Math.max(tLaunch || 0, tNow + 14 * 864e5);
     var ymax = Math.max(m.gerbang[2], m.anggota) * 1.08;
-    var n = data.length;
-    var x = function (i) { return n === 1 ? kiri + (W - kiri - kanan) : kiri + i * (W - kiri - kanan) / (n - 1); };
+    var x = function (ms) { return kiri + Math.min(1, Math.max(0, (ms - t0) / (t1 - t0))) * (W - kiri - kanan); };
     var y = function (v) { return atas + (H - atas - bawah) * (1 - v / ymax); };
     var nama = ['ESM', 'CGT', 'Launch'];
     var garis = m.gerbang.map(function (g, i) {
@@ -318,24 +324,41 @@
       return '<line x1="' + kiri + '" x2="' + (W - kanan) + '" y1="' + y(g) + '" y2="' + y(g) + '" class="g-gerbang' + (lewat ? ' lewat' : '') + '"/>' +
         '<text x="' + (W - kanan + 6) + '" y="' + (y(g) + 4) + '" class="g-label' + (lewat ? ' lewat' : '') + '">' + g + ' ' + nama[i] + '</text>';
     }).join('');
-    var titik = data.map(function (d, i) { return x(i).toFixed(1) + ',' + y(d.jumlah).toFixed(1); });
-    var area = n > 1 ? '<path class="g-area" d="M' + x(0) + ',' + y(0) + ' L' + titik.join(' L') + ' L' + x(n - 1) + ',' + y(0) + ' Z"/>' : '';
-    var jalur = n > 1 ? '<polyline class="g-garis" points="' + titik.join(' ') + '"/>' : '';
-    var akhir = data[n - 1];
-    var sentuh = data.map(function (d, i) {
-      var lebar = n === 1 ? 40 : (W - kiri - kanan) / (n - 1);
-      return '<rect class="g-sentuh" x="' + (x(i) - lebar / 2) + '" y="0" width="' + lebar + '" height="' + H + '" data-i="' + i + '"/>';
+    // titik anggota: awal chapter (0), akhir tiap ronde yang sudah lewat, dan hari ini
+    var data = (m.riwayat || []).filter(function (d) { return t(d.selesai) !== null; });
+    var pts = [[t0, 0]];
+    data.forEach(function (d) { var ms = t(d.selesai); if (ms < tNow) pts.push([ms, d.jumlah]); });
+    pts.push([tNow, m.anggota]);
+    var titik = pts.map(function (q) { return x(q[0]).toFixed(1) + ',' + y(q[1]).toFixed(1); });
+    var area = '<path class="g-area" d="M' + x(pts[0][0]).toFixed(1) + ',' + y(0).toFixed(1) + ' L' + titik.join(' L') + ' L' + x(tNow).toFixed(1) + ',' + y(0).toFixed(1) + ' Z"/>';
+    var jalur = '<polyline class="g-garis" points="' + titik.join(' ') + '"/>';
+    // jalur rencana: 0 di awal, gerbang ESM pada tanggal ESM, gerbang Launch pada tanggal Grand Launch
+    var rencana = [[t0, 0]];
+    if (tEsm && tEsm > t0 && tEsm < t1) rencana.push([tEsm, m.gerbang[0]]);
+    if (tLaunch && tLaunch > t0) rencana.push([tLaunch, m.gerbang[2]]);
+    var jalurRencana = rencana.length > 1 ? '<polyline class="g-rencana" points="' + rencana.map(function (q) { return x(q[0]).toFixed(1) + ',' + y(q[1]).toFixed(1); }).join(' ') + '"/>' : '';
+    var penandaEsm = tEsm && tEsm > t0 && tEsm < t1 ? '<line class="g-esm" x1="' + x(tEsm).toFixed(1) + '" x2="' + x(tEsm).toFixed(1) + '" y1="' + atas + '" y2="' + y(0).toFixed(1) + '"/>' +
+      '<text class="g-tgl" text-anchor="middle" x="' + x(tEsm).toFixed(1) + '" y="' + (atas - 4) + '">ESM ' + esc(tglPendek(m.tanggal_esm)) + '</text>' : '';
+    var penandaLaunch = tLaunch ? '<text class="g-tgl" text-anchor="end" x="' + (W - kanan) + '" y="' + (H - 6) + '">Launch ' + esc(tglPendek(m.tanggal_launch)) + '</text>' : '';
+    // sentuh: satu kolom per ronde yang sudah lewat, ditambah hari ini
+    var sentuhData = data.filter(function (d) { return t(d.selesai) < tNow; }).map(function (d) { return { selesai: d.selesai, jumlah: d.jumlah }; });
+    sentuhData.push({ selesai: m.sekarang, jumlah: m.anggota, kini: true });
+    var lebarMin = 10;
+    var sentuh = sentuhData.map(function (d, i) {
+      var cx = x(t(d.selesai) || tNow);
+      return '<rect class="g-sentuh" x="' + (cx - lebarMin / 2).toFixed(1) + '" y="0" width="' + lebarMin + '" height="' + H + '" data-i="' + i + '"/>';
     }).join('');
-    return '<div class="grafik" data-titik="' + esc(JSON.stringify(data)) + '">' +
-      '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Member growth per week, now ' + akhir.jumlah + ' members">' +
+    var ujung = '<circle class="g-ujung" cx="' + x(tNow).toFixed(1) + '" cy="' + y(m.anggota).toFixed(1) + '" r="5"/>';
+    return '<div class="grafik" data-titik="' + esc(JSON.stringify(sentuhData)) + '">' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Member growth over time, now ' + m.anggota + ' members">' +
         '<line x1="' + kiri + '" x2="' + (W - kanan) + '" y1="' + y(0) + '" y2="' + y(0) + '" class="g-dasar"/>' +
-        garis + area + jalur +
+        garis + penandaEsm + jalurRencana + area + jalur +
         '<line class="g-silang" x1="0" x2="0" y1="' + atas + '" y2="' + y(0) + '" style="display:none"/>' +
-        '<circle class="g-ujung" cx="' + x(n - 1) + '" cy="' + y(akhir.jumlah) + '" r="5"/>' +
-        '<text class="g-tgl" x="' + kiri + '" y="' + (H - 6) + '">' + esc(tglPendek(data[0].selesai)) + '</text>' +
-        (n > 1 ? '<text class="g-tgl" text-anchor="end" x="' + (W - kanan) + '" y="' + (H - 6) + '">' + esc(tglPendek(akhir.selesai)) + '</text>' : '') +
+        ujung +
+        '<text class="g-tgl" x="' + kiri + '" y="' + (H - 6) + '">' + esc(tglPendek(m.mulai)) + '</text>' +
+        penandaLaunch +
         sentuh +
-      '</svg><p class="g-info">Tap the chart for weekly totals.</p></div>';
+      '</svg><p class="g-info">Solid line: members so far. Dashed: plan to Grand Launch. Tap for weekly totals.</p></div>';
   }
 
   function pasangGrafik(akar) {
@@ -343,13 +366,14 @@
     if (!g) return;
     var data = JSON.parse(g.dataset.titik);
     var info = g.querySelector('.g-info');
+    var awalInfo = info.textContent;
     var silang = g.querySelector('.g-silang');
     g.querySelectorAll('.g-sentuh').forEach(function (r) {
       var tunjuk = function () {
         var d = data[Number(r.dataset.i)];
         var cx = Number(r.getAttribute('x')) + Number(r.getAttribute('width')) / 2;
         silang.setAttribute('x1', cx); silang.setAttribute('x2', cx); silang.style.display = '';
-        info.textContent = 'Week ending ' + tglHari(d.selesai) + ': ' + d.jumlah + ' members';
+        info.textContent = d.kini ? 'Today: ' + d.jumlah + ' members' : 'Week ending ' + tglHari(d.selesai) + ': ' + d.jumlah + ' members';
       };
       r.addEventListener('click', tunjuk);
       r.addEventListener('mouseenter', tunjuk);

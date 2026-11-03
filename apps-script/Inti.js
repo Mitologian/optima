@@ -476,12 +476,16 @@ var Inti = (function () {
     var a = k.pengaturan();
     var jumlah = k.anggota().length;
     var target = a.fase === 'Pembentukan' ? a.target_founding : (a.fase === 'BOD' ? a.target_cgt : a.target_launch);
-    // riwayat: jumlah anggota di akhir setiap ronde Rabu, dari ronde anggota pertama sampai sekarang
+    // Garis waktu tetap: dari awal chapter (kegiatan pertama di Master, atau anggota pertama) sampai Grand Launch. Satu titik per ronde Rabu,
+    // dihitung dari tanggal bergabung, jadi grafik tumbuh ke kanan seiring waktu dan naik seiring anggota baru.
     var kini = k.ronde();
-    var awal = kini;
     var tglGabung = k.anggota().map(function (r) { return tgl(r.tanggal_bergabung); });
-    tglGabung.forEach(function (d) { if (d) awal = Math.min(awal, nomorRonde(d)); });
-    awal = Math.max(awal, kini - 51);
+    var awalWaktu = null;
+    k.tab('Master').forEach(function (r) {
+      [tgl(r.tanggal_masuk), tgl(r.tanggal_bergabung)].forEach(function (d) { if (d && (!awalWaktu || d < awalWaktu)) awalWaktu = d; });
+    });
+    var awal = awalWaktu ? nomorRonde(awalWaktu) : kini;
+    awal = Math.min(Math.max(awal, kini - 78), kini);
     var riwayat = [];
     for (var n = awal; n <= kini; n++) {
       var batas = batasRonde(n).selesai;
@@ -498,6 +502,7 @@ var Inti = (function () {
     });
     var baruPekan = tglGabung.filter(function (d) { return d && d >= mulai && d <= akhir; }).length;
     return { anggota: jumlah, gerbang: [a.target_founding, a.target_cgt, a.target_launch], fase: a.fase, target: target, riwayat: riwayat,
+      mulai: batasRonde(awal).mulai.toISOString(), sekarang: k.now.toISOString(), tanggal_esm: tgl(a.tanggal_esm) ? isoTanggal(tgl(a.tanggal_esm)) : '', tanggal_launch: tgl(a.tanggal_grand_launch) ? isoTanggal(tgl(a.tanggal_grand_launch)) : '',
       hari_ke_esm: hariKe(a.tanggal_esm), hari_ke_launch: hariKe(a.tanggal_grand_launch), tamu_pekan: tamuPekan, anggota_baru_pekan: baruPekan };
   }
 

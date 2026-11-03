@@ -286,3 +286,5 @@ Mohon dipertimbangkan Lapis (di sisi Form dan normalisasi):
 4. Cek: buat satu member uji lewat People, lalu pastikan ia muncul di tab Member dan tidak di Visitor. Tambah satu calon, pastikan muncul di Visitor dengan status terbaca. Hapus baris ujinya di Master sesudahnya (tab tampilan ikut bersih pada penyegaran berikutnya).
 
 5. (24 Oktober 2026) Server: aksi calonSaya kini juga mengembalikan status_undangan dan acara_undangan. Tidak ada perubahan sheet. Gabung dengan versi sebelumnya dalam satu deploy.
+
+6. (3 November 2026) Server: aksi beranda (misi) kini juga mengembalikan mulai, sekarang, tanggal_esm, dan tanggal_launch untuk grafik pertumbuhan. Tidak ada perubahan sheet. Gabung dalam satu deploy.

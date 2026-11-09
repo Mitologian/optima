@@ -40,16 +40,37 @@ function doPost(e) {
 var AKSI_JADWAL_ = { tambahAcara: true, ubahAcara: true, geserAcara: true, tambahOrang: true, jadikanAnggota: true, ubahOrang: true };
 function api_sesudahTulis_(aksi, hasil) {
   if (!hasil || hasil.ok !== true) return;
-  // Tab baca-saja (Tim Peluncuran, Member, Visitor) ikut diperbarui setelah aksi tulis, paling cepat tiap 20 detik. Pemicu 5 menit menjadi jaring pengaman.
+  // Tab baca-saja (Tim Peluncuran, Member, Visitor) disusun ulang di latar belakang lewat pemicu satu kali, supaya aksi simpan tidak menunggu.
   try {
-    if (!Inti._tanpaLog[aksi]) api_segarkanTampilan_(false);
-  } catch (err) { console.warn('tampilan sheet gagal setelah ' + aksi + ': ' + err); }
+    if (!Inti._tanpaLog[aksi]) api_jadwalkanTampilan_();
+  } catch (err) { console.warn('jadwal tampilan sheet gagal setelah ' + aksi + ': ' + err); }
   if (!AKSI_JADWAL_[aksi]) return;
-  try { api_segarkanJendelaForm_(); } catch (err) { console.warn('jendela Form gagal setelah ' + aksi + ': ' + err); }
+  // Jendela acara di halaman daftar selalu disegarkan. Dropdown Google Form lama (sinkronPilihan, milik Lapis) hanya bila jendelanya berubah,
+  // karena memanggil Forms tiap simpan memperlambat. Pemicu tiap jam milik Lapis tetap menjadi jaring pengaman.
+  var berubah = false;
+  try { berubah = !!api_segarkanJendelaForm_(); } catch (err) { console.warn('jendela Form gagal setelah ' + aksi + ': ' + err); }
   try {
-    if (typeof sinkronPilihan === 'function') sinkronPilihan();
+    if (berubah && typeof sinkronPilihan === 'function') sinkronPilihan();
   } catch (err) {
     console.warn('sinkronPilihan gagal setelah ' + aksi + ': ' + err);
+  }
+}
+/* Pemicu satu kali (3 detik lagi) untuk menyusun tab tampilan, paling sering tiap 30 detik. Pemicu 5 menit tetap jaring pengaman. */
+function api_jadwalkanTampilan_() {
+  var cache = CacheService.getScriptCache();
+  if (cache.get('tampilan_jadwal')) return;
+  cache.put('tampilan_jadwal', '1', 30);
+  ScriptApp.newTrigger('api_segarkanTampilanTunda_').timeBased().after(3000).create();
+}
+function api_segarkanTampilanTunda_() {
+  try {
+    api_segarkanTampilan_(true);
+  } catch (err) {
+    console.warn('api_segarkanTampilanTunda_: ' + err);
+  } finally {
+    ScriptApp.getProjectTriggers().forEach(function (t) {
+      if (t.getHandlerFunction() === 'api_segarkanTampilanTunda_') { try { ScriptApp.deleteTrigger(t); } catch (x) {} }
+    });
   }
 }
 
@@ -149,7 +170,8 @@ function api_segarkanTampilan_(paksa) {
   return true;
 }
 function api_tulisTampilan_(ss, t, warna) {
-  var sh = ss.getSheetByName(t.tab) || ss.insertSheet(t.tab);
+  var sh = ss.getSheetByName(t.tab), baru = !sh;
+  if (!sh) sh = ss.insertSheet(t.tab);
   var lebar = t.kolom.length, tinggi = t.baris.length + 1;
   sh.clear();
   var data = [t.kolom].concat(t.baris.map(function (r) { return r.map(function (v) { return v == null ? '' : String(v); }); }));
@@ -163,7 +185,7 @@ function api_tulisTampilan_(ss, t, warna) {
   sh.setFrozenRows(1);
   sh.setFrozenColumns(1);
   sh.setTabColor(warna);
-  try { sh.autoResizeColumns(1, lebar); } catch (e) {}
+  if (baru) { try { sh.autoResizeColumns(1, lebar); } catch (e) {} }
   if (tinggi > 1) { try { area.createFilter(); } catch (e) {} }
 }
 /* Pemicu onEdit terpasang: edit tangan di sheet langsung membersihkan simpanan. */

@@ -151,9 +151,49 @@
     var a = document.activeElement;
     return !$lembar.hidden || (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
   }
+  /* Umpan balik tiap simpan: pil "Saving..." langsung muncul saat data dikirim, lalu "Saved" atau "Not saved".
+     Selama menyimpan, tombol redup dan tidak bisa ditekan dua kali. Garis tipis di atas menandai bacaan yang sedang dimuat. */
+  var $simpan = document.getElementById('simpan'), $garis = document.getElementById('muat-garis');
+  var sedangSimpan = 0, sedangBaca = 0, tundaSimpan = null, tundaLama = null, tundaGaris = null;
+  function ikonSimpan(jenis) {
+    return jenis === 'ok' ? '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : jenis === 'gagal' ? '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>' : '<i class="putar-simpan"></i>';
+  }
+  function tampilSimpan(jenis, teks) {
+    clearTimeout(tundaSimpan);
+    $simpan.className = 'simpan tampil ' + jenis;
+    $simpan.innerHTML = ikonSimpan(jenis) + '<span>' + esc(teks) + '</span>';
+    if (jenis !== 'proses') tundaSimpan = setTimeout(function () { $simpan.className = 'simpan'; }, jenis === 'ok' ? 1400 : 4500);
+  }
+  function mulaiSimpan() {
+    sedangSimpan++;
+    document.body.classList.add('menyimpan');
+    tampilSimpan('proses', 'Saving...');
+    clearTimeout(tundaLama);
+    tundaLama = setTimeout(function () { if (sedangSimpan) tampilSimpan('proses', 'Still saving, please wait...'); }, 7000);
+  }
+  function selesaiSimpan(ok) {
+    sedangSimpan = Math.max(0, sedangSimpan - 1);
+    if (sedangSimpan) return;
+    clearTimeout(tundaLama);
+    document.body.classList.remove('menyimpan');
+    tampilSimpan(ok ? 'ok' : 'gagal', ok ? 'Saved' : 'Not saved');
+  }
+  function mulaiBaca() {
+    sedangBaca++;
+    clearTimeout(tundaGaris);
+    tundaGaris = setTimeout(function () { if (sedangBaca) $garis.className = 'muat-garis aktif'; }, 350);
+  }
+  function selesaiBaca() {
+    sedangBaca = Math.max(0, sedangBaca - 1);
+    if (!sedangBaca) { clearTimeout(tundaGaris); $garis.className = 'muat-garis'; }
+  }
   async function api(aksi, data) {
     if (!BACA_CEPAT[aksi]) {
-      var w = await Api.panggil(aksi, data);
+      var catat = aksi !== 'masuk';
+      if (catat) mulaiSimpan();
+      var w, berhasil = false;
+      try { w = await Api.panggil(aksi, data); berhasil = !!(w && w.ok); } finally { if (catat) selesaiSimpan(berhasil); }
       if (!w.ok && /Access code not recognized/.test(w.pesan || '') && aksi !== 'masuk') keluar();
       if (w.ok && aksi !== 'masuk') kosongkanSimpanan();
       return w;
@@ -175,7 +215,9 @@
       }
       return JSON.parse(JSON.stringify(c.r));
     }
-    var r = await Api.panggil(aksi, data);
+    mulaiBaca();
+    var r;
+    try { r = await Api.panggil(aksi, data); } finally { selesaiBaca(); }
     if (!r.ok && /Access code not recognized/.test(r.pesan || '')) keluar();
     if (r.ok) { simpanan[kunci] = { r: JSON.parse(JSON.stringify(r)), t: Date.now() }; simpanSimpanan(); }
     return r;

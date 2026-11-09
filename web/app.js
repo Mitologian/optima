@@ -165,9 +165,30 @@
     $simpan.innerHTML = ikonSimpan(jenis) + '<span>' + esc(teks) + '</span>';
     if (jenis !== 'proses') tundaSimpan = setTimeout(function () { $simpan.className = 'simpan'; }, jenis === 'ok' ? 1400 : 4500);
   }
+  // Tombol yang baru saja diketuk ikut berubah: "Saving..." lalu hijau "Saved" (bila masih ada di layar). Pil di atas tetap tampil.
+  var tombolAktif = null, tombolWaktu = 0, tombolAsli = null;
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('button.tombol, .lembar-isi button[type=submit]');
+    if (b && !b.classList.contains('sedang-simpan')) { tombolAktif = b; tombolWaktu = Date.now(); }
+  }, true);
+  function tombolMulai() {
+    if (!tombolAktif || Date.now() - tombolWaktu > 2000 || !document.body.contains(tombolAktif) || tombolAsli) return;
+    tombolAsli = { el: tombolAktif, html: tombolAktif.innerHTML };
+    tombolAktif.classList.add('sedang-simpan');
+    tombolAktif.innerHTML = '<i class="putar-simpan"></i><span>Saving...</span>';
+  }
+  function tombolSelesai(ok) {
+    var t = tombolAsli; tombolAsli = null; tombolAktif = null;
+    if (!t || !document.body.contains(t.el)) return;
+    if (!ok) { t.el.classList.remove('sedang-simpan'); t.el.innerHTML = t.html; return; }
+    t.el.classList.remove('sedang-simpan'); t.el.classList.add('tersimpan');
+    t.el.innerHTML = '<svg viewBox="0 0 20 20" class="ikon-simpan" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Saved</span>';
+    setTimeout(function () { if (document.body.contains(t.el)) { t.el.classList.remove('tersimpan'); t.el.innerHTML = t.html; } }, 1100);
+  }
   function mulaiSimpan() {
     sedangSimpan++;
     document.body.classList.add('menyimpan');
+    tombolMulai();
     tampilSimpan('proses', 'Saving...');
     clearTimeout(tundaLama);
     tundaLama = setTimeout(function () { if (sedangSimpan) tampilSimpan('proses', 'Still saving, please wait...'); }, 7000);
@@ -177,6 +198,7 @@
     if (sedangSimpan) return;
     clearTimeout(tundaLama);
     document.body.classList.remove('menyimpan');
+    tombolSelesai(ok);
     tampilSimpan(ok ? 'ok' : 'gagal', ok ? 'Saved' : 'Not saved');
   }
   function mulaiBaca() {

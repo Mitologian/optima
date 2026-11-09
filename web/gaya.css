@@ -520,3 +520,7 @@ li.ketuk[data-o] { cursor: pointer; }
 @keyframes garis-muat { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
 body.menyimpan .tombol, body.menyimpan .lembar button[type=submit], body.menyimpan .lembar-isi button { pointer-events: none; opacity: .6; }
 @media (prefers-reduced-motion: reduce) { .putar-simpan, .muat-garis::before { animation-duration: 2.4s; } }
+.tombol.sedang-simpan, .lembar-isi button.sedang-simpan { opacity: 1 !important; display: inline-flex; align-items: center; justify-content: center; gap: 8px; filter: brightness(.88); }
+.tombol.tersimpan, .lembar-isi button.tersimpan { background: #1E7B43 !important; border-color: #1E7B43 !important; color: #fff !important; display: inline-flex; align-items: center; justify-content: center; gap: 8px; opacity: 1 !important; }
+.ikon-simpan { width: 16px; height: 16px; flex: none; }
+.tombol.kedua.sedang-simpan .putar-simpan { border-color: rgba(26,23,24,.25); border-top-color: var(--tinta); }

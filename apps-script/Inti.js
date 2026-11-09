@@ -867,6 +867,7 @@ var Inti = (function () {
   /* ---------- aksi ---------- */
 
   /* Aksi yang boleh dipanggil tanpa kode akses (halaman pendaftaran tamu). Harus memeriksa semua masukan sendiri. */
+  var VERSI_KODE = '2026-11-09.2';   // tampil di infoDaftar (publik) supaya deploy bisa dipastikan dari luar
   var PUBLIK = { infoDaftar: 1, daftarTamu: 1, cariPengundang: 1 };
   var HURUF_AJAK = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   function kodeAjakBaru(k) {
@@ -1176,6 +1177,7 @@ var Inti = (function () {
     infoDaftar: function (k, b) {
       var peng = teks(b.m) ? orangDariKodeAjak(k, b.m) : null;
       return {
+        versi: VERSI_KODE,
         chapter: teks(k.pengaturan().nama_chapter) || 'Optima',
         pengundang: peng ? teks(peng.nama) : '',
         acara: acaraBerikut(k).filter(function (e) { return e.di_form && JENIS_FORM.indexOf(e.jenis) >= 0; }).map(function (e) {

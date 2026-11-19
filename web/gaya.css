@@ -524,3 +524,5 @@ body.menyimpan .tombol, body.menyimpan .lembar button[type=submit], body.menyimp
 .tombol.tersimpan, .lembar-isi button.tersimpan { background: #1E7B43 !important; border-color: #1E7B43 !important; color: #fff !important; display: inline-flex; align-items: center; justify-content: center; gap: 8px; opacity: 1 !important; }
 .ikon-simpan { width: 16px; height: 16px; flex: none; }
 .tombol.kedua.sedang-simpan .putar-simpan { border-color: rgba(26,23,24,.25); border-top-color: var(--tinta); }
+.blok-sponsor { margin: 2px 0 12px; }
+.blok-sponsor [data-bag-sponsor] { margin: 8px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--kertas-2); }

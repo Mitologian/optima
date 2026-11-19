@@ -669,8 +669,9 @@
     bukaLembar('<div class="muat"></div>');
     var tugas = [id ? api('kursiDetail', { id_kursi: id }) : Promise.resolve({ ok: true, kursi: { id_kursi: '', bidang: 'Undecided classification', singkat: '?', sphere: 'No seat', status: 'kosong', jumlah_calon: 0, jumlah_butuh: 0, saya_butuh: false }, calon: [], calon_saya: [] })];
     tugas.push(api('acara'));
+    if (isLDC()) tugas.push(api('anggota'));
     var h = await Promise.all(tugas);
-    var d = h[0], ac = h[1];
+    var d = h[0], ac = h[1], dataSponsor = isLDC() && h[2] && h[2].ok ? h[2] : null;
     if (!d.ok) { bukaLembar('<p class="kosong-isi">' + esc(d.pesan) + '</p>'); return; }
     var x = d.kursi;
     var html = '<div class="tajuk">' + ubinKursi(x) + '<div><p class="kecil">' + esc(x.sphere) + '</p><h2>' + esc(x.bidang) + '</h2></div></div>';
@@ -708,6 +709,7 @@
         : '<label class="isian"><span>Classification (their type of business)</span><input name="bisnis" required autocomplete="off" placeholder="Example: Halal catering"></label>' +
           '<p class="kecil" style="margin:-6px 0 12px">Not on the seat list? Type it here. The launch team can add the seat once the person joins.</p>' + pilihKursiKosong('id_kursi', false)) +
       '<label class="isian"><span>WhatsApp' + (isLT() ? '' : ' (can be added later)') + '</span><input name="whatsapp" inputmode="tel" autocomplete="off" placeholder="08..."' + (isLT() ? ' required' : '') + '></label>' +
+      (dataSponsor ? blokSponsorLDC(dataSponsor, '') : '') +
       '<label class="saklar"><input type="checkbox" name="undang"><span>Invite right away<br><span class="kecil">Choose BOD, Lunch Networking or a coffee session after adding. WhatsApp number is required.</span></span></label>' +
       '<p class="pesan-salah" id="salah" hidden></p>' +
       '<button class="tombol" type="submit">Add name</button>' +
@@ -721,15 +723,19 @@
       var f = el.querySelector('#f-calon');
       var cek = f.querySelector('[name=undang]');
       if (cek) cek.onchange = function () { f.whatsapp.required = cek.checked || isLT(); };
+      pasangBlokSponsor(el);
       f.onsubmit = async function (e) {
         e.preventDefault();
         var tombol = f.querySelector('[type=submit]');
         tombol.disabled = true;
         var langsung = !!(cek && cek.checked);
         var data = { id_kursi: x.id_kursi || (f.id_kursi ? f.id_kursi.value : ''), nama: f.nama.value, bisnis: f.bisnis.value, whatsapp: f.whatsapp.value };
+        var salah = el.querySelector('#salah');
+        var spBeda = ambilBlokSponsor(f);
+        if (spBeda === null) { tombol.disabled = false; salah.textContent = 'Choose the sponsor, or type a name.'; salah.hidden = false; return; }
+        if (spBeda) data.sponsor_rencana = spBeda;
         var r = await api('tambahCalon', data);
         tombol.disabled = false;
-        var salah = el.querySelector('#salah');
         if (!r.ok) {
           var t = r.pesan;
           if (r.duplikat) t += ' (' + r.duplikat.nama_depan + (r.duplikat.tahap ? ', stage ' + lblTahap(r.duplikat.tahap) + ', PIC ' + (r.duplikat.pic || 'none yet') : '') + ')';
@@ -1411,7 +1417,7 @@
       var bisa = !u.status_undangan && u.tahap === 'Listed';
       var ketuk = !bisa && ['Invited', 'Attended', 'Coffee_Scheduled'].indexOf(u.tahap) >= 0;
       var info = u.tahap === 'Coffee_Scheduled' && u.jadwal_cs ? ' · Coffee ' + jamCS(u.jadwal_cs).hari + ' ' + jamCS(u.jadwal_cs).jam : (u.tanggal_undangan ? ' · ' + esc(u.acara_undangan) + ', ' + esc(tglPendek(u.tanggal_undangan)) : '');
-      var isiBaris = '<div class="utama"><b>' + esc(u.nama) + '</b><span>' + esc(u.bidang) + info + '</span></div>';
+      var isiBaris = '<div class="utama"><b>' + esc(u.nama) + '</b><span>' + esc(u.bidang) + info + (isLDC() && u.sponsor_nama ? ' · Sponsor ' + esc(u.sponsor_nama) : '') + '</span></div>';
       return '<li>' + (ketuk ? '<button class="ketuk" data-buka="' + esc(u.id_orang) + '" style="flex:1;min-width:0">' + isiBaris + '</button>' : isiBaris) + ikonWa(u.whatsapp, u.nama) +
         (bisa ? '<button class="tombol kecil" data-undang="' + esc(u.id_orang) + '">' + 'Invite' + '</button>' : chipUndangan(u)) + '</li>';
     }
@@ -1652,7 +1658,8 @@
       if (segCalon === 'done') return '<button class="tombol kecil" data-aksi="terima" data-id="' + esc(c.id_orang) + '">Joined</button>';
       return '<button class="tombol kecil kedua" data-aksi="buka" data-id="' + esc(c.id_orang) + '">Reopen</button>';
     }
-    function sub(c) {
+    function sub(c) { return isLDC() && c.sponsor_nama ? sub0(c) + ' · Sponsor ' + c.sponsor_nama : sub0(c); }
+    function sub0(c) {
       var diam = c.hari_diam ? c.hari_diam + ' days idle' : 'today';
       if (segCalon === 'cs') return (c.tahap === 'Coffee_Session' ? 'Interviewed' : (c.jadwal_cs ? jamCS(c.jadwal_cs).hari + ' ' + jamCS(c.jadwal_cs).jam : 'time not set'));
       if (segCalon === 'done') return 'Waiting for payment';
@@ -1743,26 +1750,52 @@
   function pilihSponsor(r, nilai, opsi) {
     opsi = opsi || {};
     var manual = /^Luar: /.test(nilai || '');
+    var mentah = manual ? nilai.replace(/^Luar: /, '') : '';
+    var cocok = mentah.match(/^(.*?)\s*\(([^()]*)\)\s*$/);
+    var namaLuar = cocok ? cocok[1] : mentah, chapterLuar = cocok ? cocok[2] : '';
     function o(v, t) { return '<option value="' + esc(v) + '"' + (v === (manual ? '__manual' : nilai) ? ' selected' : '') + '>' + esc(t) + '</option>'; }
     var anggota = (r.anggota || []).filter(function (m) { return m.id_orang !== opsi.kecuali; });
     return '<label class="isian"><span>Sponsor</span><select name="id_sponsor" data-sponsor>' +
       (opsi.kosong ? '<option value="">' + esc(opsi.kosong) + '</option>' : '') +
       (anggota.length ? '<optgroup label="Members">' + anggota.map(function (m) { return o(m.id_orang, m.nama); }).join('') + '</optgroup>' : '') +
       ((r.pendiri || []).length ? '<optgroup label="LDC and launch team">' + r.pendiri.filter(function (m) { return m.id_orang !== opsi.kecuali; }).map(function (m) { return o(m.id_orang, m.nama); }).join('') + '</optgroup>' : '') +
-      '<optgroup label="Other">' + o('BNI', 'BNI Indonesia (no one known personally)') + o('__manual', 'Someone else (type the name)') + '</optgroup>' +
+      '<optgroup label="Other">' + o('BNI', 'BNI Indonesia (no one known personally)') + o('__manual', 'Someone else (other chapter)') + '</optgroup>' +
       '</select></label>' +
-      '<label class="isian" data-sponsor-manual' + (manual ? '' : ' hidden') + '><span>Sponsor name</span><input name="sponsor_manual" maxlength="60" autocomplete="off" placeholder="Name, and chapter if known" value="' + esc(manual ? nilai.replace(/^Luar: /, '') : '') + '"></label>';
+      '<div data-sponsor-manual' + (manual ? '' : ' hidden') + '>' +
+        '<label class="isian"><span>Sponsor name</span><input name="sponsor_manual" maxlength="60" autocomplete="off" placeholder="Full name" value="' + esc(namaLuar) + '"></label>' +
+        '<label class="isian"><span>Chapter</span><input name="sponsor_chapter" maxlength="36" autocomplete="off" placeholder="Example: BNI Garuda (leave empty if none)" value="' + esc(chapterLuar) + '"></label>' +
+      '</div>';
   }
   function pasangSponsor(el) {
     var sel = el.querySelector('[data-sponsor]'), box = el.querySelector('[data-sponsor-manual]');
     if (!sel) return;
     sel.onchange = function () { box.hidden = sel.value !== '__manual'; if (!box.hidden) box.querySelector('input').focus(); };
   }
-  /* Nilai yang dikirim ke server, atau null bila nama bebas masih kosong. */
+  /* Nilai yang dikirim ke server, atau null bila nama bebas masih kosong. Orang luar ditulis "Luar: Nama (Chapter)". */
   function ambilSponsor(f) {
     if (f.id_sponsor.value !== '__manual') return f.id_sponsor.value;
-    var t = f.sponsor_manual.value.trim();
-    return t.length >= 2 ? 'Luar: ' + t : null;
+    var t = f.sponsor_manual.value.trim(), ch = f.sponsor_chapter ? f.sponsor_chapter.value.trim() : '';
+    return t.length >= 2 ? 'Luar: ' + t + (ch ? ' (' + ch + ')' : '') : null;
+  }
+  /* Khusus LDC: pengundang tetap yang menambah nama, sponsor bisa orang lain (member chapter lain, BNI Indonesia, atau orang luar).
+     Kosong berarti sponsor mengikuti pengundang. Sponsor inilah yang mendapat kredit saat calon bergabung. */
+  function blokSponsorLDC(r, nilai) {
+    var aktif = !!nilai;
+    return '<div class="blok-sponsor"><label class="saklar"><input type="checkbox" name="sponsor_beda"' + (aktif ? ' checked' : '') + '><span>Sponsor is not me<br><span class="kecil">Tick when someone else gets the credit: a member of this or another chapter, or BNI Indonesia.</span></span></label>' +
+      '<div data-bag-sponsor' + (aktif ? '' : ' hidden') + '>' + pilihSponsor(r, nilai || '', { kosong: 'Choose a sponsor' }) + '</div></div>';
+  }
+  function pasangBlokSponsor(el) {
+    var cek = el.querySelector('[name=sponsor_beda]'), bag = el.querySelector('[data-bag-sponsor]');
+    if (!cek) return;
+    pasangSponsor(el);
+    cek.onchange = function () { bag.hidden = !cek.checked; };
+  }
+  /* '' bila tidak dicentang, nilai sponsor bila dicentang, null bila dicentang tetapi belum diisi. */
+  function ambilBlokSponsor(f) {
+    if (!f.sponsor_beda) return '';
+    if (!f.sponsor_beda.checked) return '';
+    var v = ambilSponsor(f);
+    return v || null;
   }
 
   async function lembarAnggota(c, segarkan) {
@@ -1771,7 +1804,7 @@
     if (!S.cache.kursi) { var kr = await api('kursi'); if (kr.ok) S.cache.kursi = kr.baris; }
     bukaLembar(
       '<h2>' + esc(c.nama.split(/\s+/)[0]) + ' joined</h2><p class="kecil" style="margin:4px 0 0">Confirm once the membership payment is in.</p><p class="kecil" style="margin:6px 0 14px">Seat: <b>' + esc(c.bidang) + '</b>. Type: ' + (S.atur.fase === 'Pembentukan' ? 'Founding' : 'Core Group') + '.</p>' +
-      '<form id="f-ang">' + pilihKursiAnggota('id_kursi', c.id_kursi, c.bisnis) + '' + pilihSponsor(r, '', { kosong: 'Choose a sponsor' }) +
+      '<form id="f-ang">' + pilihKursiAnggota('id_kursi', c.id_kursi, c.bisnis) + '' + pilihSponsor(r, c.sponsor_default || '', { kosong: 'Choose a sponsor' }) +
       '<p class="kecil" style="margin:-4px 0 14px">BNI rule: the sponsor is the member who invited the prospect and is known to them personally. If there is none, choose BNI Indonesia, unless the prospect names a specific person. Someone outside the list can be typed in.</p>' +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Confirm</button></form>',
       function (el) {
@@ -1863,17 +1896,27 @@
   }
 
   /* ---------- Perbaikan alur undangan: ubah data calon, ganti acara, batalkan, tamu tanpa daftar ---------- */
-  function lembarUbahCalon(c, segarkan) {
+  async function lembarUbahCalon(c, segarkan) {
+    var dataSponsor = null;
+    if (isLDC()) { bukaLembar('<div class="muat"></div>'); var ra = await api('anggota'); if (ra.ok) dataSponsor = ra; }
     bukaLembar('<h2>Edit details</h2><p class="kecil" style="margin:4px 0 12px">Fix a typo in the name, number, or business. The number must not belong to someone else on the list.</p>' +
       '<form id="f-ubah"><label class="isian"><span>Full name</span><input name="nama" required value="' + esc(c.nama) + '"></label>' +
       '<label class="isian"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" value="' + esc(c.whatsapp || '') + '" placeholder="08..."></label>' +
       '<label class="isian"><span>Business</span><input name="bisnis" value="' + esc(c.bisnis || '') + '"></label>' +
+      (dataSponsor ? blokSponsorLDC(dataSponsor, c.sponsor_rencana || '') : '') +
       '<p class="pesan-salah" id="salah" hidden></p><button class="tombol" type="submit">Save</button></form>',
       function (el) {
+        pasangBlokSponsor(el);
         el.querySelector('#f-ubah').onsubmit = async function (e) {
           e.preventDefault();
           var f = e.target;
-          var h = await api('ubahCalonSaya', { id_orang: c.id_orang, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value });
+          var badan = { id_orang: c.id_orang, nama: f.nama.value, whatsapp: f.whatsapp.value, bisnis: f.bisnis.value };
+          if (dataSponsor) {
+            var sp = ambilBlokSponsor(f);
+            if (sp === null) { var s1 = el.querySelector('#salah'); s1.textContent = 'Choose the sponsor, or type a name.'; s1.hidden = false; return; }
+            badan.sponsor_rencana = sp;
+          }
+          var h = await api('ubahCalonSaya', badan);
           if (!h.ok) { var s0 = el.querySelector('#salah'); s0.textContent = h.pesan; s0.hidden = false; return; }
           tutupLembar(); toast('Saved.'); if (segarkan) segarkan();
         };

@@ -649,12 +649,19 @@ var Inti = (function () {
     if (sp.toLowerCase().indexOf('luar:') === 0) {
       var nama = sp.slice(5).replace(/\s+/g, ' ').trim();
       if (nama.length < 2) gagal('Type the sponsor name.');
-      if (nama.length > 60) gagal('The sponsor name is too long.');
+      if (nama.length > 100) gagal('The sponsor name is too long.');
       return AWALAN_LUAR + nama;
     }
     var so = k.orang(sp);
     if (!so || !(timPendiri(so) || teks(so.tahap) === 'Anggota')) gagal('The sponsor must be a chapter member, the LDC or launch team, BNI Indonesia, or a typed name.');
     return sp;
+  }
+  /* Sponsor rencana: sponsor yang berbeda dari pengundang, dicatat sejak calon ditambahkan. Hanya LDC yang mengaturnya. Kosong = sponsor mengikuti pengundang.
+     Kredit tetap jatuh ke Master.id_sponsor saat calon resmi bergabung, dan nilai ini menjadi isian awalnya. */
+  function sponsorRencana(k, v) {
+    if (!k.isLDC()) gagal('Only the LDC can set a sponsor different from the inviter.');
+    v = teks(v);
+    return v ? cekSponsor(k, v) : '';
   }
   /* Nama sponsor untuk ditampilkan. */
   function namaSponsor(k, sp) {
@@ -867,7 +874,7 @@ var Inti = (function () {
   /* ---------- aksi ---------- */
 
   /* Aksi yang boleh dipanggil tanpa kode akses (halaman pendaftaran tamu). Harus memeriksa semua masukan sendiri. */
-  var VERSI_KODE = '2026-11-09.2';   // tampil di infoDaftar (publik) supaya deploy bisa dipastikan dari luar
+  var VERSI_KODE = '2026-11-19.1';   // tampil di infoDaftar (publik) supaya deploy bisa dipastikan dari luar
   var PUBLIK = { infoDaftar: 1, daftarTamu: 1, cariPengundang: 1 };
   var HURUF_AJAK = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   function kodeAjakBaru(k) {
@@ -982,7 +989,7 @@ var Inti = (function () {
         id_kursi: x ? x.id_kursi : '', kota: '', sumber: 'app', kategori: 'Calon', tahap: 'Listed', jenis_anggota: '',
         tanggal_bergabung: '', id_sponsor: '', PIC: k.isLT() ? k.saya.id_orang : '', diajukan_oleh: k.saya.id_orang,
         tanggal_masuk: k.now.toISOString(), tanggal_sentuh: k.now.toISOString(), alasan_tidak_lanjut: '', catatan: '',
-        terakhir_diubah: k.now.toISOString(), jadwal_cs: ''
+        terakhir_diubah: k.now.toISOString(), jadwal_cs: '', sponsor_rencana: teks(b.sponsor_rencana) ? sponsorRencana(k, b.sponsor_rencana) : ''
       };
       k.tambah('Master', o);
       k._idx = null;
@@ -1030,7 +1037,7 @@ var Inti = (function () {
           var x = kursiById(k, r.id_kursi);
           var u = terakhir[teks(r.id_orang)], e = u ? acara[teks(u.id_event)] : null;
           return { id_orang: teks(r.id_orang), nama: teks(r.nama), bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), punya_wa: !!teks(r.whatsapp_norm), whatsapp: teks(r.whatsapp_norm), bisnis: teks(r.bisnis), jumlah_undangan: hitung[teks(r.id_orang)] || 0,
-            jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '', status_undangan: u ? teks(u.status) : '', acara_undangan: e ? teks(e.nama_acara) : '', tanggal_undangan: e && tgl(e.tanggal) ? isoTanggal(tgl(e.tanggal)) : '',
+            jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '', sponsor_rencana: teks(r.sponsor_rencana), sponsor_nama: namaSponsor(k, r.sponsor_rencana), status_undangan: u ? teks(u.status) : '', acara_undangan: e ? teks(e.nama_acara) : '', tanggal_undangan: e && tgl(e.tanggal) ? isoTanggal(tgl(e.tanggal)) : '',
             id_event_undangan: u ? teks(u.id_event) : '',
             acara_detail: e && tgl(e.tanggal) ? { id_event: teks(e.id_event), tanggal: isoTanggal(tgl(e.tanggal)), jam_mulai: jamEv(e.jam_mulai), jam_selesai: jamEv(e.jam_selesai), nama_acara: teks(e.nama_acara), jenis: teks(e.jenis), mode: teks(e.mode), lokasi: teks(e.lokasi) } : null };
         }).reverse()
@@ -1105,7 +1112,7 @@ var Inti = (function () {
       return {
         calon: k.tab('Master').filter(function (r) { return teks(r.kategori) === 'Calon' && TAHAP_LT.indexOf(teks(r.tahap)) >= 0; }).filter(function (r) { return semua || teks(r.PIC) === id || (!teks(r.PIC) && k.isLDC()); }).map(function (r) {
           var x = kursiById(k, r.id_kursi);
-          return { id_orang: teks(r.id_orang), nama: teks(r.nama), bisnis: teks(r.bisnis), id_kursi: x ? x.id_kursi : '', bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), whatsapp: teks(r.whatsapp_norm), hari_diam: k.hariDiam(r), pic: namaDepan(k.orang(r.PIC)) || 'None yet', jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '', alasan: teks(r.alasan_tidak_lanjut), status_undangan: statusU(r), acara_undangan: acaraU(r) };
+          return { id_orang: teks(r.id_orang), nama: teks(r.nama), bisnis: teks(r.bisnis), id_kursi: x ? x.id_kursi : '', bidang: x ? x.bidang : 'Undecided classification', tahap: teks(r.tahap), whatsapp: teks(r.whatsapp_norm), hari_diam: k.hariDiam(r), pic: namaDepan(k.orang(r.PIC)) || 'None yet', jadwal_cs: tgl(r.jadwal_cs) ? tgl(r.jadwal_cs).toISOString() : '', alasan: teks(r.alasan_tidak_lanjut), status_undangan: statusU(r), acara_undangan: acaraU(r), diajukan_id: teks(r.diajukan_oleh), sponsor_rencana: teks(r.sponsor_rencana), sponsor_nama: namaSponsor(k, r.sponsor_rencana), sponsor_default: teks(r.sponsor_rencana) || teks(r.diajukan_oleh) };
         }).sort(function (a, b) { return b.hari_diam - a.hari_diam; })
       };
     },
@@ -1280,11 +1287,15 @@ var Inti = (function () {
         if (kembar) gagal('This number is already used by ' + namaDepan(kembar) + ' on the chapter list.');
         ubah.whatsapp_norm = wa;
       }
+      if (b.sponsor_rencana !== undefined) {
+        var baru = sponsorRencana(k, b.sponsor_rencana);
+        if (baru !== teks(o.sponsor_rencana)) ubah.sponsor_rencana = baru;
+      }
       if (!Object.keys(ubah).length) gagal('Nothing to change.');
       ubah.terakhir_diubah = k.now.toISOString();
       k.ubah('Master', o, ubah);
       k.log('ubahCalonSaya', teks(o.id_orang) + ': ' + Object.keys(ubah).join(', '));
-      return { nama: teks(o.nama), whatsapp: teks(o.whatsapp_norm), bisnis: teks(o.bisnis) };
+      return { nama: teks(o.nama), whatsapp: teks(o.whatsapp_norm), bisnis: teks(o.bisnis), sponsor_rencana: teks(o.sponsor_rencana) };
     },
 
     /* Pengundang (atau LT) membatalkan undangan atau menggantinya ke acara lain, selama tamu belum mendaftar. */
@@ -1425,7 +1436,7 @@ var Inti = (function () {
       if (!o) gagal('Person not found.');
       if (teks(o.tahap) === 'Anggota') gagal(namaDepan(o) + ' is already a member.');
       if (timPendiri(o)) gagal('Launch team members are founders, not chapter members.');
-      var sp = cekSponsor(k, b.id_sponsor);
+      var sp = cekSponsor(k, teks(b.id_sponsor) || teks(o.sponsor_rencana));
       var x;
       if (b.kursi_baru) x = buatKursi(k, b.kursi_baru);
       else {
@@ -2491,7 +2502,7 @@ var Inti = (function () {
         }
         if (tahap === 'Coffee_Scheduled' && teks(o.jadwal_cs)) status += ' (' + teks(o.jadwal_cs).replace('T', ' ').slice(0, 16) + ' UTC)';
         var peng = u && teks(u.id_pengundang) ? nama(u.id_pengundang) : nama(o.diajukan_oleh);
-        visitor.push([teks(o.nama), teks(o.perusahaan), bidang || (kursi[teks(o.id_kursi)] || ''), wa, teks(o.email), peng, status,
+        visitor.push([teks(o.nama), teks(o.perusahaan), bidang || (kursi[teks(o.id_kursi)] || ''), wa, teks(o.email), peng, lengkapSponsor(o.sponsor_rencana) || (peng ? peng + ' (pengundang)' : ''), status,
           ev ? tanggalPendekSheet(ev.tanggal) + ' ' + (teks(ev.jenis) === 'BOD' ? 'BOD' : teks(ev.nama_acara)) : '', u && teks(u.konfirmasi_oleh) ? 'Sudah (' + nama(u.konfirmasi_oleh) + ')' : '', teks(o.sumber)]);
       }
     });
@@ -2499,7 +2510,7 @@ var Inti = (function () {
     return {
       tim: { tab: 'Tim Peluncuran', kolom: ['Nama lengkap', 'Peran', 'WhatsApp', 'Email', 'Nama bisnis', 'Bidang bisnis', 'Kode akses', 'Masuk'], baris: tim },
       member: { tab: 'Member', kolom: ['Nama lengkap', 'Nama bisnis', 'Bidang bisnis', 'Seat', 'WhatsApp', 'Email', 'Sponsor', 'Kode akses', 'Jenis', 'Tim', 'Bergabung'], baris: member },
-      visitor: { tab: 'Visitor', kolom: ['Nama lengkap', 'Nama bisnis', 'Bidang bisnis', 'WhatsApp', 'Email', 'Diundang oleh', 'Status sekarang', 'Acara', 'Konfirmasi H-1', 'Sumber'], baris: visitor }
+      visitor: { tab: 'Visitor', kolom: ['Nama lengkap', 'Nama bisnis', 'Bidang bisnis', 'WhatsApp', 'Email', 'Diundang oleh', 'Sponsor', 'Status sekarang', 'Acara', 'Konfirmasi H-1', 'Sumber'], baris: visitor }
     };
   }
 

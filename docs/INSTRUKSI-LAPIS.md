@@ -290,3 +290,5 @@ Mohon dipertimbangkan Lapis (di sisi Form dan normalisasi):
 6. (3 November 2026) Server: aksi beranda (misi) kini juga mengembalikan mulai, sekarang, tanggal_esm, dan tanggal_launch untuk grafik pertumbuhan. Tidak ada perubahan sheet. Gabung dalam satu deploy.
 
 7. (9 November 2026) Kecepatan simpan. Api.js: tab tampilan (Tim Peluncuran, Member, Visitor) kini disusun lewat pemicu satu kali yang dibuat otomatis setelah aksi tulis (fungsi api_jadwalkanTampilan_, penangannya api_segarkanTampilanTunda_ menghapus pemicunya sendiri), tidak lagi di dalam aksi simpan. sinkronPilihan() hanya dipanggil bila jendela acara tamu berubah. Tidak ada perubahan sheet, dan tidak perlu memasang pemicu manual. Bila otorisasi baru diminta saat deploy (ScriptApp), izinkan. Tolong cek di Triggers bahwa tidak ada pemicu api_segarkanTampilanTunda_ yang menumpuk (maksimal satu atau dua sesaat sesudah simpan).
+
+8. (19 November 2026) Kolom baru `Master.sponsor_rencana` (ditambah otomatis). Tab Visitor mendapat kolom Sponsor (tab disusun ulang otomatis). Perubahan di `Inti.js` dan `Api.js`. Penanda versi: `2026-11-19.1` pada `infoDaftar`.

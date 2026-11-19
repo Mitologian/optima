@@ -101,7 +101,7 @@ var TAB_BARU_ = {
 };
 var KOLOM_BARU_ = {
   Events: ['pembicara', 'poster', 'pembuka', 'judul_topik', 'biaya', 'tautan_lokasi'],
-  Master: ['driver', 'tim', 'kode_ajak'],
+  Master: ['driver', 'tim', 'kode_ajak', 'sponsor_rencana'],
   Undangan: ['konfirmasi_oleh', 'konfirmasi_waktu', 'konfirmasi_acara']
 };
 

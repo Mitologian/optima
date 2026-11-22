@@ -330,3 +330,6 @@ function api_ujiMasuk() {
   var hasil = Inti.jalankan(api_adaptor_(), { action: 'beranda', kode: kode }, new Date());
   console.log(JSON.stringify(hasil, null, 2));
 }
+
+/* Pembungkus publik: fungsi berakhiran garis bawah tidak muncul di menu Run editor, jadi jalankan ini sekali dari editor. */
+function pasangPemicu() { api_pasangPemicu_(); }

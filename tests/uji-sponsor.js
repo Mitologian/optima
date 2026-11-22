@@ -24,9 +24,9 @@ vm.runInContext(fs.readFileSync(path.join(akar, 'web/tiruan.js'), 'utf8') + '\nt
   cek('calonSaya membawa nama sponsor dan isian awal', c1 && c1.sponsor_nama === 'Budi Santoso (BNI Garuda)' && c1.sponsor_default === 'Luar: Budi Santoso (BNI Garuda)', JSON.stringify(c1));
 
   r = await call('AGT001', 'tambahCalon', { nama: 'Calon Anggota', bisnis: 'Foto', whatsapp: '0813 9000 0002', sponsor_rencana: 'BNI' });
-  cek('anggota tidak boleh mengatur sponsor berbeda', !r.ok && /LDC/.test(r.pesan), JSON.stringify(r));
+  cek('anggota tidak boleh mengatur sponsor berbeda', !r.ok && /launch team/.test(r.pesan), JSON.stringify(r));
   r = await call('LT0001', 'tambahCalon', { nama: 'Calon LT', bisnis: 'Foto', whatsapp: '0813 9000 0003', sponsor_rencana: 'BNI' });
-  cek('LT tidak boleh mengatur sponsor berbeda', !r.ok && /LDC/.test(r.pesan), JSON.stringify(r));
+  cek('LT boleh mengatur sponsor berbeda', r.ok, JSON.stringify(r));
   r = await call('LDC001', 'tambahCalon', { nama: 'Calon Salah', bisnis: 'X', whatsapp: '0813 9000 0004', sponsor_rencana: 'P9999' });
   cek('sponsor yang bukan member ditolak', !r.ok, JSON.stringify(r));
 
@@ -46,7 +46,10 @@ vm.runInContext(fs.readFileSync(path.join(akar, 'web/tiruan.js'), 'utf8') + '\nt
   r = await call('LDC001', 'ubahCalonSaya', { id_orang: id4, sponsor_rencana: '' });
   cek('LDC mengosongkan sponsor berbeda', r.ok && r.sponsor_rencana === '', JSON.stringify(r));
   r = await call('LT0001', 'ubahCalonSaya', { id_orang: id4, sponsor_rencana: 'BNI' });
-  cek('LT tidak boleh mengubah sponsor', !r.ok && /LDC/.test(r.pesan), JSON.stringify(r));
+  cek('LT boleh mengubah sponsor', r.ok && r.sponsor_rencana === 'BNI', JSON.stringify(r));
+  r = await call('AGT001', 'ubahCalonSaya', { id_orang: id4, sponsor_rencana: 'BNI' });
+  cek('anggota tidak boleh mengubah sponsor', !r.ok, JSON.stringify(r));
+  r = await call('LDC001', 'ubahCalonSaya', { id_orang: id4, sponsor_rencana: '' });
 
   let tv = await T.tampilan();
   const v1 = tv.visitor.baris.find(b => b[0] === 'Calon Satu'), v4 = tv.visitor.baris.find(b => b[0] === 'Calon Empat');

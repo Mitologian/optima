@@ -338,7 +338,7 @@
   /* Memanaskan simpanan: layar lain yang mungkin dibuka berikutnya dimuat diam-diam. */
   function panaskan() {
     if (!S.profil) return;
-    ['kursi', 'pengumuman', 'undanganSaya'].concat(isLT() ? ['calonSaya', 'acara'].concat(isLDC() ? ['orangSemua', 'timDaftar', 'anggota'] : []) : ['papan', 'timPapan']).forEach(function (a) { api(a, a === 'calonSaya' ? {} : undefined); });
+    ['kursi', 'pengumuman', 'undanganSaya'].concat(isLT() ? ['calonSaya', 'acara', 'anggota'].concat(isLDC() ? ['orangSemua', 'timDaftar'] : []) : ['papan', 'timPapan']).forEach(function (a) { api(a, a === 'calonSaya' ? {} : undefined); });
   }
 
   async function coba(kode) {
@@ -669,9 +669,9 @@
     bukaLembar('<div class="muat"></div>');
     var tugas = [id ? api('kursiDetail', { id_kursi: id }) : Promise.resolve({ ok: true, kursi: { id_kursi: '', bidang: 'Undecided classification', singkat: '?', sphere: 'No seat', status: 'kosong', jumlah_calon: 0, jumlah_butuh: 0, saya_butuh: false }, calon: [], calon_saya: [] })];
     tugas.push(api('acara'));
-    if (isLDC()) tugas.push(api('anggota'));
+    if (isLT()) tugas.push(api('anggota'));
     var h = await Promise.all(tugas);
-    var d = h[0], ac = h[1], dataSponsor = isLDC() && h[2] && h[2].ok ? h[2] : null;
+    var d = h[0], ac = h[1], dataSponsor = isLT() && h[2] && h[2].ok ? h[2] : null;
     if (!d.ok) { bukaLembar('<p class="kosong-isi">' + esc(d.pesan) + '</p>'); return; }
     var x = d.kursi;
     var html = '<div class="tajuk">' + ubinKursi(x) + '<div><p class="kecil">' + esc(x.sphere) + '</p><h2>' + esc(x.bidang) + '</h2></div></div>';
@@ -1417,7 +1417,7 @@
       var bisa = !u.status_undangan && u.tahap === 'Listed';
       var ketuk = !bisa && ['Invited', 'Attended', 'Coffee_Scheduled'].indexOf(u.tahap) >= 0;
       var info = u.tahap === 'Coffee_Scheduled' && u.jadwal_cs ? ' · Coffee ' + jamCS(u.jadwal_cs).hari + ' ' + jamCS(u.jadwal_cs).jam : (u.tanggal_undangan ? ' · ' + esc(u.acara_undangan) + ', ' + esc(tglPendek(u.tanggal_undangan)) : '');
-      var isiBaris = '<div class="utama"><b>' + esc(u.nama) + '</b><span>' + esc(u.bidang) + info + (isLDC() && u.sponsor_nama ? ' · Sponsor ' + esc(u.sponsor_nama) : '') + '</span></div>';
+      var isiBaris = '<div class="utama"><b>' + esc(u.nama) + '</b><span>' + esc(u.bidang) + info + (isLT() && u.sponsor_nama ? ' · Sponsor ' + esc(u.sponsor_nama) : '') + '</span></div>';
       return '<li>' + (ketuk ? '<button class="ketuk" data-buka="' + esc(u.id_orang) + '" style="flex:1;min-width:0">' + isiBaris + '</button>' : isiBaris) + ikonWa(u.whatsapp, u.nama) +
         (bisa ? '<button class="tombol kecil" data-undang="' + esc(u.id_orang) + '">' + 'Invite' + '</button>' : chipUndangan(u)) + '</li>';
     }
@@ -1658,7 +1658,7 @@
       if (segCalon === 'done') return '<button class="tombol kecil" data-aksi="terima" data-id="' + esc(c.id_orang) + '">Joined</button>';
       return '<button class="tombol kecil kedua" data-aksi="buka" data-id="' + esc(c.id_orang) + '">Reopen</button>';
     }
-    function sub(c) { return isLDC() && c.sponsor_nama ? sub0(c) + ' · Sponsor ' + c.sponsor_nama : sub0(c); }
+    function sub(c) { return isLT() && c.sponsor_nama ? sub0(c) + ' · Sponsor ' + c.sponsor_nama : sub0(c); }
     function sub0(c) {
       var diam = c.hari_diam ? c.hari_diam + ' days idle' : 'today';
       if (segCalon === 'cs') return (c.tahap === 'Coffee_Session' ? 'Interviewed' : (c.jadwal_cs ? jamCS(c.jadwal_cs).hari + ' ' + jamCS(c.jadwal_cs).jam : 'time not set'));
@@ -1777,7 +1777,7 @@
     var t = f.sponsor_manual.value.trim(), ch = f.sponsor_chapter ? f.sponsor_chapter.value.trim() : '';
     return t.length >= 2 ? 'Luar: ' + t + (ch ? ' (' + ch + ')' : '') : null;
   }
-  /* Khusus LDC: pengundang tetap yang menambah nama, sponsor bisa orang lain (member chapter lain, BNI Indonesia, atau orang luar).
+  /* Khusus LDC dan LT: pengundang tetap yang menambah nama, sponsor bisa orang lain (member chapter lain, BNI Indonesia, atau orang luar).
      Kosong berarti sponsor mengikuti pengundang. Sponsor inilah yang mendapat kredit saat calon bergabung. */
   function blokSponsorLDC(r, nilai) {
     var aktif = !!nilai;
@@ -1898,7 +1898,7 @@
   /* ---------- Perbaikan alur undangan: ubah data calon, ganti acara, batalkan, tamu tanpa daftar ---------- */
   async function lembarUbahCalon(c, segarkan) {
     var dataSponsor = null;
-    if (isLDC()) { bukaLembar('<div class="muat"></div>'); var ra = await api('anggota'); if (ra.ok) dataSponsor = ra; }
+    if (isLT()) { bukaLembar('<div class="muat"></div>'); var ra = await api('anggota'); if (ra.ok) dataSponsor = ra; }
     bukaLembar('<h2>Edit details</h2><p class="kecil" style="margin:4px 0 12px">Fix a typo in the name, number, or business. The number must not belong to someone else on the list.</p>' +
       '<form id="f-ubah"><label class="isian"><span>Full name</span><input name="nama" required value="' + esc(c.nama) + '"></label>' +
       '<label class="isian"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" value="' + esc(c.whatsapp || '') + '" placeholder="08..."></label>' +

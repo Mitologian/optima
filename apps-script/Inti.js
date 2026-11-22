@@ -656,10 +656,10 @@ var Inti = (function () {
     if (!so || !(timPendiri(so) || teks(so.tahap) === 'Anggota')) gagal('The sponsor must be a chapter member, the LDC or launch team, BNI Indonesia, or a typed name.');
     return sp;
   }
-  /* Sponsor rencana: sponsor yang berbeda dari pengundang, dicatat sejak calon ditambahkan. Hanya LDC yang mengaturnya. Kosong = sponsor mengikuti pengundang.
+  /* Sponsor rencana: sponsor yang berbeda dari pengundang, dicatat sejak calon ditambahkan. Hanya LDC dan LT yang mengaturnya. Kosong = sponsor mengikuti pengundang.
      Kredit tetap jatuh ke Master.id_sponsor saat calon resmi bergabung, dan nilai ini menjadi isian awalnya. */
   function sponsorRencana(k, v) {
-    if (!k.isLDC()) gagal('Only the LDC can set a sponsor different from the inviter.');
+    if (!k.isLT()) gagal('Only the launch team can set a sponsor different from the inviter.');
     v = teks(v);
     return v ? cekSponsor(k, v) : '';
   }
@@ -874,7 +874,7 @@ var Inti = (function () {
   /* ---------- aksi ---------- */
 
   /* Aksi yang boleh dipanggil tanpa kode akses (halaman pendaftaran tamu). Harus memeriksa semua masukan sendiri. */
-  var VERSI_KODE = '2026-11-19.1';   // tampil di infoDaftar (publik) supaya deploy bisa dipastikan dari luar
+  var VERSI_KODE = '2026-11-22.1';   // tampil di infoDaftar (publik) supaya deploy bisa dipastikan dari luar
   var PUBLIK = { infoDaftar: 1, daftarTamu: 1, cariPengundang: 1 };
   var HURUF_AJAK = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   function kodeAjakBaru(k) {

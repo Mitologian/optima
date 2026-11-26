@@ -551,7 +551,15 @@ var Inti = (function () {
   }
   function daftarPendamping(r) { return teks(r.pendamping).split(',').map(teks).filter(Boolean); }
   function jamEv(v) { return v instanceof Date ? jamWIB(v) : teks(v).replace(/^(\d):/, '0$1:'); }
-  function jamWIB(d) { return new Date(d.getTime() + WIB).toISOString().slice(11, 16); }
+  /* Sel jam di Sheets yang bertipe waktu (contoh 10:30) terbaca Apps Script sebagai tanggal 30 Des 1899 dengan selisih zona historis
+     (LMT, sekitar 7 menit 12 detik), sehingga 10:30 menjadi 10:22. Untuk nilai setua itu, pakai jam dan menit lokal apa adanya. */
+  function jamWIB(d) {
+    if (d.getUTCFullYear() < 1950) {
+      var m = d.getHours() * 60 + d.getMinutes() + (d.getSeconds() >= 30 ? 1 : 0);
+      return ('0' + Math.floor(m / 60) % 24).slice(-2) + ':' + ('0' + m % 60).slice(-2);
+    }
+    return new Date(d.getTime() + WIB).toISOString().slice(11, 16);
+  }
   function slotById(k, id) {
     var r = k.tab('Jadwal_CS').filter(function (x) { return teks(x.id_slot) === teks(id); })[0];
     if (!r) gagal('That time is no longer available.');
@@ -874,7 +882,7 @@ var Inti = (function () {
   /* ---------- aksi ---------- */
 
   /* Aksi yang boleh dipanggil tanpa kode akses (halaman pendaftaran tamu). Harus memeriksa semua masukan sendiri. */
-  var VERSI_KODE = '2026-11-22.1';   // tampil di infoDaftar (publik) supaya deploy bisa dipastikan dari luar
+  var VERSI_KODE = '2026-11-26.1';   // tampil di infoDaftar (publik) supaya deploy bisa dipastikan dari luar
   var PUBLIK = { infoDaftar: 1, daftarTamu: 1, cariPengundang: 1 };
   var HURUF_AJAK = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   function kodeAjakBaru(k) {
@@ -2263,7 +2271,7 @@ var Inti = (function () {
         return o && teks(o.diajukan_oleh) === id;
       }).map(function (r) {
         var o = k.orang(r.id_orang), x = o ? kursiById(k, o.id_kursi) : null;
-        var h = { id_slot: teks(r.id_slot), waktu: waktuSlot(r).toISOString(), tanggal: isoTanggal(tgl(r.tanggal) || waktuSlot(r)), jam: teks(r.jam), tempat: teks(r.tempat) || 'Zoom', pic: namaDepan(k.orang(r.PIC)), pic_id: teks(r.PIC), pic_ldc: perannya(k, r.PIC) === 'LDC', status: teks(r.status),
+        var h = { id_slot: teks(r.id_slot), waktu: waktuSlot(r).toISOString(), tanggal: isoTanggal(tgl(r.tanggal) || waktuSlot(r)), jam: r.jam instanceof Date ? jamWIB(r.jam) : teks(r.jam), tempat: teks(r.tempat) || 'Zoom', pic: namaDepan(k.orang(r.PIC)), pic_id: teks(r.PIC), pic_ldc: perannya(k, r.PIC) === 'LDC', status: teks(r.status),
           pendamping: daftarPendamping(r).map(function (x) { return namaDepan(k.orang(x)); }) };
         if (lt) { h.saya_dampingi = daftarPendamping(r).indexOf(id) >= 0; h.boleh_hapus = k.isLDC() || teks(r.PIC) === id; }
         if (o) {

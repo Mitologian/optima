@@ -117,7 +117,7 @@ var CACHE_DETIK_ = 600;
 var CACHE_VERSI_DETIK_ = 21600;
 var TANPA_CACHE_ = { Log: true, Responses: true };
 /* Kolom yang harus tersimpan sebagai teks (Sheets suka mengubah '07:00' dan '2027-05-24' menjadi waktu atau tanggal). */
-var KOLOM_TEKS_ = { Events: ['tanggal', 'jam_mulai', 'jam_selesai'] };
+var KOLOM_TEKS_ = { Events: ['tanggal', 'jam_mulai', 'jam_selesai'], Jadwal_CS: ['jam'] };
 var TAB_CACHE_ = ['Pengaturan', 'Klasifikasi', 'Master', 'Undangan', 'Hadir', 'Events', 'Butuh', 'Wawancara', 'Jadwal_CS', 'Akses', 'Lencana', 'Pengumuman'];
 
 function api_kemas_(baris) {

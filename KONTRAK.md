@@ -88,8 +88,8 @@ Dua kolom: `kunci` · `nilai`.
 | `driver_hadir_bod` · `driver_undang` · `driver_tamu_hadir` · `driver_konversi` · `driver_lunch` | 80 · 60 · 60 · 20 · 50 (persen) |
 | `driver_aktif_ronde` | 2 (dari 4 minggu terakhir ada aksi di app) |
 | `hari_bod` | Rabu |
-| `tanggal_esm` | 2027-05-24 |
-| `tanggal_grand_launch` | 2027-08-02 |
+| `tanggal_esm` | 2027-04-21 |
+| `tanggal_grand_launch` | 2027-07-21 |
 | `tautan_form` | https://forms.gle/... |
 | `tautan_zoom_cs` | tautan Zoom tetap untuk coffee session, ikut di pesan konfirmasi |
 

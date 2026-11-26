@@ -170,7 +170,7 @@ var Tiruan = (function () {
     return {
       Pengaturan: [
         ['nama_chapter', 'Optima'], ['fase', 'Pembentukan'], ['target_founding', 20], ['target_cgt', 37], ['target_launch', 52],
-        ['target_nama_min', 20], ['target_nama_maks', 40], ['hari_bod', 'Rabu'], ['tanggal_esm', '2027-05-24'], ['tanggal_grand_launch', '2027-08-02'],
+        ['target_nama_min', 20], ['target_nama_maks', 40], ['hari_bod', 'Rabu'], ['tanggal_esm', '2027-04-21'], ['tanggal_grand_launch', '2027-07-21'],
         ['tautan_form', 'https://forms.gle/contoh-optima'], ['tautan_zoom_cs', 'https://zoom.us/j/contoh-coffee']
       ].map(function (x) { return { kunci: x[0], nilai: x[1] }; }),
       Klasifikasi: klasifikasi,

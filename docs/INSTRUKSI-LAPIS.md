@@ -40,8 +40,8 @@ Akun `dedydahlan@gmail.com`, privat, editor hanya Coach Dedy dan Lapis.
    | `target_nama_min` | 20 |
    | `target_nama_maks` | 40 |
    | `hari_bod` | Rabu |
-   | `tanggal_esm` | 2027-05-24 |
-   | `tanggal_grand_launch` | 2027-08-02 |
+   | `tanggal_esm` | 2027-04-21 |
+   | `tanggal_grand_launch` | 2027-07-21 |
    | `tautan_form` | tautan Google Form (bagian B) |
    | `tautan_zoom_cs` | tautan Zoom tetap Coach Dedy untuk coffee session (minta ke Coach Dedy) |
 
